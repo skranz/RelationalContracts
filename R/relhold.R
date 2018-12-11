@@ -41,7 +41,8 @@ rel_compile = function(g,...) {
   restore.point("rel_compile")
 
   # 1. Create a data frame with all states
-  def = g$state_defs[[1]]
+  #def = g$state_defs[[2]]
+
   li = lapply(g$state_defs, function(def) {
     A1 = eval.rel.expression(def$A1,g, null.value = "-")
     A2 = eval.rel.expression(def$A2,g, null.value = "-")
@@ -50,10 +51,46 @@ rel_compile = function(g,...) {
 
     a.grid = as_data_frame(expand.grid(c(A1,A2),stringsAsFactors = FALSE))
     if (length(def$x)==1) {
-      quick_df(x=def$x,na1=na1,na2=na2, A1=list(A1),A2=list(A2),a.grid=list(a.grid))
+      state = quick_df(x=def$x,na1=na1,na2=na2, A1=list(A1),A2=list(A2),a.grid=list(a.grid))
+    } else {
+      stop("rel_state with multiple x not yet implemented.")
     }
   })
-  sdf = bind_rows(li)
+
+  # Compute states defined by A.fun
+  def = g$state_fun_defs[[1]]
+  li2 = lapply(g$state_fun_defs, function(def) {
+    if (def$vectorized=="full") {
+      res = do.call(def$A.fun, c(list(x=def$x, param=g$param), def$args))
+      na1 = sapply(res$A1, function(A1) prod(sapply(A1, length)))
+      na2 = sapply(res$A2, function(A2) prod(sapply(A2, length)))
+      state = quick_df(x=x,na1=na1,na2=na2,A1=res$A1,A2=res$A2)
+    } else {
+      A1 = vector("list", length(def$x))
+      A2 = vector("list", length(def$x))
+      na1 = na2 = rep(NA, length(def$x))
+      for (row in seq_along(def$x)) {
+        res = do.call(def$A.fun, c(list(x=def$x[row], param=g$param), def$args))
+        A1[row] = list(res$A1)
+        A2[row] = list(res$A2)
+        na1[row] = prod(sapply(res$A1, length))
+        na2[row] = prod(sapply(res$A2, length))
+
+      }
+      state = quick_df(x=x,na1=na1,na2=na2,A1=A1,A2=A2)
+    }
+
+    state$a.grid = lapply(seq_len(NROW(state)), function(row) {
+      a.grid = as_data_frame(expand.grid(c(state$A1[[row]],state$A2[[row]]),stringsAsFactors = FALSE))
+    })
+    state
+  })
+
+  sdf = bind_rows(li,li2)
+
+  g$a.labs.df = bind_rows(lapply(seq_len(NROW(sdf)),function(row) {
+    quick_df(x=sdf$x[row],a = seq_len(NROW(sdf$a.grid[[row]])), lab=make.state.lab.a(sdf[row,]))
+  }))
 
   nx = NROW(sdf)
 
@@ -61,7 +98,8 @@ rel_compile = function(g,...) {
   pi1 = vector("list",nx)
   pi2 = vector("list",nx)
 
-  def = g$payoff_defs[[1]]
+
+  #def = g$payoff_defs[[1]]
   empty.x = sdf$x
   for (def in g$payoff_defs) {
     if (is.null(def$x)) {
@@ -73,12 +111,30 @@ rel_compile = function(g,...) {
     x = def.x
     for (x in def.x) {
       row = which(sdf$x == x)
+      if (length(row)==0) {
+        stop("You specify a payoff for the undefined state ", x)
+      }
+
       state = sdf[row,]
       na = state$na1*state$na2
       pi1[[row]] = rep_len(compute.payoff.for.state(1,state, def,g),na)
       pi2[[row]] = rep_len(compute.payoff.for.state(2,state, def,g),na)
     }
   }
+
+  # Payoff functions
+  def = g$payoff_fun_defs[[1]]
+  for (def in g$payoff_fun_defs) {
+    for (x in def$x) {
+      row = which(sdf$x == x)
+      a.grid = sdf$a.grid[[row]]
+      args = c(list(x=x, params=g$params), def$args, as.list(a.grid))
+      res = do.call(def$pi.fun, args)
+      pi1[row] = res["pi1"]
+      pi2[row] = res["pi2"]
+    }
+  }
+
 
   sdf$pi1 = pi1
   sdf$pi2 = pi2
@@ -96,11 +152,31 @@ rel_compile = function(g,...) {
   li = lapply(seq_along(g$trans_defs), function(ind) {
     def = g$trans_defs[[ind]]
     res = as_data_frame(def)
+    if (!all(df$xs %in% sdf$x))
+      stop("You define a state transition from an undefined state ", paste0(setdiff(df$xs,sdf$x), collapse=", "))
+
+    if (!all(df$xd %in% sdf$x))
+      stop("You define a state transition to an undefined state ", paste0(setdiff(df$xd,sdf$x), collapse=", "))
+
     res$.def.ind = ind
     res
   })
-  tdf = bind_rows(li) %>%
-    filter(xs != xd)
+
+  li2 = lapply(seq_along(g$trans_fun_defs), function(ind) {
+    def = g$trans_fun_defs[[ind]]
+    res = bind_rows(lapply(def$x, function(x) {
+      row = which(sdf$x == x)
+      a.grid = sdf$a.grid[[row]]
+      args = c(list(x=x, params=g$params), def$args, as.list(a.grid))
+      res = do.call(def$trans.fun, args)
+    }))
+    res$.def.ind = ind + length(g$trans_defs)
+    res
+  })
+
+  tdf = bind_rows(li,li2) %>%
+    filter(xs != xd) %>%
+    unique()
 
   sdf$is_terminal = !(sdf$x %in% tdf$xs)
 
@@ -167,24 +243,42 @@ rel_state = function(g, x=NA,A1=list(a1="-"),A2=list(a2="-")) {
   add.to.rel.list(g, "state_defs",list(x=x, A1=A1,A2=A2) )
 }
 
+#' Add multiple states via functions
+#'
+#' @param g a relational contracting game created with rel_game
+#' @param x The names of the states
+#' @param A.fun A function that returns action sets
+#' @param A.fun.vec Vectorized version
+#' @param A2 The action set of player 2. Can be a numeric or character vector
+#' @return Returns the updated game
+rel_state_fun = function(g, x,A.fun=NULL, ..., vectorized=c("no","full")[1]) {
+  args=list(...)
+  restore.point("rel_state_fun")
+  obj = list(x=x,A.fun=A.fun, vectorized=vectorized, args=args)
+  add.to.rel.list(g, "state_fun_defs",obj)
+}
+
+
 
 #' Add a payoff function to one or several states
 #'
 #' @param g a relational contracting game created with rel_game
 #' @param x Name of one or multiple states. If NULL assume the payoff function holds for all states
-#' @param pi1 Player 1's payoff
-#' @param pi2 Player 2's payoff
-#' @param vectorized Are payoff functions or expressions vectorized?
+#' @param pi1 Player 1's payoff. Value(s) or formula
+#' @param pi2 Player 2's payoff. Values(s) or formula
 #' @return Returns the updated game
-rel_payoff = function(g, x=NULL,pi1=NULL,pi2=NULL, vectorized=FALSE) {
-  obj = list(x=x,pi1=pi1,pi2=pi2, vectorized=vectorized)
+rel_payoff = function(g, x=NULL,pi1=NULL,pi2=NULL) {
+  obj = list(x=x,pi1=pi1,pi2=pi2)
   add.to.rel.list(g, "payoff_defs",obj)
 }
 
-#' Version of rel_payoff that sets vectorized = TRUE
-rel_payoff_v = function(g,...) {
-  rel_payoff(g,..., vectorized=TRUE)
+#' Version of rel_payoff that takes a function
+rel_payoff_fun = function(g,x, pi.fun, vectorized=c("no","full")[1],...) {
+  obj = list(x=x,pi.fun=pi.fun,type="fun", vectorized=vectorized)
+  add.to.rel.list(g, "payoff_fun_defs",obj)
 }
+
+
 
 #' Add a state transition from one state to one or several states
 #'
@@ -197,6 +291,19 @@ rel_payoff_v = function(g,...) {
 rel_transition = function(g, xs,xd,...,prob=1) {
   obj = list(xs=xs,xd=xd,..., prob=prob)
   add.to.rel.list(g, "trans_defs",obj)
+}
+
+#' Add a state transition function
+#'
+#' @param g a relational contracting game created with rel_game
+#' @param xs Name(s) of source states
+#' @param xd Name(s) of destination states
+#' @param ... named action and their values
+#' @param prob transition probability
+#' @return Returns the updated game
+rel_transition_fun = function(g, x,trans.fun,..., vectorized=c("no","full")[1]) {
+  obj = list(x=x,trans.fun=trans.fun,vectorized=vectorized, args=list(...))
+  add.to.rel.list(g, "trans_fun_defs",obj)
 }
 
 

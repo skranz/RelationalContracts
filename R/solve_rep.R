@@ -58,8 +58,18 @@ make.state.lab.ai = function(state) {
   list(a1.lab, a2.lab)
 }
 
-make.state.lab.a = function(state) {
+make.state.lab.a = function(state, sep=" ", empty.sep=TRUE) {
   restore.point("make.state.lab.ai")
-  paste.matrix.cols(state$a.grid[[1]], collapse="_")
+  a.grid = state$a.grid[[1]]
+
+  for (col in seq_len(NCOL(a.grid))) {
+    if (is.character(a.grid[[col]])) {
+      a.grid[[col]][a.grid[[col]]=="-"] = ""
+    }
+  }
+
+  paste.df.cols(a.grid, sep=sep, empty.sep=TRUE)
+
 }
+
 
