@@ -1,10 +1,10 @@
-match.by.cols = function(x.df, v.df, cols) {
+match.by.cols = function(x.df, v.df, cols=NULL, cols1=cols, cols2=cols) {
   restore.point("match.by.cols")
   if (length(cols)==1) {
-    return(match(x.df[[cols]], v.df[[cols]]))
+    return(match(x.df[[cols1]], v.df[[cols2]]))
   } else {
-    x = paste.df.cols(x.df,cols, sep="§")
-    v = paste.df.cols(v.df, cols, sep="§")
+    x = paste.df.cols(x.df,cols1, sep="§")
+    v = paste.df.cols(v.df, cols2, sep="§")
     match(x,v)
   }
 

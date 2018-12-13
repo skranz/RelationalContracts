@@ -68,69 +68,95 @@ example.rne = function() {
 
 
 arms.race.example = function() {
-  x.max = 10
-  c = 0.1
-  k = 0.5
-  T = 4
 
-  states = as_data_frame(expand.grid(x1=0:x.max,x2=0:x.max))
-  states$x = paste0(states$x1,"_", states$x2)
-
-  A.fun = function(x, states,...) {
+  A.fun = function(x.df, x.max,...) {
     restore.point("A.fun")
-    row = which(states$x==x)
-    x1 = states$x1[row]
-    x2 = states$x2[row]
+    x1=x.df$x1; x2=x.df$x2
     list(
       A1=list(h1=0:x1, i1=c(if (x1>0) "d","",if (x1<x.max) "b")),
       A2=list(h2=0:x2, i2=c(if (x2>0) "d","",if (x2<x.max) "b"))
     )
   }
 
-  pi.fun = function(h1,i1,h2,i2,...) {
+  pi.fun = function(a.df,c,k,...) {
     restore.point("pi.fun")
-    pi1 = -c*h1 - h2 - k*(i1=="b")
-    pi2 = -c*h2 - h1 - k*(i2=="b")
-    list(pi1=pi1,pi2=pi2)
+    transmute(a.df,
+      pi1 = -c*h1 - h2 - k*(i1=="b"),
+      pi2 = -c*h2 - h1 - k*(i2=="b")
+    )
   }
 
-  trans.fun = function(x,i1,i2,...) {
+  trans.fun = function(x, x.df,a.df,x.max, success.prob,...) {
     restore.point("trans.fun")
-    rows = match(x,states$x)
-    x1 = states$x1[rows]
-    x2 = states$x2[rows]
-
-    iv1 = 0 + (i1=="b") - (i1=="d")
-    iv2 = 0 + (i2=="b") - (i2=="d")
-
-    nx1 = pmin(x.max,pmax(x1+iv1,0))
-    nx2 = pmin(x.max,pmax(x2+iv2,0))
-
-    nx = paste0(nx1,"_",nx2)
-    unique(quick_df(xs=x, xd=nx,i1=i1,i2=i2, prob=1))
-
+    x1=x.df$x1;x2=x.df$x2;
+    a.df = unique(select(a.df, i1,i2))
+    sp = success.prob
+    res = mutate(a.df,
+        prob = ifelse(i1=="b", sp,1)*ifelse(i2=="b",sp,1),
+        iv1 = 0 + (i1=="b") - (i1=="d"),
+        iv2 = 0 + (i2=="b") - (i2=="d"),
+        nx1 = pmin(x.max,pmax(x1+iv1,0)),
+        nx2 = pmin(x.max,pmax(x2+iv2,0)),
+        xd = paste0(nx1,"_",nx2),
+        xs=x
+      ) %>%
+      filter(xs != xd) %>%
+      select(xs,xd,i1,i2,prob)
+    res
   }
 
 
-  x = states$x
+  x.max = 3
+  x.df = as_data_frame(expand.grid(x1=0:x.max,x2=0:x.max))
+  x.df$x = paste0(x.df$x1,"_", x.df$x2)
+
   g = rel_game("Arms Race") %>%
-    rel_param(delta=0.8, rho=0.2, c=c, k=k,x.max=x.max) %>%
-    rel_state_fun(x,A.fun=A.fun, states=states) %>%
-    rel_payoff_fun(x,pi.fun) %>%
-    rel_transition_fun(x, trans.fun,states=states) %>%
+    rel_param(delta=0.995, rho=0.4, c=0, k=2,x.max=x.max, success.prob=0.5) %>%
+    rel_states_fun(x.df,A.fun=A.fun, pi.fun=pi.fun, trans.fun=trans.fun) %>%
     rel_compile()
 
-  g=g %>% rel_capped_rne(T=2)
+  g=g %>% rel_capped_rne(T=10, save.details = TRUE)
 
-  (rne = filter(g$rne, t<max(g$rne$t)))
+  #rne = g$rne %>% filter(t<max(g$rne$t), t==1)
+  #rne
+
+  res = get.rne.details(g)
+
+  d = res %>%
+    filter(can.ae==2) %>%
+    mutate(iv1 =  0 + (i1=="b") - (i1=="d"),iv2 = 0 + (i2=="b") - (i2=="d"))
+
+  library(ggplot2)
+  ggplot(d, aes(x=t,y=iv1)) + geom_point(size=1.5, color="red", alpha=0.5) + facet_grid(x1~x2, labeller=label_both) + geom_point(aes(x=t,y=iv2), size=1.5, color="blue", alpha=0.5) + theme_bw()
+
+  de = res %>% filter(x %in% c("3_0"), t==5) %>%
+    filter(h1==0, h2==0)
+  de
+
+
   tdf = g$tdf
 
   View(rne)
 }
-rne.summary = function(g, rne=g$rne) {
-  restore.point("rne.summary")
 
 
+
+get.rne.details = function(g, x=NULL,t=NULL) {
+  restore.point("get.rne.details")
+
+  if (is.null(g$rne.details)) return(NULL)
+  if (is.null(x)) x = g$sdf$x
+
+  if (!is.null(t)) {
+    rows = which(g$rne$x %in% x & g$rne$t %in% t)
+  } else {
+    rows = which(g$rne$x %in% x)
+  }
+  if (length(rows)==1) {
+    g$rne.details[[rows]]
+  } else {
+    bind_rows(g$rne.details[rows])
+  }
 
 }
 
@@ -151,6 +177,9 @@ rel_rne = function(g,...) {
 
 
   res = data_frame(x = sdf$x, solved=FALSE, r1=NA,r2=NA, U=NA, v1=NA,v2=NA,ae=NA,a1=NA,a2=NA)
+
+
+
 
   # First solve repeated games for all terminal states
   rows = which(sdf$is_terminal)
@@ -358,7 +387,7 @@ compute.x.trans.mat = function(x,g, add.own=TRUE) {
 
 
 
-rel_capped_rne = function(g,T,...) {
+rel_capped_rne = function(g,T,..., save.details=FALSE) {
   restore.point("rel_capped_rne")
   if (!g$is_compiled) g = rel_compile(g)
 
@@ -369,8 +398,19 @@ rel_capped_rne = function(g,T,...) {
   beta1 = g$param$beta1
   beta2 = 1-beta1
 
+  if (save.details) {
+    x.df = non.null(g$x.df, quick_df(x=sdf$x))
+  }
+
 
   res = data_frame(x = rep(sdf$x,times=T),t=rep(T:1,each=NROW(sdf)), r1=NA,r2=NA, U=NA, v1=NA,v2=NA,ae=NA,a1=NA,a2=NA)
+
+
+  rne.details = NULL
+  if (save.details)
+    rne.details = vector("list",NROW(res))
+
+  a.res = data_frame(row=integer(0))
 
   # First solve repeated games for all states
   # These are the continuation payoffs in state T
@@ -391,6 +431,8 @@ rel_capped_rne = function(g,T,...) {
     res$ae[row] = rep$ae
     res$a1[row] = rep$a1
     res$a2[row] = rep$a2
+
+
 
     w = ((1-delta) / (1-adj_delta))
     v1 = w*rep$v1_rep + (1-w)*rep$r1
@@ -419,7 +461,7 @@ rel_capped_rne = function(g,T,...) {
       na1 = sdf$na1[srow]
       na2 = sdf$na2[srow]
       trans.mat = sdf$trans.mat[[srow]]
-      rownames(trans.mat) = make.state.lab.a(sdf[srow,])
+      #rownames(trans.mat) = make.state.lab.a(sdf[srow,])
 
       if (is.null(trans.mat)) {
         trans.mat = matrix(1,na1*na2,1)
@@ -487,17 +529,78 @@ rel_capped_rne = function(g,T,...) {
       res$ae[row] = which.max(slack * (U.hat==U & IC.holds))
       res$a1[row] = which.max(slack * (v1.hat==v1 & IC.holds))
       res$a2[row] = which.max(slack * (v2.hat==v2 & IC.holds))
+
+
+      if (save.details) {
+        pi1 = sdf$pi1[[srow]]
+        Er1 = as.vector(trans.mat %*% (res$r1[dest.rows]))
+        # Continuation payoff if new negotiation in next period
+        u1_neg = (1-delta)*pi1 + delta*Er1
+
+        pi2 = sdf$pi2[[srow]]
+        Er2 = as.vector(trans.mat %*% (res$r2[dest.rows]))
+        # Continuation payoff if new negotiation in next period
+        u2_neg = (1-delta)*pi2 + delta*Er2
+
+
+        arows = seq_along(IC.holds)
+        a.info = cbind(
+          quick_df(t=t),
+          x.df[x.df$x==x,],
+          sdf$a.grid[[srow]],
+          quick_df(
+            can.ae = (U.hat==U & IC.holds)*1 + (arows==res$ae[row]),
+            can.a1 = (v1.hat==v1 & IC.holds)*1 + (arows==res$ae[row]),
+            can.a2 = (v2.hat==v2 & IC.holds)*1 + (arows==res$ae[row]),
+            IC.holds=IC.holds,
+            slack=slack,
+
+            pi1 = pi1,
+            Er1 = Er1,
+            u1_neg = u1_neg,
+
+            pi2 = pi2,
+            Er2 = Er2,
+            u2_neg = u2_neg,
+
+            r1=r1,
+            r2=r2,
+
+            U.hat = U.hat,
+            v1.hat=v1.hat,
+            v2.hat=v2.hat,
+            U=U,
+            v1=v1,
+            v2=v2
+          )
+        )
+        rne.details[[row]] = a.info
+      }
+
     }
   }
 
   # Add some additional info
-  for (row in seq_len(NROW(res))) {
-    res$ae.lab = left_join(select(res,x,a=ae), g$a.labs.df, by=c("x","a"))$lab
-    res$a1.lab = left_join(select(res,x,a=a1), g$a.labs.df, by=c("x","a"))$lab
-    res$a2.lab = left_join(select(res,x,a=a2), g$a.labs.df, by=c("x","a"))$lab
-  }
+
+  rows = match.by.cols(res,g$a.labs.df, cols1=c("x","ae"), cols2=c("x","a"))
+  res$ae.lab = g$a.labs.df$lab[rows]
+
+  rows = match.by.cols(res,g$a.labs.df, cols1=c("x","a1"), cols2=c("x","a"))
+  res$a1.lab = g$a.labs.df$lab[rows]
+
+  rows = match.by.cols(res,g$a.labs.df, cols1=c("x","a2"), cols2=c("x","a"))
+  res$a2.lab = g$a.labs.df$lab[rows]
+
+  if (!is.null(g$x.df))
+    res = left_join(res, g$x.df, by="x")
+
+    #res$ae.lab = left_join(select(res,x,a=ae), g$a.labs.df, by=c("x","a"))$lab
+    #res$a1.lab = left_join(select(res,x,a=a1), g$a.labs.df, by=c("x","a"))$lab
+    #res$a2.lab = left_join(select(res,x,a=a2), g$a.labs.df, by=c("x","a"))$lab
 
   g$sdf = sdf
   g$rne = res
+  g$rne.details = rne.details
   g
 }
+

@@ -34,7 +34,18 @@ example.relhold = function() {
 
 }
 
+get.x.df = function(x,g) {
+  if (is.null(g$x.df)) return(NULL)
 
+  left_join(quick_df(x=x), g$x.df, by="x")
+}
+
+get.def.x = function(x,g,x.df=g$x.df, sdf=g$sdf) {
+  if (!is.null(x)) return(x)
+  if (!is.null(x.df)) return(x.df$x)
+  if (!is.null(sdf)) return(sdf$x)
+  NULL
+}
 
 #' Compiles a relational contracting game
 rel_compile = function(g,...) {
@@ -42,6 +53,13 @@ rel_compile = function(g,...) {
 
   # 1. Create a data frame with all states
   #def = g$state_defs[[2]]
+
+  if (!is.null(g$x_df_def)) {
+    g$x.df = bind_rows(g$x_df_def)
+  } else {
+    g$x.df = NULL
+  }
+
 
   li = lapply(g$state_defs, function(def) {
     A1 = eval.rel.expression(def$A1,g, null.value = "-")
@@ -60,8 +78,12 @@ rel_compile = function(g,...) {
   # Compute states defined by A.fun
   def = g$state_fun_defs[[1]]
   li2 = lapply(g$state_fun_defs, function(def) {
-    if (def$vectorized=="full") {
-      res = do.call(def$A.fun, c(list(x=def$x, param=g$param), def$args))
+    def$x = get.def.x(def$x,g)
+
+    if (def$vectorized) {
+      args = c(list(x=x, x.df=(get.x.df(x,g))),g$param, def$args)
+      res = do.call(def$A.fun,args)
+
       na1 = sapply(res$A1, function(A1) prod(sapply(A1, length)))
       na2 = sapply(res$A2, function(A2) prod(sapply(A2, length)))
       state = quick_df(x=x,na1=na1,na2=na2,A1=res$A1,A2=res$A2)
@@ -70,14 +92,15 @@ rel_compile = function(g,...) {
       A2 = vector("list", length(def$x))
       na1 = na2 = rep(NA, length(def$x))
       for (row in seq_along(def$x)) {
-        res = do.call(def$A.fun, c(list(x=def$x[row], param=g$param), def$args))
+        args = c(list(x.df=(get.x.df(def$x[row],g)),x=def$x[row]),g$param, def$args)
+        res = do.call(def$A.fun, args)
         A1[row] = list(res$A1)
         A2[row] = list(res$A2)
         na1[row] = prod(sapply(res$A1, length))
         na2[row] = prod(sapply(res$A2, length))
 
       }
-      state = quick_df(x=x,na1=na1,na2=na2,A1=A1,A2=A2)
+      state = quick_df(x=def$x,na1=na1,na2=na2,A1=A1,A2=A2)
     }
 
     state$a.grid = lapply(seq_len(NROW(state)), function(row) {
@@ -94,6 +117,7 @@ rel_compile = function(g,...) {
 
   nx = NROW(sdf)
 
+
   # 2. Evaluate and store payoff matrices
   pi1 = vector("list",nx)
   pi2 = vector("list",nx)
@@ -102,11 +126,7 @@ rel_compile = function(g,...) {
   #def = g$payoff_defs[[1]]
   empty.x = sdf$x
   for (def in g$payoff_defs) {
-    if (is.null(def$x)) {
-      def.x = empty.x
-    } else {
-      def.x = def$x
-    }
+    def.x = get.def.x(def$x,g)
 
     x = def.x
     for (x in def.x) {
@@ -128,7 +148,7 @@ rel_compile = function(g,...) {
     for (x in def$x) {
       row = which(sdf$x == x)
       a.grid = sdf$a.grid[[row]]
-      args = c(list(x=x, params=g$params), def$args, as.list(a.grid))
+      args = c(list(x=x, x.df=get.x.df(x,g), a.df = a.grid),g$param, def$args)
       res = do.call(def$pi.fun, args)
       pi1[row] = res["pi1"]
       pi2[row] = res["pi2"]
@@ -167,7 +187,7 @@ rel_compile = function(g,...) {
     res = bind_rows(lapply(def$x, function(x) {
       row = which(sdf$x == x)
       a.grid = sdf$a.grid[[row]]
-      args = c(list(x=x, params=g$params), def$args, as.list(a.grid))
+      args = c(list(x=x, x.df=get.x.df(x,g), a.df = a.grid),g$param, def$args)
       res = do.call(def$trans.fun, args)
     }))
     res$.def.ind = ind + length(g$trans_defs)
@@ -236,9 +256,18 @@ rel_param = function(g, delta=non.null(param[["delta"]], 0.9), rho=non.null(para
 #' @param A1 The action set of player 1. Can be a numeric or character vector
 #' @param A2 The action set of player 2. Can be a numeric or character vector
 #' @return Returns the updated game
-rel_state = function(g, x=NA,A1=list(a1="-"),A2=list(a2="-")) {
+rel_state = function(g, x,A1=list(a1="-"),A2=list(a2="-")) {
   if (!is.list(A1)) A1 = list(a1=A1)
   if (!is.list(A2)) A2 = list(a2=A2)
+  if (is.data.frame(x)) {
+    x.df = x
+    x = x.df$x
+  } else {
+    x.df = NULL
+  }
+  if (!is.null(x.df))
+    g = add.to.rel.list(g,"x_df_def", x.df)
+
 
   add.to.rel.list(g, "state_defs",list(x=x, A1=A1,A2=A2) )
 }
@@ -251,11 +280,33 @@ rel_state = function(g, x=NA,A1=list(a1="-"),A2=list(a2="-")) {
 #' @param A.fun.vec Vectorized version
 #' @param A2 The action set of player 2. Can be a numeric or character vector
 #' @return Returns the updated game
-rel_state_fun = function(g, x,A.fun=NULL, ..., vectorized=c("no","full")[1]) {
+rel_states_fun = function(g, x,A.fun=NULL, pi.fun=NULL, trans.fun=NULL, vectorized=FALSE, ...) {
   args=list(...)
   restore.point("rel_state_fun")
-  obj = list(x=x,A.fun=A.fun, vectorized=vectorized, args=args)
-  add.to.rel.list(g, "state_fun_defs",obj)
+  if (is.data.frame(x)) {
+    x.df = x
+    x = x.df$x
+  } else {
+    x.df = NULL
+  }
+  if (!is.null(x.df))
+    g = add.to.rel.list(g,"x_df_def", x.df)
+
+  if (!is.null(A.fun)) {
+    obj = list(x=x,A.fun=A.fun, args=args, vectorized=vectorized)
+    g = add.to.rel.list(g, "state_fun_defs",obj)
+  }
+  if (!is.null(pi.fun)) {
+    obj = list(x=x,pi.fun=pi.fun, args=args, vectorized=vectorized)
+    g = add.to.rel.list(g, "payoff_fun_defs",obj)
+  }
+  if (!is.null(trans.fun)) {
+    obj = list(x=x,trans.fun=trans.fun, args=args, vectorized=vectorized)
+    g = add.to.rel.list(g, "trans_fun_defs",obj)
+  }
+
+
+  g
 }
 
 
@@ -273,7 +324,7 @@ rel_payoff = function(g, x=NULL,pi1=NULL,pi2=NULL) {
 }
 
 #' Version of rel_payoff that takes a function
-rel_payoff_fun = function(g,x, pi.fun, vectorized=c("no","full")[1],...) {
+rel_payoff_fun = function(g,pi.fun,x=NULL, vectorized=FALSE,...) {
   obj = list(x=x,pi.fun=pi.fun,type="fun", vectorized=vectorized)
   add.to.rel.list(g, "payoff_fun_defs",obj)
 }
@@ -301,7 +352,7 @@ rel_transition = function(g, xs,xd,...,prob=1) {
 #' @param ... named action and their values
 #' @param prob transition probability
 #' @return Returns the updated game
-rel_transition_fun = function(g, x,trans.fun,..., vectorized=c("no","full")[1]) {
+rel_transition_fun = function(g, trans.fun,x=NULL,..., vectorized=FALSE) {
   obj = list(x=x,trans.fun=trans.fun,vectorized=vectorized, args=list(...))
   add.to.rel.list(g, "trans_fun_defs",obj)
 }
