@@ -1,4 +1,22 @@
 example.rne = function() {
+
+  e.seq = c(0,1); xL=0; xH=5;
+  g = rel_game("Weakly Monotone Vulnerability Paradox") %>%
+    rel_param(delta=0.8, rho=0.5, c=0.4, xL=xL,xH=xH) %>%
+    # Initial State
+    rel_state("xL", A1=list(move=c("stay","vul")),A2=list(e=e.seq)) %>%
+    rel_payoff("xL",pi1=~e, pi2=~ -c*e*(e>=0)) %>%
+    rel_transition("xL","xH",move="vul") %>%
+    # High vulnerability
+    rel_state("xH", A1=NULL,A2=list(e=unique(c(-xH,e.seq)))) %>%
+    rel_payoff("xH",pi1=~e, pi2=~ -c*e*(e>=0)) %>%
+    rel_compile()
+
+  g = rel_rne(g)
+
+
+
+
   e.seq = c(0,1); xL=0; xH=5;
   g = rel_game("Simple Vulnerability Paradox") %>%
     rel_param(delta=0.8, rho=0.5, c=0.4, xL=xL,xH=xH) %>%
@@ -91,7 +109,7 @@ arms.race.example = function() {
     x1=x.df$x1;x2=x.df$x2;
     a.df = unique(select(a.df, i1,i2))
     sp = success.prob
-    res = mutate(a.df,
+    rne = mutate(a.df,
         prob = ifelse(i1=="b", sp,1)*ifelse(i2=="b",sp,1),
         iv1 = 0 + (i1=="b") - (i1=="d"),
         iv2 = 0 + (i2=="b") - (i2=="d"),
@@ -102,7 +120,7 @@ arms.race.example = function() {
       ) %>%
       filter(xs != xd) %>%
       select(xs,xd,i1,i2,prob)
-    res
+    rne
   }
 
 
@@ -120,16 +138,16 @@ arms.race.example = function() {
   #rne = g$rne %>% filter(t<max(g$rne$t), t==1)
   #rne
 
-  res = get.rne.details(g)
+  rne = get.rne.details(g)
 
-  d = res %>%
+  d = rne %>%
     filter(can.ae==2) %>%
     mutate(iv1 =  0 + (i1=="b") - (i1=="d"),iv2 = 0 + (i2=="b") - (i2=="d"))
 
   library(ggplot2)
   ggplot(d, aes(x=t,y=iv1)) + geom_point(size=1.5, color="red", alpha=0.5) + facet_grid(x1~x2, labeller=label_both) + geom_point(aes(x=t,y=iv2), size=1.5, color="blue", alpha=0.5) + theme_bw()
 
-  de = res %>% filter(x %in% c("3_0"), t==5) %>%
+  de = rne %>% filter(x %in% c("3_0"), t==5) %>%
     filter(h1==0, h2==0)
   de
 
@@ -176,7 +194,7 @@ rel_rne = function(g,...) {
   beta2 = 1-beta1
 
 
-  res = data_frame(x = sdf$x, solved=FALSE, r1=NA,r2=NA, U=NA, v1=NA,v2=NA,ae=NA,a1=NA,a2=NA)
+  rne = data_frame(x = sdf$x, solved=FALSE, r1=NA,r2=NA, U=NA, v1=NA,v2=NA,ae=NA,a1=NA,a2=NA)
 
 
 
@@ -195,39 +213,40 @@ rel_rne = function(g,...) {
       filter(adj_delta >= delta_min, adj_delta < delta_max)
 
 
-    res$U[row] = rep$U
-    res$r1[row] = rep$r1
-    res$r2[row] = rep$r2
-    res$ae[row] = rep$ae
-    res$a1[row] = rep$a1
-    res$a2[row] = rep$a2
+    rne$U[row] = rep$U
+    rne$r1[row] = rep$r1
+    rne$r2[row] = rep$r2
+    rne$ae[row] = rep$ae
+    rne$a1[row] = rep$a1
+    rne$a2[row] = rep$a2
 
     w = ((1-delta) / (1-adj_delta))
     v1 = w*rep$v1_rep + (1-w)*rep$r1
     v2 = w*rep$v2_rep + (1-w)*rep$r2
-    res$v1[row] = v1
-    res$v2[row] = v2
+    rne$v1[row] = v1
+    rne$v2[row] = v2
   }
-  res$solved[rows] = TRUE
-  res
+  rne$solved[rows] = TRUE
+  rne
 
   # Compute state transitions for all remaining states
-  for (row in which(!res$solved)) {
+  for (row in which(!rne$solved)) {
     if (is.null(sdf$trans.mat[[row]])) {
       x = sdf$x[row]
       sdf$trans.mat[row] = list(compute.x.trans.mat(x=x,g=g))
     }
-    to.self = x %in% colnames(sdf$trans.mat[[row]])
-    if (to.self)
-      stop(paste0("The non-terminal state ", x, " has a positive probability (", max(trans.mat[,x]), ") to transit to itself. Cannot yet find RNE in such games."))
+    #to.self = x %in% colnames(sdf$trans.mat[[row]])
+    #if (to.self)
+    #  stop(paste0("The non-terminal state ", x, " has a positive probability (", max(trans.mat[,x]), ") to transit to itself. Cannot yet find RNE in such games."))
   }
+  g$sdf = sdf
 
   find.next.state.row = function() {
-    x.solved = sdf$x[res$solved]
-    rows = which(!res$solved)
+    x.solved = sdf$x[rne$solved]
+    rows = which(!rne$solved)
     for (row in rows) {
       xd = colnames(sdf$trans.mat[[row]])
-      if (all(xd %in% x.solved))
+      if (all(xd %in% c(sdf$x[row],x.solved)))
         return(row)
     }
     # No row could be found
@@ -236,31 +255,48 @@ rel_rne = function(g,...) {
 
 
 
-  while(sum(!res$solved)>0) {
+  while(sum(!rne$solved)>0) {
     row = find.next.state.row()
     if (is.na(row)) {
-      x.unsolved = sdf$x[!res$solved]
+      x.unsolved = sdf$x[!rne$solved]
       stop(paste0("Cannot compute RNE since there is a cycle among the non-terminal state(s) ", paste0(x.unsolved, collapse=", ")))
     }
-
-
     x = sdf$x[row]
     trans.mat = sdf$trans.mat[[row]]
+
+    # Check if state transists to itself
+    if (x %in% colnames(trans.mat)) {
+      cat("Solve weakly monotone state", x, "...")
+      res = solve.weakly.monotone.state(x,rne,g,sdf)
+      if (res$ok) {
+        rne$U[row] = res$U;
+        rne$v1[row] = res$v1; rne$v2[row] = res$v2
+        rne$r1[row] = res$r1; rne$r2[row] = res$r2
+        rne$a1[row] = res$a1; rne$a2[row] = res$a2
+        rne$ae[row] = res$ae
+        rne$solved[row] = TRUE
+        cat(" ok")
+        next
+      } else {
+        stop("Cannot find an RNE in weakly monotone state ", x)
+      }
+    }
+
     xd = colnames(trans.mat)
-    dest.rows = match(xd, res$x)
+    dest.rows = match(xd, rne$x)
     na1 = sdf$na1[row]
     na2 = sdf$na2[row]
 
     # Include code to compute U v and r for the current state
     U.hat = (1-delta)*(sdf$pi1[[row]] + sdf$pi2[[row]]) +
-      delta * (trans.mat %*% res$U[dest.rows])
+      delta * (trans.mat %*% rne$U[dest.rows])
 
     # "q-value" of punishment payoffs
     q1.hat = (1-delta)*sdf$pi1[[row]] +
-      delta * (trans.mat %*% ( (1-rho)*res$v1[dest.rows] + rho*res$r1[dest.rows] ))
+      delta * (trans.mat %*% ( (1-rho)*rne$v1[dest.rows] + rho*rne$r1[dest.rows] ))
 
     q2.hat = (1-delta)*sdf$pi2[[row]] +
-      delta * (trans.mat %*% ( (1-rho)*res$v2[dest.rows] + rho*res$r2[dest.rows] ))
+      delta * (trans.mat %*% ( (1-rho)*rne$v2[dest.rows] + rho*rne$r2[dest.rows] ))
 
     # v1 is best reply q for player 1
     q1.hat = matrix(q1.hat,na1, sdf$na2)
@@ -292,31 +328,31 @@ rel_rne = function(g,...) {
     r1 = v1 + beta1*(U-v1-v2)
     r2 = v2 + beta2*(U-v1-v2)
 
-    res$U[row] = U;
-    res$v1[row] = v1; res$v2[row] = v2
-    res$r1[row] = r1; res$r2[row] = r2
+    rne$U[row] = U;
+    rne$v1[row] = v1; rne$v2[row] = v2
+    rne$r1[row] = r1; rne$r2[row] = r2
 
     # Pick equilibrium actions
     # If indifferent choose the one with the largest
     # slack in the IC
     slack = U.hat - (v1.hat + v2.hat)
-    res$ae[row] = which.max(slack * (U.hat==U & IC.holds))
-    res$a1[row] = which.max(slack * (v1.hat==v1 & IC.holds))
-    res$a2[row] = which.max(slack * (v2.hat==v2 & IC.holds))
+    rne$ae[row] = which.max(slack * (U.hat==U & IC.holds))
+    rne$a1[row] = which.max(slack * (v1.hat==v1 & IC.holds))
+    rne$a2[row] = which.max(slack * (v2.hat==v2 & IC.holds))
 
-    res$solved[row] = TRUE
+    rne$solved[row] = TRUE
   }
 
   # Add some additional info
-  for (row in seq_len(NROW(res))) {
-    res$ae.lab = left_join(select(res,x,a=ae), g$a.labs.df, by=c("x","a"))$lab
-    res$a1.lab = left_join(select(res,x,a=a1), g$a.labs.df, by=c("x","a"))$lab
-    res$a2.lab = left_join(select(res,x,a=a2), g$a.labs.df, by=c("x","a"))$lab
+  for (row in seq_len(NROW(rne))) {
+    rne$ae.lab = left_join(select(rne,x,a=ae), g$a.labs.df, by=c("x","a"))$lab
+    rne$a1.lab = left_join(select(rne,x,a=a1), g$a.labs.df, by=c("x","a"))$lab
+    rne$a2.lab = left_join(select(rne,x,a=a2), g$a.labs.df, by=c("x","a"))$lab
   }
 
-  res = select(res,-solved)
+  rne = select(rne,-solved)
   g$sdf = sdf
-  g$rne = res
+  g$rne = rne
   g
 }
 
@@ -403,14 +439,14 @@ rel_capped_rne = function(g,T,..., save.details=FALSE) {
   }
 
 
-  res = data_frame(x = rep(sdf$x,times=T),t=rep(T:1,each=NROW(sdf)), r1=NA,r2=NA, U=NA, v1=NA,v2=NA,ae=NA,a1=NA,a2=NA)
+  rne = data_frame(x = rep(sdf$x,times=T),t=rep(T:1,each=NROW(sdf)), r1=NA,r2=NA, U=NA, v1=NA,v2=NA,ae=NA,a1=NA,a2=NA)
 
 
   rne.details = NULL
   if (save.details)
-    rne.details = vector("list",NROW(res))
+    rne.details = vector("list",NROW(rne))
 
-  a.res = data_frame(row=integer(0))
+  a.rne = data_frame(row=integer(0))
 
   # First solve repeated games for all states
   # These are the continuation payoffs in state T
@@ -425,22 +461,22 @@ rel_capped_rne = function(g,T,..., save.details=FALSE) {
       filter(adj_delta >= delta_min, adj_delta < delta_max)
 
 
-    res$U[row] = rep$U
-    res$r1[row] = rep$r1
-    res$r2[row] = rep$r2
-    res$ae[row] = rep$ae
-    res$a1[row] = rep$a1
-    res$a2[row] = rep$a2
+    rne$U[row] = rep$U
+    rne$r1[row] = rep$r1
+    rne$r2[row] = rep$r2
+    rne$ae[row] = rep$ae
+    rne$a1[row] = rep$a1
+    rne$a2[row] = rep$a2
 
 
 
     w = ((1-delta) / (1-adj_delta))
     v1 = w*rep$v1_rep + (1-w)*rep$r1
     v2 = w*rep$v2_rep + (1-w)*rep$r2
-    res$v1[row] = v1
-    res$v2[row] = v2
+    rne$v1[row] = v1
+    rne$v2[row] = v2
   }
-  res
+  rne
 
   # Compute all transition matrices
   for (row in 1:NROW(sdf)) {
@@ -449,6 +485,7 @@ rel_capped_rne = function(g,T,..., save.details=FALSE) {
       sdf$trans.mat[row] = list(compute.x.trans.mat(x=x,g=g))
     }
   }
+  g$sdf = sdf
 
 
   t = T-1
@@ -475,15 +512,15 @@ rel_capped_rne = function(g,T,..., save.details=FALSE) {
 
       # Include code to compute U v and r for the current state
       U.hat = (1-delta)*(sdf$pi1[[srow]] + sdf$pi2[[srow]]) +
-        delta * (trans.mat %*% res$U[dest.rows])
+        delta * (trans.mat %*% rne$U[dest.rows])
       U.hat = as.vector(U.hat)
 
       # "q-value" of punishment payoffs
       q1.hat = (1-delta)*sdf$pi1[[srow]] +
-        delta * (trans.mat %*% ( (1-rho)*res$v1[dest.rows] + rho*res$r1[dest.rows] ))
+        delta * (trans.mat %*% ( (1-rho)*rne$v1[dest.rows] + rho*rne$r1[dest.rows] ))
 
       q2.hat = (1-delta)*sdf$pi2[[srow]] +
-        delta * (trans.mat %*% ( (1-rho)*res$v2[dest.rows] + rho*res$r2[dest.rows] ))
+        delta * (trans.mat %*% ( (1-rho)*rne$v2[dest.rows] + rho*rne$r2[dest.rows] ))
 
       # v1 is best reply q for player 1
       q1.hat = matrix(q1.hat,na1, na2)
@@ -518,27 +555,27 @@ rel_capped_rne = function(g,T,..., save.details=FALSE) {
 
       row = srow + (T-t)*NROW(sdf)
 
-      res$U[row] = U;
-      res$v1[row] = v1; res$v2[row] = v2
-      res$r1[row] = r1; res$r2[row] = r2
+      rne$U[row] = U;
+      rne$v1[row] = v1; rne$v2[row] = v2
+      rne$r1[row] = r1; rne$r2[row] = r2
 
       # Pick equilibrium actions
       # If indifferent choose the one with the largest
       # slack in the IC
       slack = U.hat - (v1.hat + v2.hat)
-      res$ae[row] = which.max(slack * (U.hat==U & IC.holds))
-      res$a1[row] = which.max(slack * (v1.hat==v1 & IC.holds))
-      res$a2[row] = which.max(slack * (v2.hat==v2 & IC.holds))
+      rne$ae[row] = which.max(slack * (U.hat==U & IC.holds))
+      rne$a1[row] = which.max(slack * (v1.hat==v1 & IC.holds))
+      rne$a2[row] = which.max(slack * (v2.hat==v2 & IC.holds))
 
 
       if (save.details) {
         pi1 = sdf$pi1[[srow]]
-        Er1 = as.vector(trans.mat %*% (res$r1[dest.rows]))
+        Er1 = as.vector(trans.mat %*% (rne$r1[dest.rows]))
         # Continuation payoff if new negotiation in next period
         u1_neg = (1-delta)*pi1 + delta*Er1
 
         pi2 = sdf$pi2[[srow]]
-        Er2 = as.vector(trans.mat %*% (res$r2[dest.rows]))
+        Er2 = as.vector(trans.mat %*% (rne$r2[dest.rows]))
         # Continuation payoff if new negotiation in next period
         u2_neg = (1-delta)*pi2 + delta*Er2
 
@@ -549,9 +586,9 @@ rel_capped_rne = function(g,T,..., save.details=FALSE) {
           x.df[x.df$x==x,],
           sdf$a.grid[[srow]],
           quick_df(
-            can.ae = (U.hat==U & IC.holds)*1 + (arows==res$ae[row]),
-            can.a1 = (v1.hat==v1 & IC.holds)*1 + (arows==res$ae[row]),
-            can.a2 = (v2.hat==v2 & IC.holds)*1 + (arows==res$ae[row]),
+            can.ae = (U.hat==U & IC.holds)*1 + (arows==rne$ae[row]),
+            can.a1 = (v1.hat==v1 & IC.holds)*1 + (arows==rne$ae[row]),
+            can.a2 = (v2.hat==v2 & IC.holds)*1 + (arows==rne$ae[row]),
             IC.holds=IC.holds,
             slack=slack,
 
@@ -582,25 +619,158 @@ rel_capped_rne = function(g,T,..., save.details=FALSE) {
 
   # Add some additional info
 
-  rows = match.by.cols(res,g$a.labs.df, cols1=c("x","ae"), cols2=c("x","a"))
-  res$ae.lab = g$a.labs.df$lab[rows]
+  rows = match.by.cols(rne,g$a.labs.df, cols1=c("x","ae"), cols2=c("x","a"))
+  rne$ae.lab = g$a.labs.df$lab[rows]
 
-  rows = match.by.cols(res,g$a.labs.df, cols1=c("x","a1"), cols2=c("x","a"))
-  res$a1.lab = g$a.labs.df$lab[rows]
+  rows = match.by.cols(rne,g$a.labs.df, cols1=c("x","a1"), cols2=c("x","a"))
+  rne$a1.lab = g$a.labs.df$lab[rows]
 
-  rows = match.by.cols(res,g$a.labs.df, cols1=c("x","a2"), cols2=c("x","a"))
-  res$a2.lab = g$a.labs.df$lab[rows]
+  rows = match.by.cols(rne,g$a.labs.df, cols1=c("x","a2"), cols2=c("x","a"))
+  rne$a2.lab = g$a.labs.df$lab[rows]
 
   if (!is.null(g$x.df))
-    res = left_join(res, g$x.df, by="x")
+    rne = left_join(rne, g$x.df, by="x")
 
-    #res$ae.lab = left_join(select(res,x,a=ae), g$a.labs.df, by=c("x","a"))$lab
-    #res$a1.lab = left_join(select(res,x,a=a1), g$a.labs.df, by=c("x","a"))$lab
-    #res$a2.lab = left_join(select(res,x,a=a2), g$a.labs.df, by=c("x","a"))$lab
+    #rne$ae.lab = left_join(select(rne,x,a=ae), g$a.labs.df, by=c("x","a"))$lab
+    #rne$a1.lab = left_join(select(rne,x,a=a1), g$a.labs.df, by=c("x","a"))$lab
+    #rne$a2.lab = left_join(select(rne,x,a=a2), g$a.labs.df, by=c("x","a"))$lab
 
   g$sdf = sdf
-  g$rne = res
+  g$rne = rne
   g$rne.details = rne.details
   g
 }
 
+
+solve.weakly.monotone.state = function(x,rne,g, sdf, tol=1e-8) {
+  restore.point("solve.weakly.monotone.state")
+  rne = rne
+  delta = g$param$delta
+  rho = g$param$rho
+  beta1 = g$param$beta1
+  beta2 = 1-beta1
+
+  row = which(sdf$x==x)
+  # Transition probability to own states
+  trans.mat = g$sdf$trans.mat[[row]]
+  omega = trans.mat[,x]
+
+  # Transitions to other states
+  xd = setdiff(colnames(trans.mat),x)
+  trans.mat = trans.mat[,xd, drop=FALSE]
+  dest.rows = match(xd, rne$x)
+
+  na1 = sdf$na1[row]
+  na2 = sdf$na2[row]
+
+  pi1 = sdf$pi1[[row]]
+  pi2 = sdf$pi2[[row]]
+  Pi = pi1+pi2
+
+  a.grid = sdf$a.grid[[row]]
+
+  A = 1:NROW(a.grid)
+  EU_x = as.vector(trans.mat %*% rne$U[dest.rows])
+  Evr1_x = as.vector(trans.mat %*% ((1-rho)*rne$v1[dest.rows]+rho*rne$r1[dest.rows]))
+  Evr2_x = as.vector(trans.mat %*% ((1-rho)*rne$v2[dest.rows]+rho*rne$r2[dest.rows]))
+
+
+  # S1: Compute U.tilde(a,x) for all actions
+  U.tilde = (1 / (1-delta*omega)) * ((1-delta)*Pi + delta*(EU_x))
+
+
+  K1.vec = (1-delta)*pi1 + delta*Evr1_x
+  K2.vec = (1-delta)*pi2 + delta*Evr2_x
+
+  m1.vec = delta*omega*rho*beta1
+  d1.vec = 1-delta*omega*((1-rho)+rho*(1-beta1))
+
+  m2.vec = delta*omega*rho*beta2
+  d2.vec = 1-delta*omega*((1-rho)+rho*(1-beta2))
+
+  # L1 Loop through all ae starting with largest value of U.tilde
+  # In the moment simply loop through all ae
+  Ae = A[order(-U.tilde)]
+
+  ae = Ae[1]
+  a1.tilde = A[1]
+  a2.tilde = A[1]
+  for (ae in Ae) {
+    # L2 Loop through all combinations of a1.tilde and a2.tilde
+    U = U.tilde[ae]
+    for (a1.tilde in A) {
+      for (a2.tilde in A) {
+        # M1 Compute v and r
+        m1 = m1.vec[a1.tilde]; m2 = m2.vec[a2.tilde]
+        d1 = d1.vec[a1.tilde]; d2 = d2.vec[a2.tilde]
+        K1 = K1.vec[a1.tilde]; K2 = K2.vec[a2.tilde]
+
+        v1 = (m1*d2*U -m1*m2*U - m1*K2+d2*K1) / (d1*d2-m1*m2)
+        v2 = (m2*d1*U -m2*m1*U - m2*K1+d1*K2) / (d1*d2-m1*m2)
+
+        r1 = v1 + beta1*(U-v1-v2)
+        r2 = v2 + beta2*(U-v1-v2)
+
+        # Check v1 equation
+        v1.diff = v1-(K1+delta*omega[a1.tilde]*((1-rho)*v1+rho*r1))
+        if (abs(v1.diff) > tol) {
+          restore.point("computation.error")
+          stop(paste0("v1 not correctly computed!"))
+        }
+
+        # M2: Now compute U.hat, v.hat for all action profiles taking U, v1, v2, r1 and r2 as given
+        U.hat = (1-delta)*Pi + delta*(EU_x+omega*U)
+        q1.hat = (1-delta)*pi1 + delta*(Evr1_x + omega*((1-rho)*v1+rho*r1))
+        q2.hat = (1-delta)*pi2 + delta*(Evr2_x + omega*((1-rho)*v2+rho*r2))
+
+
+        # v1.hat is best reply q for player 1
+        q1.hat = matrix(q1.hat,na1, sdf$na2)
+        v1.hat.short = colMaxs(q1.hat)
+        v1.hat = rep(v1.hat.short, each=na1)
+
+
+        # v2.hat is best reply q for player 2
+        q2.hat = matrix(q2.hat,sdf$na1[row], sdf$na2[row])
+        v2.hat.short = rowMaxs(q2.hat)
+        v2.hat = rep(v2.hat.short, times=na2)
+
+
+        # Compute which action profiles are implementable
+        IC.holds = (U.hat >= v1.hat + v2.hat)
+        slack = U.hat - (v1.hat + v2.hat)
+
+        # M3 check incentive constraint for ae
+        if (!IC.holds[ae]) next
+
+        # M4 check if there is another incentive compatible
+        # a with higher payoff
+        better.ae = IC.holds & (U.hat > U+tol)
+        if (any(better.ae)) next
+
+        # M5 Check if there are better incentive compatible
+        # punishment profiles
+        better.a1 = IC.holds & (v1.hat < v1-tol)
+        if (any(better.a1)) next
+
+        better.a2 = IC.holds & (v2.hat < v2-tol)
+        if (any(better.a2)) next
+
+        # M6 check if there are incentive compatible a1 and a2
+        # that implement payoffs v1 and v2, respectively.
+        is.a1 = IC.holds & abs(v1.hat-v1)<tol
+        if (sum(is.a1)==0) next
+        a1 = which.max(slack * ((abs(v1.hat-v1)<tol) & IC.holds))
+
+        is.a2 = IC.holds & (abs(v2.hat-v2)<tol)
+        if (sum(is.a2)==0) next
+        a2 = which.max(slack * ((abs(v2.hat-v2)<tol) & IC.holds))
+
+        # M7 We have found an RNE
+        return(list(ok=TRUE,rne.row=list(x=x,U=U,v1=v1,v2=v2,r1=r1,r2=r2, ae=ae,a1=a1, a2=a2)))
+
+      }
+    }
+  }
+  return(list(ok=FALSE))
+}

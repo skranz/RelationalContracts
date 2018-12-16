@@ -171,15 +171,15 @@ rel_compile = function(g,...) {
   ind = 1
   li = lapply(seq_along(g$trans_defs), function(ind) {
     def = g$trans_defs[[ind]]
-    res = as_data_frame(def)
+    df = as_data_frame(def)
     if (!all(df$xs %in% sdf$x))
       stop("You define a state transition from an undefined state ", paste0(setdiff(df$xs,sdf$x), collapse=", "))
 
     if (!all(df$xd %in% sdf$x))
       stop("You define a state transition to an undefined state ", paste0(setdiff(df$xd,sdf$x), collapse=", "))
 
-    res$.def.ind = ind
-    res
+    df$.def.ind = ind
+    df
   })
 
   li2 = lapply(seq_along(g$trans_fun_defs), function(ind) {
