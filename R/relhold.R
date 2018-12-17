@@ -171,7 +171,16 @@ rel_compile = function(g,...) {
   ind = 1
   li = lapply(seq_along(g$trans_defs), function(ind) {
     def = g$trans_defs[[ind]]
-    df = as_data_frame(def)
+    if (is(def$prob,"formula")) {
+
+      df = as_data_frame(def[setdiff(names(df),"prob")])
+      env = as.environment(g$param)
+      parent.env(env) = parent.frame()
+
+      df$prob = eval.rel.expression(def$prob,g = g,param = df,enclos=env)
+    } else {
+      df = as_data_frame(def)
+    }
     if (!all(df$xs %in% sdf$x))
       stop("You define a state transition from an undefined state ", paste0(setdiff(df$xs,sdf$x), collapse=", "))
 
@@ -372,18 +381,18 @@ add.to.rel.list = function(g, var, obj) {
   g
 }
 
-eval.rel.expression = function(e,g=NULL, param=g$param, vectorized=FALSE, null.value = NULL) {
+eval.rel.expression = function(e,g=NULL, param=g$param, vectorized=FALSE, null.value = NULL, enclos=parent.frame()) {
   restore.point("eval.rel.expression")
 
   if (is.list(e))
-    return(lapply(e,eval.rel.expression, g=g, param=param, vectorized=vectorized, null.value=null.value))
+    return(lapply(e,eval.rel.expression, g=g, param=param, vectorized=vectorized, null.value=null.value, enclos=enclos))
 
   if (class(e)=="formula")
     e = e[[2]]
 
   if (is.null(param)) param = list()
   if (class(e)=="call" | class(e)=="expression" | class(e)=="name") {
-    e = eval(e,param)
+    e = eval(e,param,enclos = enclos)
   }
 
   if (is.function(e))

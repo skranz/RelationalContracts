@@ -1,21 +1,78 @@
 example.rne = function() {
 
-  e.seq = c(0,1); xL=0; xH=5;
+
+  reveal.prob = 0.1
+  g = rel_game("Blackmailing with Brinkmanship") %>%
+    rel_param(delta=0.5, rho=0.1) %>%
+    # Initial State
+    rel_state("x0", A1=list(move=c("keep","reveal")),A2=NULL) %>%
+    rel_payoff("x0",pi1=0, pi2=1) %>%
+    rel_transition("x0","x1",move="reveal", prob=reveal.prob) %>%
+    # Evidence Revealed
+    rel_state("x1", A1=NULL,A2=NULL) %>%
+    rel_payoff("x1",pi1=0, pi2=0) %>%
+    rel_compile() %>%
+    rel_rne()
+
+  (g$rne)
+
+  reveal = seq(0,1,by=0.2)
+  g = rel_game("Blackmailing with Endogenous Brinkmanship") %>%
+    rel_param(delta=0.5, rho=0.9) %>%
+    # Initial State
+    rel_state("x0", A1=list(reveal=reveal),A2=NULL) %>%
+    rel_payoff("x0",pi1=0, pi2=1) %>%
+    rel_transition("x0","x1",reveal=reveal, prob=reveal) %>%
+    # Evidence Revealed
+    rel_state("x1", A1=NULL,A2=NULL) %>%
+    rel_payoff("x1",pi1=0, pi2=0) %>%
+    rel_compile() %>%
+    rel_rne()
+
+  (g$rne)
+
+  reveal = seq(0,1,by=0.2)
+  g = rel_game("Blackmailing with Endogenous Brinkmanship") %>%
+    rel_param(delta=0.5, rho=0.9) %>%
+    # Initial State
+    rel_state("x0", A1=list(reveal=reveal),A2=NULL) %>%
+    rel_payoff("x0",pi1=0, pi2=1) %>%
+    rel_transition("x0","x1",reveal=reveal, prob=reveal) %>%
+    # Evidence Revealed
+    rel_state("x1", A1=NULL,A2=NULL) %>%
+    rel_payoff("x1",pi1=0, pi2=0) %>%
+    rel_compile() %>%
+    rel_capped_rne(T=100)
+
+  (ren = g$rne) %>% filter(t %in% 1:100)
+
+
+
+  e = e.seq = seq(0,1, by=0.1); xL=0; xH=0.1;
+
+  plot(e, e-0.5*e*e)
+
   g = rel_game("Weakly Monotone Vulnerability Paradox") %>%
-    rel_param(delta=0.8, rho=0.5, c=0.4, xL=xL,xH=xH) %>%
+    rel_param(delta=0.5, rho=0.1, c=0.5, xL=xL,xH=xH) %>%
     # Initial State
     rel_state("xL", A1=list(move=c("stay","vul")),A2=list(e=e.seq)) %>%
-    rel_payoff("xL",pi1=~e, pi2=~ -c*e*(e>=0)) %>%
+    rel_payoff("xL",pi1=~e, pi2=~ -c*e*e*(e>=0)) %>%
     rel_transition("xL","xH",move="vul") %>%
     # High vulnerability
     rel_state("xH", A1=NULL,A2=list(e=unique(c(-xH,e.seq)))) %>%
-    rel_payoff("xH",pi1=~e, pi2=~ -c*e*(e>=0)) %>%
+    rel_payoff("xH",pi1=~e, pi2=~ -c*e*e*(e>=0)) %>%
     rel_compile()
 
   g = rel_rne(g)
+  rne = g$rne
+  rne
+
+  gc = rel_capped_rne(g, T=10)
+  rne = gc$rne
+  filter(rne, t==1)
 
 
-
+  g$sdf$rep
 
   e.seq = c(0,1); xL=0; xH=5;
   g = rel_game("Simple Vulnerability Paradox") %>%
@@ -266,14 +323,10 @@ rel_rne = function(g,...) {
 
     # Check if state transists to itself
     if (x %in% colnames(trans.mat)) {
-      cat("Solve weakly monotone state", x, "...")
+      cat("\nSolve weakly monotone state", x, "...")
       res = solve.weakly.monotone.state(x,rne,g,sdf)
       if (res$ok) {
-        rne$U[row] = res$U;
-        rne$v1[row] = res$v1; rne$v2[row] = res$v2
-        rne$r1[row] = res$r1; rne$r2[row] = res$r2
-        rne$a1[row] = res$a1; rne$a2[row] = res$a2
-        rne$ae[row] = res$ae
+        rne[row, names(res$rne.row)] = res$rne.row
         rne$solved[row] = TRUE
         cat(" ok")
         next
@@ -642,7 +695,7 @@ rel_capped_rne = function(g,T,..., save.details=FALSE) {
 }
 
 
-solve.weakly.monotone.state = function(x,rne,g, sdf, tol=1e-8) {
+solve.weakly.monotone.state = function(x,rne,g, sdf, tol=1e-12) {
   restore.point("solve.weakly.monotone.state")
   rne = rne
   delta = g$param$delta
@@ -737,7 +790,7 @@ solve.weakly.monotone.state = function(x,rne,g, sdf, tol=1e-8) {
 
 
         # Compute which action profiles are implementable
-        IC.holds = (U.hat >= v1.hat + v2.hat)
+        IC.holds = (U.hat+tol >= v1.hat + v2.hat)
         slack = U.hat - (v1.hat + v2.hat)
 
         # M3 check incentive constraint for ae
@@ -760,12 +813,13 @@ solve.weakly.monotone.state = function(x,rne,g, sdf, tol=1e-8) {
         # that implement payoffs v1 and v2, respectively.
         is.a1 = IC.holds & abs(v1.hat-v1)<tol
         if (sum(is.a1)==0) next
-        a1 = which.max(slack * ((abs(v1.hat-v1)<tol) & IC.holds))
+        a1 = which.max(slack * is.a1 + is.a1)
 
         is.a2 = IC.holds & (abs(v2.hat-v2)<tol)
         if (sum(is.a2)==0) next
-        a2 = which.max(slack * ((abs(v2.hat-v2)<tol) & IC.holds))
+        a2 = which.max(slack * is.a2+is.a2)
 
+        restore.point("found.eq")
         # M7 We have found an RNE
         return(list(ok=TRUE,rne.row=list(x=x,U=U,v1=v1,v2=v2,r1=r1,r2=r2, ae=ae,a1=a1, a2=a2)))
 
