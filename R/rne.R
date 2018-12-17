@@ -1,9 +1,9 @@
 example.rne = function() {
 
 
-  reveal.prob = 0.1
+  reveal.prob = 0.6
   g = rel_game("Blackmailing with Brinkmanship") %>%
-    rel_param(delta=0.5, rho=0.1) %>%
+    rel_param(delta=0.5, rho=0.5) %>%
     # Initial State
     rel_state("x0", A1=list(move=c("keep","reveal")),A2=NULL) %>%
     rel_payoff("x0",pi1=0, pi2=1) %>%
@@ -14,7 +14,27 @@ example.rne = function() {
     rel_compile() %>%
     rel_rne()
 
+  (rne = get.rne(g))
   (g$rne)
+
+
+  reveal.prob = 0.6
+  g = rel_game("Blackmailing with Brinkmanship") %>%
+    rel_param(delta=0.5, rho=0.5) %>%
+    # Initial State
+    rel_state("x0", A1=list(move=c("keep","reveal")),A2=NULL) %>%
+    rel_payoff("x0",pi1=0, pi2=1) %>%
+    rel_transition("x0","x1",move="reveal", prob=reveal.prob) %>%
+    # Evidence Revealed
+    rel_state("x1", A1=NULL,A2=NULL) %>%
+    rel_payoff("x1",pi1=0, pi2=0) %>%
+    rel_compile() %>%
+    rel_capped_rne(T=100)
+
+  (rne = get.rne(g, TRUE))
+  (g$rne)
+
+
 
   reveal = seq(0,1,by=0.2)
   g = rel_game("Blackmailing with Endogenous Brinkmanship") %>%
@@ -32,8 +52,9 @@ example.rne = function() {
   (g$rne)
 
   reveal = seq(0,1,by=0.2)
+  reveal = c(0,0.51)
   g = rel_game("Blackmailing with Endogenous Brinkmanship") %>%
-    rel_param(delta=0.5, rho=0.9) %>%
+    rel_param(delta=0.5, rho=0.5) %>%
     # Initial State
     rel_state("x0", A1=list(reveal=reveal),A2=NULL) %>%
     rel_payoff("x0",pi1=0, pi2=1) %>%
@@ -42,11 +63,16 @@ example.rne = function() {
     rel_state("x1", A1=NULL,A2=NULL) %>%
     rel_payoff("x1",pi1=0, pi2=0) %>%
     rel_compile() %>%
-    rel_capped_rne(T=100)
+    rel_capped_rne(T=1000, save.details = TRUE)
 
-  (ren = g$rne) %>% filter(t %in% 1:100)
+  rne = get.rne(g,TRUE) %>% filter(x %in% "x0", t>100)
+  plot(rne$t,rne$a2.reveal)
+  plot(rne$t,rne$r1)
 
+  mean(rne$r1)
+  #plot(rne$r2)
 
+  de = get.rne.details(g) %>% filter(x %in% "x0", t>=4)
 
   e = e.seq = seq(0,1, by=0.1); xL=0; xH=0.1;
 
@@ -64,7 +90,7 @@ example.rne = function() {
     rel_compile()
 
   g = rel_rne(g)
-  rne = g$rne
+  (rne = get.rne(g))
   rne
 
   gc = rel_capped_rne(g, T=10)
@@ -116,7 +142,7 @@ example.rne = function() {
     rel_compile() %>%
     rel_capped_rne(T=10)
 
-  (rne = g$rne)
+  (rne = get.rne(g,TRUE))
 
 
   g = rel_game("Blackmailing Game") %>%
@@ -215,6 +241,28 @@ arms.race.example = function() {
 }
 
 
+get.rne = function(g, action.details=FALSE) {
+  restore.point("get.rne")
+  if (action.details) {
+    rne=g$rne
+    grid = select(rne, .x=x, .a=ae)
+    add.ae = left_join(grid, g$ax.grid, by=c(".x",".a"))[,-c(1:2), drop=FALSE]
+    colnames(add.ae) = paste0("ae.", colnames(add.ae))
+
+    grid = select(rne, .x=x, .a=a1)
+    add.a1 = left_join(grid, g$ax.grid, by=c(".x",".a"))[,-c(1:2), drop=FALSE]
+    colnames(add.a1) = paste0("a1.", colnames(add.a1))
+
+    grid = select(rne, .x=x, .a=a2)
+    add.a2 = left_join(grid, g$ax.grid, by=c(".x",".a"))[,-c(1:2), drop=FALSE]
+    colnames(add.a2) = paste0("a2.", colnames(add.a2))
+
+    rne = cbind(g$rne, add.ae, add.a1,add.a2)
+    return(rne)
+  } else {
+    return(g$rne)
+  }
+}
 
 get.rne.details = function(g, x=NULL,t=NULL) {
   restore.point("get.rne.details")
@@ -239,7 +287,23 @@ print.rne = function(g) {
 
 }
 
-rel_rne = function(g,...) {
+
+#' Find an RNE for a game with (weakly) monotone state transitions
+#'
+#' If the game has strictly monotone state transitions,
+#' i.e. non-terminal states will be reached at most once,
+#' there exists a unique RNE payoff.
+#'
+#' For weak monotone state transititions no RNE or multiple
+#' RNE payoffs may exist.
+#'
+#' You can call rel_capped_rne to solve a capped version of the game
+#' that allows state changes only up to some period T. Such a capped
+#' version always has a unique RNE payoff.
+#'
+#' @param g The game object
+#' @param save.details If yes, detailed information about the equilibrium for each state and period will be stored in g and can be retrieved via the function get.rne.details
+rel_rne = function(g) {
   restore.point("rel_rne")
   if (!g$is_compiled) g = rel_compile(g)
 
@@ -474,9 +538,17 @@ compute.x.trans.mat = function(x,g, add.own=TRUE) {
 }
 
 
-
-
-rel_capped_rne = function(g,T,..., save.details=FALSE) {
+#' Solve an RNE for a capped version of the game
+#'
+#' Once the capped version of the game reaches period T,
+#' the state cannot change anymore.
+#' We can solve such capped games via a fast backward induction
+#' algorithm. There always exists a unique RNE payoff.
+#'
+#' @param g The game object
+#' @param T The number of periods until states can change
+#' @param save.details If yes, detailed information about the equilibrium for each state and period will be stored in g and can be retrieved via the function get.rne.details
+rel_capped_rne = function(g,T, save.details=FALSE) {
   restore.point("rel_capped_rne")
   if (!g$is_compiled) g = rel_compile(g)
 
@@ -616,9 +688,9 @@ rel_capped_rne = function(g,T,..., save.details=FALSE) {
       # If indifferent choose the one with the largest
       # slack in the IC
       slack = U.hat - (v1.hat + v2.hat)
-      rne$ae[row] = which.max(slack * (U.hat==U & IC.holds))
-      rne$a1[row] = which.max(slack * (v1.hat==v1 & IC.holds))
-      rne$a2[row] = which.max(slack * (v2.hat==v2 & IC.holds))
+      rne$ae[row] = which.max((1+slack) * (U.hat==U & IC.holds))
+      rne$a1[row] = which.max((1+slack) * (v1.hat==v1 & IC.holds))
+      rne$a2[row] = which.max((1+slack) * (v2.hat==v2 & IC.holds))
 
 
       if (save.details) {
@@ -640,8 +712,8 @@ rel_capped_rne = function(g,T,..., save.details=FALSE) {
           sdf$a.grid[[srow]],
           quick_df(
             can.ae = (U.hat==U & IC.holds)*1 + (arows==rne$ae[row]),
-            can.a1 = (v1.hat==v1 & IC.holds)*1 + (arows==rne$ae[row]),
-            can.a2 = (v2.hat==v2 & IC.holds)*1 + (arows==rne$ae[row]),
+            can.a1 = (v1.hat==v1 & IC.holds)*1 + (arows==rne$a1[row]),
+            can.a2 = (v2.hat==v2 & IC.holds)*1 + (arows==rne$a2[row]),
             IC.holds=IC.holds,
             slack=slack,
 

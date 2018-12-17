@@ -62,8 +62,8 @@ rel_compile = function(g,...) {
 
 
   li = lapply(g$state_defs, function(def) {
-    A1 = eval.rel.expression(def$A1,g, null.value = "-")
-    A2 = eval.rel.expression(def$A2,g, null.value = "-")
+    A1 = eval.rel.expression(def$A1,g, null.value = "")
+    A2 = eval.rel.expression(def$A2,g, null.value = "")
     na1 = prod(sapply(A1, length))
     na2 = prod(sapply(A2, length))
 
@@ -216,6 +216,15 @@ rel_compile = function(g,...) {
 
   sdf$trans.mat = vector("list",NROW(sdf))
 
+  ax.grid = bind_rows(lapply(seq_len(NROW(sdf)), function(row) {
+    cbind(quick_df(.x=sdf$x[row],.a=seq_len(NROW(sdf$a.grid[[row]]))), sdf$a.grid[[row]])
+  }))
+  empty.action = sapply(ax.grid[3:NCOL(ax.grid)], function(vals) {
+    all(vals == "" | is.na(vals))
+  })
+  g$ax.grid = ax.grid[c(".x",".a", names(empty.action)[!empty.action])]
+
+
   g$tdf = tdf
   g$sdf = sdf
 
@@ -265,7 +274,7 @@ rel_param = function(g, delta=non.null(param[["delta"]], 0.9), rho=non.null(para
 #' @param A1 The action set of player 1. Can be a numeric or character vector
 #' @param A2 The action set of player 2. Can be a numeric or character vector
 #' @return Returns the updated game
-rel_state = function(g, x,A1=list(a1="-"),A2=list(a2="-")) {
+rel_state = function(g, x,A1=list(a1=""),A2=list(a2="")) {
   if (!is.list(A1)) A1 = list(a1=A1)
   if (!is.list(A2)) A2 = list(a2=A2)
   if (is.data.frame(x)) {
