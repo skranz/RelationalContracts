@@ -89,9 +89,12 @@ example.rne = function() {
     rel_payoff("xH",pi1=~e, pi2=~ -c*e*e*(e>=0)) %>%
     rel_compile()
 
+  cat(rel_to_mermaid_code(g))
+
   g = rel_rne(g)
   (rne = get.rne(g))
   rne
+
 
   gc = rel_capped_rne(g, T=10)
   rne = gc$rne
@@ -117,8 +120,7 @@ example.rne = function() {
     rel_compile() %>%
     rel_rne()
 
-  compute.x.trans.mat("x0",g)
-  compute.x.trans.mat("xL",g)
+  rne.diagram(g)
 
   g = rel_rne(g)
 
@@ -189,25 +191,52 @@ arms.race.example = function() {
 
   trans.fun = function(x, x.df,a.df,x.max, success.prob,...) {
     restore.point("trans.fun")
+    #if (x=="0_0") stop()
     x1=x.df$x1;x2=x.df$x2;
     a.df = unique(select(a.df, i1,i2))
     sp = success.prob
-    rne = mutate(a.df,
-        prob = ifelse(i1=="b", sp,1)*ifelse(i2=="b",sp,1),
-        iv1 = 0 + (i1=="b") - (i1=="d"),
-        iv2 = 0 + (i2=="b") - (i2=="d"),
-        nx1 = pmin(x.max,pmax(x1+iv1,0)),
-        nx2 = pmin(x.max,pmax(x2+iv2,0)),
+
+    trans = rbind(
+      # (1,0)
+      mutate(a.df, g1=1,g2=0,
+        prob= (i1=="b")*sp* ( (i2=="b")*(1-sp)+(i2==""))),
+      # (0,1)
+      mutate(a.df, g1=0,g2=1,
+        prob= (i2=="b")*sp* ( (i1=="b")*(1-sp)+(i1==""))),
+      # (1,1)
+      mutate(a.df, g1=1,g2=1,
+        prob= (i1=="b")*sp*(i2=="b")*sp),
+      # (-1,0)
+      mutate(a.df, g1=-1,g2=0,
+        prob= (i1=="d")*( (i2=="b")*(1-sp)+(i2==""))),
+      # (0,-1)
+      mutate(a.df, g1=0,g2=-1,
+        prob= (i2=="d")*( (i1=="b")*(1-sp)+(i1==""))),
+      # (-1,-1)
+      mutate(a.df, g1=-1,g2=-1,
+        prob= (i1=="d")*(i2=="d")),
+      # (-1,1)
+      mutate(a.df, g1=-1,g2=1,
+        prob= (i1=="d")*( (i2=="b")*sp)),
+      # (1,-1)
+      mutate(a.df, g1=1,g2=-1,
+        prob= (i2=="d")*( (i1=="b")*sp))
+    ) %>%
+      filter(prob > 0 )
+
+    trans = mutate(trans,
+        nx1 = pmin(x.max,pmax(x1+g1,0)),
+        nx2 = pmin(x.max,pmax(x2+g2,0)),
         xd = paste0(nx1,"_",nx2),
         xs=x
       ) %>%
       filter(xs != xd) %>%
       select(xs,xd,i1,i2,prob)
-    rne
+    trans
   }
 
 
-  x.max = 3
+  x.max = 2
   x.df = as_data_frame(expand.grid(x1=0:x.max,x2=0:x.max))
   x.df$x = paste0(x.df$x1,"_", x.df$x2)
 
@@ -216,7 +245,11 @@ arms.race.example = function() {
     rel_states_fun(x.df,A.fun=A.fun, pi.fun=pi.fun, trans.fun=trans.fun) %>%
     rel_compile()
 
+  rel.diagram(g)
+
   g=g %>% rel_capped_rne(T=10, save.details = TRUE)
+
+
 
   #rne = g$rne %>% filter(t<max(g$rne$t), t==1)
   #rne
@@ -350,16 +383,6 @@ rel_rne = function(g) {
   rne$solved[rows] = TRUE
   rne
 
-  # Compute state transitions for all remaining states
-  for (row in which(!rne$solved)) {
-    if (is.null(sdf$trans.mat[[row]])) {
-      x = sdf$x[row]
-      sdf$trans.mat[row] = list(compute.x.trans.mat(x=x,g=g))
-    }
-    #to.self = x %in% colnames(sdf$trans.mat[[row]])
-    #if (to.self)
-    #  stop(paste0("The non-terminal state ", x, " has a positive probability (", max(trans.mat[,x]), ") to transit to itself. Cannot yet find RNE in such games."))
-  }
   g$sdf = sdf
 
   find.next.state.row = function() {
@@ -477,66 +500,6 @@ rel_rne = function(g) {
 
 
 
-compute.x.trans.mat = function(x,g, add.own=TRUE) {
-  restore.point("compute.x.trans.mat")
-  df = g$tdf[g$tdf$xs==x,]
-  if (NROW(df)==0)
-    return(NULL)
-
-  xd = unique(df$xd)
-
-  row = which(g$sdf$x == x)
-
-  a.grid = g$sdf$a.grid[[row]]
-
-  actions = intersect(colnames(a.grid), colnames(df))
-  #actions = setdiff(actions, actions[is.na(df[1,actions])])
-
-  # Transition matrix: rows action profiles, cols = destination cols
-  mat = matrix(0,NROW(a.grid), length(xd))
-  colnames(mat) = xd
-
-  mat.cols = seq_along(xd)
-  names(mat.cols) = xd
-
-  inds = unique(df$.def.ind)
-  ind = inds[1]
-  for (ind in inds) {
-    d = df[df$.def.ind == ind,,drop=FALSE]
-    act = actions[as.vector(!is.na(d[1,actions]))]
-
-    if (length(act)==0) {
-      # Set same transition probability for all actions
-      new.mat = matrix(d$prob, NROW(mat), NROW(d), byrow = TRUE)
-      mat[, d$xd] = new.mat
-    } else {
-      # Transition probabilities depend on actions
-      # Match rows from d to those of a.grid
-      # based on actions in act
-      mrows = match.by.cols(a.grid,d,cols=act)
-      #mrows[2] = NA
-      use = !is.na(mrows)
-      use.mrows = mrows[use]
-      grid = cbind(seq_along(mrows)[use],mat.cols[d$xd[use.mrows]])
-      mat[grid] = d$prob[use.mrows]
-    }
-
-  }
-  sumProbs = rowSums(mat)
-  if (any(mat<0))
-    stop(paste0("Have computed negative transition probabilities for state ", x))
-  if (any(sumProbs>1))
-    stop(paste0("Have computed sum of transition probabilities larger than 1 for state ",x))
-
-  if (add.own) {
-    if (any(sumProbs<1)) {
-      mat = cbind(.own = 1-sumProbs, mat)
-      colnames(mat)[1] = x
-    }
-  }
-  mat
-}
-
 
 #' Solve an RNE for a capped version of the game
 #'
@@ -548,7 +511,7 @@ compute.x.trans.mat = function(x,g, add.own=TRUE) {
 #' @param g The game object
 #' @param T The number of periods until states can change
 #' @param save.details If yes, detailed information about the equilibrium for each state and period will be stored in g and can be retrieved via the function get.rne.details
-rel_capped_rne = function(g,T, save.details=FALSE) {
+rel_capped_rne = function(g,T, save.details=FALSE, tol=1e-10) {
   restore.point("rel_capped_rne")
   if (!g$is_compiled) g = rel_compile(g)
 
@@ -603,13 +566,6 @@ rel_capped_rne = function(g,T, save.details=FALSE) {
   }
   rne
 
-  # Compute all transition matrices
-  for (row in 1:NROW(sdf)) {
-    if (is.null(sdf$trans.mat[[row]])) {
-      x = sdf$x[row]
-      sdf$trans.mat[row] = list(compute.x.trans.mat(x=x,g=g))
-    }
-  }
   g$sdf = sdf
 
 

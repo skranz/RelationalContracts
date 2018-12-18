@@ -1,3 +1,25 @@
+quick_df = function(...) {
+  as_data_frame(list(...))
+}
+
+non.null = function(a,b) {
+  if(is.null(a)) return(b)
+  a
+}
+
+first.non.null = function(...) {
+  args = list(...)
+  for (val in args) {
+    if (!is.null(val)) return(val)
+  }
+  return(NULL)
+
+}
+
+has.col = function(x, col) {
+  col %in% colnames(x)
+}
+
 match.by.cols = function(x.df, v.df, cols=NULL, cols1=cols, cols2=cols) {
   restore.point("match.by.cols")
   if (length(cols)==1) {

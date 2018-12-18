@@ -216,6 +216,7 @@ rel_compile = function(g,...) {
 
   sdf$trans.mat = vector("list",NROW(sdf))
 
+
   ax.grid = bind_rows(lapply(seq_len(NROW(sdf)), function(row) {
     cbind(quick_df(.x=sdf$x[row],.a=seq_len(NROW(sdf$a.grid[[row]]))), sdf$a.grid[[row]])
   }))
@@ -232,6 +233,15 @@ rel_compile = function(g,...) {
   g$param$adj_delta = g$param$delta * (1-g$param$rho)
 
   g$is_compiled =TRUE
+
+
+  # Compute all transition matrices
+  for (row in 1:NROW(sdf)) {
+    x = sdf$x[row]
+    g$sdf$trans.mat[row] = list(compute.x.trans.mat(x=x,g=g))
+  }
+
+
 
   g
 }
@@ -413,20 +423,65 @@ eval.rel.expression = function(e,g=NULL, param=g$param, vectorized=FALSE, null.v
 
 }
 
-quick_df = function(...) {
-  as_data_frame(list(...))
-}
 
-non.null = function(a,b) {
-  if(is.null(a)) return(b)
-  a
-}
 
-first.non.null = function(...) {
-  args = list(...)
-  for (val in args) {
-    if (!is.null(val)) return(val)
+
+compute.x.trans.mat = function(x,g, add.own=TRUE) {
+  restore.point("compute.x.trans.mat")
+  #if (x=="0_0") stop()
+  df = g$tdf[g$tdf$xs==x,]
+  if (NROW(df)==0)
+    return(NULL)
+
+  xd = unique(df$xd)
+
+  row = which(g$sdf$x == x)
+
+  a.grid = g$sdf$a.grid[[row]]
+
+  actions = intersect(colnames(a.grid), colnames(df))
+
+  # Transition matrix: rows action profiles, cols = destination cols
+  mat = matrix(0,NROW(a.grid), length(xd))
+  colnames(mat) = xd
+
+  mat.cols = seq_along(xd)
+  names(mat.cols) = xd
+
+  inds = unique(df$.def.ind)
+  ind = inds[1]
+
+  # Needed for inner_join later
+  a.grid$.a = seq_len(NROW(a.grid))
+  for (ind in inds) {
+    d = df[df$.def.ind == ind,,drop=FALSE]
+    act = actions[as.vector(!is.na(d[1,actions]))]
+
+    if (length(act)==0) {
+      # Set same transition probability for all actions
+      new.mat = matrix(d$prob, NROW(mat), NROW(d), byrow = TRUE)
+      mat[, d$xd] = new.mat
+    } else {
+      # In general we have an n to m matching
+      # between rows in d and rows in mat (a.grid)
+      temp.df = inner_join(d, a.grid[,c(act,".a")], by=act)
+      xd.cols = match(temp.df$xd, colnames(mat))
+      grid = cbind(temp.df$.a,xd.cols)
+      mat[grid] = temp.df$prob
+    }
   }
-  return(NULL)
+  sumProbs = rowSums(mat)
+  if (any(mat<0))
+    stop(paste0("Have computed negative transition probabilities for state ", x))
+  if (any(sumProbs>1))
+    stop(paste0("Have computed sum of transition probabilities larger than 1 for state ",x))
 
+  if (add.own) {
+    if (any(sumProbs<1)) {
+      mat = cbind(.own = 1-sumProbs, mat)
+      colnames(mat)[1] = x
+    }
+  }
+  mat
 }
+
