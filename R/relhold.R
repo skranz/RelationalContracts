@@ -269,11 +269,14 @@ compute.payoff.for.state = function(player=1,state, def, g) {
   pi.val = eval.rel.expression(pi.expr,param=args)
 }
 
+
 #' Creates a new relational contracting game
-rel_game = function(name="Game",...) {
+rel_game = function(name="Game", param=NULL, ...) {
 
   g = list(name=name,param=list(delta=0.9, rho=0, beta1=0.5),state_defs=list(), payoff_defs=list(), trans_defs=list(),is_compiled=FALSE, ...)
   class(g) = c("relgame","list")
+  if (!is.null(param))
+    g = rel_param(param)
   g
 }
 

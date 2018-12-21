@@ -16,6 +16,7 @@ examples.rel.spe = function() {
 
   plot.spe.payoff.set(g,x=c("xH","xL"), alpha=0.8)
 
+  plot.spe.payoff.set(g,x=c("xL"), alpha=0.8)
 
   g = rel_game("Two-State PD") %>%
     rel_param(delta=0.99, rho=0) %>%
@@ -54,6 +55,8 @@ examples.rel.spe = function() {
 rel_spe = function(g, delta=g$param$delta,new.dyngame=FALSE, verbose=FALSE, plots=FALSE) {
   restore.point("rel_spe")
   g$param$delta = delta
+  if (!g$is_compiled) g = rel_compile(g)
+
   if (is.null(g[["dyngame"]]) | new.dyngame)
     g$dyngame = make.rel.dyngame(g)
 

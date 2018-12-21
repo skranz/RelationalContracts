@@ -1,0 +1,46 @@
+---
+title: "Analyzing Relational Contracts with R"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# A Principal-Agent Relationship
+
+## The Model
+We start with an archetypical example of a relational contracting model: an infinitely repeated principal agent game.
+
+An agent works for a principal and can choose every period some work effort $e \in [0,1]$. The principal's stage game payoff is equal to the agent's effort of $$\pi_1 = e$$. The agent incurs quadratic effort cost and has payoffs $$\pi_2 = - \frac 1 2 e^2$$.
+
+At the beginning of each period both parties can voluntary transfer money to each other. We follow the common assumption in relational contracting models and assume that both parties are risk-neutral and thus simply add the net transfers to their stage game payoffs.
+
+For example, assume the principal transfers an amount $p_1$ to the agent at the beginning of the period and the agent transfers nothing. The transfer could be a reward for positive effort by the agent in the previous period. If the agent chooses effort $e$  in the current period, the principals' total payoffs in the current period are then $e - p_1$ and the agent's $- \frac 1 2 e^2 + p_1$
+
+We assume that principal and agent interact for infinitely many periods and discount future payoffs with a discount factor $\delta$.
+
+## Solving in R
+
+We can use the R package `RelationalContracts` to find the set of all subgame perfect equilibrium payoffs of this repeated principal-agent game.
+
+```{r}
+library(RelationalContracts)
+
+g = rel_game("Repeated Principal-Agent Game") %>%
+  rel_state("x0",
+    # Agent's action space (player 2)
+    A2 = list(e=seq(0,1,by=0.01)),
+    
+    # Stage game payoffs of both players
+    pi1 = ~ e,
+    pi2 = ~ -(1/2)*e^2
+  ) %>%
+  # Solve set of SPE payoffs
+  rel_spe(delta=0.2)
+
+plot.spe.payoff.set(g)
+
+g$spe
+```
+
