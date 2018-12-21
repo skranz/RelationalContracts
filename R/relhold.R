@@ -34,10 +34,14 @@ example.relhold = function() {
 
 }
 
-get.x.df = function(x,g) {
-  if (is.null(g$x.df)) return(NULL)
-
-  left_join(quick_df(x=x), g$x.df, by="x")
+get.x.df = function(x,g, as.list=FALSE) {
+  if (is.null(g$x.df)) {
+    if (as.list) return(list(x=x))
+    return(quick_df(x=x))
+  }
+  res = left_join(quick_df(x=x), g$x.df, by="x")
+  if (as.list) return(as.list(res))
+  res
 }
 
 get.def.x = function(x,g,x.df=g$x.df, sdf=g$sdf) {
@@ -50,6 +54,8 @@ get.def.x = function(x,g,x.df=g$x.df, sdf=g$sdf) {
 #' Compiles a relational contracting game
 rel_compile = function(g,...) {
   restore.point("rel_compile")
+
+  # Set default parameters
 
   # 1. Create a data frame with all states
   #def = g$state_defs[[2]]
@@ -67,7 +73,12 @@ rel_compile = function(g,...) {
     na1 = prod(sapply(A1, length))
     na2 = prod(sapply(A2, length))
 
-    a.grid = as_data_frame(expand.grid(c(A1,A2),stringsAsFactors = FALSE))
+    # Change order of A1 and A2 for compatibility
+    # with repgame and dyngame
+    a.grid = as_data_frame(expand.grid(c(A2,A1),stringsAsFactors = FALSE))
+    a.grid.cols = c(names(A1),names(A2))
+    a.grid = a.grid[,a.grid.cols]
+
     if (length(def$x)==1) {
       state = quick_df(x=def$x,na1=na1,na2=na2, A1=list(A1),A2=list(A2),a.grid=list(a.grid))
     } else {
@@ -81,7 +92,7 @@ rel_compile = function(g,...) {
     def$x = get.def.x(def$x,g)
 
     if (def$vectorized) {
-      args = c(list(x=x, x.df=(get.x.df(x,g))),g$param, def$args)
+      args = c(get.x.df(x,g,TRUE),list(g$param, def$args))
       res = do.call(def$A.fun,args)
 
       na1 = sapply(res$A1, function(A1) prod(sapply(A1, length)))
@@ -92,7 +103,7 @@ rel_compile = function(g,...) {
       A2 = vector("list", length(def$x))
       na1 = na2 = rep(NA, length(def$x))
       for (row in seq_along(def$x)) {
-        args = c(list(x.df=(get.x.df(def$x[row],g)),x=def$x[row]),g$param, def$args)
+        args = c(get.x.df(def$x[row],g, TRUE), list(x.df=(get.x.df(def$x[row],g)),x=def$x[row]),g$param, def$args)
         res = do.call(def$A.fun, args)
         A1[row] = list(res$A1)
         A2[row] = list(res$A2)
@@ -102,9 +113,14 @@ rel_compile = function(g,...) {
       }
       state = quick_df(x=def$x,na1=na1,na2=na2,A1=A1,A2=A2)
     }
+    # Change order of A1 and A2 for compatibility
+    # with repgame and dyngame
 
     state$a.grid = lapply(seq_len(NROW(state)), function(row) {
-      a.grid = as_data_frame(expand.grid(c(state$A1[[row]],state$A2[[row]]),stringsAsFactors = FALSE))
+      a.grid = as_data_frame(expand.grid(c(state$A2[[row]],state$A1[[row]]),stringsAsFactors = FALSE))
+      cols = c(names(A1),names(A2))
+      a.grid = a.grid[,cols]
+      a.grid
     })
     state
   })
@@ -148,7 +164,7 @@ rel_compile = function(g,...) {
     for (x in def$x) {
       row = which(sdf$x == x)
       a.grid = sdf$a.grid[[row]]
-      args = c(list(x=x, x.df=get.x.df(x,g), a.df = a.grid),g$param, def$args)
+      args = c(get.x.df(x,g, TRUE),list(a.df = a.grid),g$param, def$args)
       res = do.call(def$pi.fun, args)
       pi1[row] = res["pi1"]
       pi2[row] = res["pi2"]
@@ -196,7 +212,7 @@ rel_compile = function(g,...) {
     res = bind_rows(lapply(def$x, function(x) {
       row = which(sdf$x == x)
       a.grid = sdf$a.grid[[row]]
-      args = c(list(x=x, x.df=get.x.df(x,g), a.df = a.grid),g$param, def$args)
+      args = c(get.x.df(x,g, TRUE),list(a.df = a.grid),g$param, def$args)
       res = do.call(def$trans.fun, args)
     }))
     res$.def.ind = ind + length(g$trans_defs)
@@ -255,7 +271,8 @@ compute.payoff.for.state = function(player=1,state, def, g) {
 
 #' Creates a new relational contracting game
 rel_game = function(name="Game",...) {
-  g = list(name=name,param=NULL,state_defs=list(), payoff_defs=list(), trans_defs=list(),is_compiled=FALSE,...)
+
+  g = list(name=name,param=list(delta=0.9, rho=0, beta1=0.5),state_defs=list(), payoff_defs=list(), trans_defs=list(),is_compiled=FALSE, ...)
   class(g) = c("relgame","list")
   g
 }
@@ -284,7 +301,7 @@ rel_param = function(g, delta=non.null(param[["delta"]], 0.9), rho=non.null(para
 #' @param A1 The action set of player 1. Can be a numeric or character vector
 #' @param A2 The action set of player 2. Can be a numeric or character vector
 #' @return Returns the updated game
-rel_state = function(g, x,A1=list(a1=""),A2=list(a2="")) {
+rel_state = function(g, x,A1=list(a1=""),A2=list(a2=""), pi1=NULL, pi2=NULL) {
   if (!is.list(A1)) A1 = list(a1=A1)
   if (!is.list(A2)) A2 = list(a2=A2)
   if (is.data.frame(x)) {
@@ -297,7 +314,12 @@ rel_state = function(g, x,A1=list(a1=""),A2=list(a2="")) {
     g = add.to.rel.list(g,"x_df_def", x.df)
 
 
-  add.to.rel.list(g, "state_defs",list(x=x, A1=A1,A2=A2) )
+  g = add.to.rel.list(g, "state_defs",list(x=x, A1=A1,A2=A2) )
+
+  if (!is.null(pi1) | !is.null(pi2)) {
+    g = rel_payoff(g,x=x,pi1=pi1,pi2=pi2)
+  }
+  g
 }
 
 #' Add multiple states via functions

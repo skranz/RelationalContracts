@@ -172,9 +172,8 @@ example.rne = function() {
 
 arms.race.example = function() {
 
-  A.fun = function(x.df, x.max,...) {
+  A.fun = function(x1,x2, x.max,...) {
     restore.point("A.fun")
-    x1=x.df$x1; x2=x.df$x2
     list(
       A1=list(h1=0:x1, i1=c(if (x1>0) "d","",if (x1<x.max) "b")),
       A2=list(h2=0:x2, i2=c(if (x2>0) "d","",if (x2<x.max) "b"))
@@ -189,10 +188,9 @@ arms.race.example = function() {
     )
   }
 
-  trans.fun = function(x, x.df,a.df,x.max, success.prob,...) {
+  trans.fun = function(x,x1,x2,a.df,x.max, success.prob,...) {
     restore.point("trans.fun")
     #if (x=="0_0") stop()
-    x1=x.df$x1;x2=x.df$x2;
     a.df = unique(select(a.df, i1,i2))
     sp = success.prob
 
@@ -241,20 +239,23 @@ arms.race.example = function() {
   x.df$x = paste0(x.df$x1,"_", x.df$x2)
 
   g = rel_game("Arms Race") %>%
-    rel_param(delta=0.995, rho=0.4, c=0, k=2,x.max=x.max, success.prob=0.5) %>%
+    rel_param(delta=0.995, rho=0.4, c=0, k=2,x.max=x.max, success.prob=1) %>%
     rel_states_fun(x.df,A.fun=A.fun, pi.fun=pi.fun, trans.fun=trans.fun) %>%
-    rel_compile()
+    rel_compile() %>%
+    rel_capped_rne(T=100)
 
-  rel.diagram(g)
+  rne.diagram(g,t=98)
 
-  g=g %>% rel_capped_rne(T=10, save.details = TRUE)
+  g=g %>% rel_capped_rne(T=50, save.details = TRUE)
 
 
 
   #rne = g$rne %>% filter(t<max(g$rne$t), t==1)
   #rne
 
-  rne = get.rne.details(g)
+  de = get.rne.details(g)
+  d = filter(de, t==1, x=="0_0")
+
 
   d = rne %>%
     filter(can.ae==2) %>%
@@ -320,7 +321,6 @@ print.rne = function(g) {
 
 }
 
-
 #' Find an RNE for a game with (weakly) monotone state transitions
 #'
 #' If the game has strictly monotone state transitions,
@@ -336,15 +336,15 @@ print.rne = function(g) {
 #'
 #' @param g The game object
 #' @param save.details If yes, detailed information about the equilibrium for each state and period will be stored in g and can be retrieved via the function get.rne.details
-rel_rne = function(g) {
+rel_rne = function(g, delta=g$param$delta, rho=g$param$rho, beta1=g$param$beta1,verbose=TRUE,...) {
   restore.point("rel_rne")
   if (!g$is_compiled) g = rel_compile(g)
 
+  g$param$delta = delta
+  g$param$rho = rho
+  g$param$beta1 = beta1
   sdf = g$sdf
-  delta = g$param$delta
-  rho = g$param$rho
   adj_delta = (1-rho)*delta
-  beta1 = g$param$beta1
   beta2 = 1-beta1
 
 
@@ -410,7 +410,8 @@ rel_rne = function(g) {
 
     # Check if state transists to itself
     if (x %in% colnames(trans.mat)) {
-      cat("\nSolve weakly monotone state", x, "...")
+      if (verbose)
+        cat("\nSolve weakly monotone state", x, "...")
       res = solve.weakly.monotone.state(x,rne,g,sdf)
       if (res$ok) {
         rne[row, names(res$rne.row)] = res$rne.row
@@ -438,17 +439,17 @@ rel_rne = function(g) {
     q2.hat = (1-delta)*sdf$pi2[[row]] +
       delta * (trans.mat %*% ( (1-rho)*rne$v2[dest.rows] + rho*rne$r2[dest.rows] ))
 
-    # v1 is best reply q for player 1
-    q1.hat = matrix(q1.hat,na1, sdf$na2)
-    v1.hat.short = colMaxs(q1.hat)
-    v1.hat = rep(v1.hat.short, each=na1)
-    # Extend to all a action profiles
+    # v1.hat is best reply q for player 1
+    # Note player 1 is col player
+    q1.hat = matrix(q1.hat,na2, na1)
+    v1.hat.short = rowMaxs(q1.hat)
+    v1.hat = rep(v1.hat.short, times=na1)
 
 
-    # v2 is best reply q for player 2
-    q2.hat = matrix(q2.hat,sdf$na1[row], sdf$na2[row])
-    v2.hat.short = rowMaxs(q2.hat)
-    v2.hat = rep(v2.hat.short, times=na2)
+    # v2.hat is best reply q for player 2
+    q2.hat = matrix(q2.hat,na2, na1)
+    v2.hat.short = colMaxs(q2.hat)
+    v2.hat = rep(v2.hat.short, each=na2)
 
 
     # Compute which action profiles are implementable
@@ -493,6 +494,9 @@ rel_rne = function(g) {
   rne = select(rne,-solved)
   g$sdf = sdf
   g$rne = rne
+
+  if (verbose) cat("\n")
+
   g
 }
 
@@ -511,13 +515,14 @@ rel_rne = function(g) {
 #' @param g The game object
 #' @param T The number of periods until states can change
 #' @param save.details If yes, detailed information about the equilibrium for each state and period will be stored in g and can be retrieved via the function get.rne.details
-rel_capped_rne = function(g,T, save.details=FALSE, tol=1e-10) {
+rel_capped_rne = function(g,T, save.details=FALSE, tol=1e-10,  delta=g$param$delta, rho=g$param$rho, res.field="rne") {
   restore.point("rel_capped_rne")
   if (!g$is_compiled) g = rel_compile(g)
 
+  g$param$delta = delta
+  g$param$rho = rho
+
   sdf = g$sdf
-  delta = g$param$delta
-  rho = g$param$rho
   adj_delta = (1-rho)*delta
   beta1 = g$param$beta1
   beta2 = 1-beta1
@@ -603,18 +608,18 @@ rel_capped_rne = function(g,T, save.details=FALSE, tol=1e-10) {
       q2.hat = (1-delta)*sdf$pi2[[srow]] +
         delta * (trans.mat %*% ( (1-rho)*rne$v2[dest.rows] + rho*rne$r2[dest.rows] ))
 
-      # v1 is best reply q for player 1
-      q1.hat = matrix(q1.hat,na1, na2)
-      v1.hat.short = colMaxs(q1.hat)
-      v1.hat = rep(v1.hat.short, each=na1)
-      # Extend to all a action profiles
+
+      # v1.hat is best reply q for player 1
+      # Note player 1 is col player
+      q1.hat = matrix(q1.hat,na2, na1)
+      v1.hat.short = rowMaxs(q1.hat)
+      v1.hat = rep(v1.hat.short, times=na1)
 
 
-      # v2 is best reply q for player 2
-      q2.hat = matrix(q2.hat,na1, na2)
-      v2.hat.short = rowMaxs(q2.hat)
-      v2.hat = rep(v2.hat.short, times=na2)
-
+      # v2.hat is best reply q for player 2
+      q2.hat = matrix(q2.hat,na2, na1)
+      v2.hat.short = colMaxs(q2.hat)
+      v2.hat = rep(v2.hat.short, each=na2)
 
       # Compute which action profiles are implementable
       IC.holds = U.hat >= v1.hat + v2.hat
@@ -717,8 +722,8 @@ rel_capped_rne = function(g,T, save.details=FALSE, tol=1e-10) {
     #rne$a2.lab = left_join(select(rne,x,a=a2), g$a.labs.df, by=c("x","a"))$lab
 
   g$sdf = sdf
-  g$rne = rne
-  g$rne.details = rne.details
+  g[[res.field]] = rne
+  g[[paste0(res.field,".details")]] = rne.details
   g
 }
 
@@ -806,15 +811,16 @@ solve.weakly.monotone.state = function(x,rne,g, sdf, tol=1e-12) {
 
 
         # v1.hat is best reply q for player 1
-        q1.hat = matrix(q1.hat,na1, sdf$na2)
-        v1.hat.short = colMaxs(q1.hat)
-        v1.hat = rep(v1.hat.short, each=na1)
+        # Note player 1 is col player
+        q1.hat = matrix(q1.hat,na2, na1)
+        v1.hat.short = rowMaxs(q1.hat)
+        v1.hat = rep(v1.hat.short, times=na1)
 
 
         # v2.hat is best reply q for player 2
-        q2.hat = matrix(q2.hat,sdf$na1[row], sdf$na2[row])
-        v2.hat.short = rowMaxs(q2.hat)
-        v2.hat = rep(v2.hat.short, times=na2)
+        q2.hat = matrix(q2.hat,na2, na1)
+        v2.hat.short = colMaxs(q2.hat)
+        v2.hat = rep(v2.hat.short, each=na2)
 
 
         # Compute which action profiles are implementable

@@ -26,7 +26,7 @@ examples.rel.mermaid.code = function() {
   cat(rel.mermaid.code(g))
 
 
-  x.max = 4
+  x.max = 3
   x.df = as_data_frame(expand.grid(x1=0:x.max,x2=0:x.max))
   x.df$x = paste0(x.df$x1,"_", x.df$x2)
 
@@ -59,8 +59,14 @@ rne.diagram = function(g,t=1, show.own.loop=FALSE, show.terminal.loop=FALSE) {
   n = NROW(g$sdf)
   sdf=g$sdf
   lab = paste0(sdf$x, " \n", round(rne$r1,2), " ", round(rne$r2,2))
+  tooltip = paste0(
+    rne$x,
+    "<br>ae: ",rne$ae.lab,
+    "<br>a1: ", rne$a1.lab, "<br>a2: ", rne$a2.lab,
+    "<br>v1=",round(rne$v1,2)," v2=",round(rne$v2,2),
+    "<br>U=", round(rne$U,2))
 
-  ndf = data.frame(id=1:n, label=lab, type="node", shape="box")
+  ndf = data.frame(id=1:n, label=lab, type="node", shape="box", title=tooltip)
 
   # Create edges
   tr = lapply(seq_len(NROW(sdf)), function(row) {

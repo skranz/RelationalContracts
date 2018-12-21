@@ -3,15 +3,15 @@
 solve_x_repgame = function(g,x,  state = g$sdf[g$sdf$x == x,]) {
   restore.point("solve_x_repgame")
 
-  g1 = matrix(state$pi1[[1]], state$na1,state$na2)
-  g2 = matrix(state$pi2[[1]], state$na1,state$na2)
+  g1 = t(matrix(state$pi1[[1]], state$na2,state$na1))
+  g2 = t(matrix(state$pi2[[1]], state$na2,state$na1))
   lab.ai = make.state.lab.ai(state)
 
   rg = repgame::init.game(n=2, g1=g1,g2=g2,lab.ai = lab.ai)
   sol = repgame::solve.game(rg)
 
   beta1 = g$param$beta1
-  beta2 = g$param$beta2
+  beta2 = 1-beta1
 
   opt.mat = sol$opt.mat
 
@@ -59,7 +59,7 @@ make.state.lab.ai = function(state) {
 }
 
 make.state.lab.a = function(state, sep=" ", empty.sep=TRUE) {
-  restore.point("make.state.lab.ai")
+  restore.point("make.state.lab.a")
   a.grid = state$a.grid[[1]]
 
   for (col in seq_len(NCOL(a.grid))) {
