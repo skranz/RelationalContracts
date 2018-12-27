@@ -45,19 +45,31 @@ examples.rel.mermaid.code = function() {
 
 }
 
+spe.diagram = function(g,t=1, show.own.loop=FALSE, show.terminal.loop=FALSE, eq.field = "spe") {
+  rne.diagram(g,t,show.own.loop, show.terminal.loop,eq.field)
+}
 
-rne.diagram = function(g,t=1, show.own.loop=FALSE, show.terminal.loop=FALSE) {
+rne.diagram = function(g,t=1, show.own.loop=FALSE, show.terminal.loop=FALSE, eq.field = "rne", use.x=NULL, just.eq.chain=FALSE, x0=g$sdf$x[1]) {
   restore.point("rne.diagram")
 
   library(DiagrammeR)
 
-  rne = g$rne
+
+  rne = g[[eq.field]]
+
   if (has.col(rne,"t"))
     rne = rne[rne$t==t,]
 
-
-  n = NROW(g$sdf)
   sdf=g$sdf
+
+  if (just.eq.chain) {
+    use.x = find.eq.chain.x(g,x0 = x0,eq = rne)
+  }
+  if (!is.null(use.x)) {
+    rne = rne[rne$x %in% use.x,]
+    sdf = sdf[sdf$x %in% use.x,]
+  }
+  n = NROW(sdf)
   lab = paste0(sdf$x, " \n", round(rne$r1,2), " ", round(rne$r2,2))
   tooltip = paste0(
     rne$x,
@@ -85,7 +97,11 @@ rne.diagram = function(g,t=1, show.own.loop=FALSE, show.terminal.loop=FALSE) {
       is.ae.dest = trans.mat[ae,]>0
     }
     dest.rows = match(dest, sdf$x)
+
     edges = quick_df(from=row, to=dest.rows, rel="", color=ifelse(is.ae.dest, "#000077","#dddddd"), width=ifelse(is.ae.dest,2,1))
+
+    if (just.eq.chain)
+      edges = edges[is.ae.dest,,drop=FALSE]
     edges
   })
   edf = bind_rows(tr)
@@ -98,6 +114,31 @@ rne.diagram = function(g,t=1, show.own.loop=FALSE, show.terminal.loop=FALSE) {
   render_graph(graph, output="visNetwork")
 }
 
+
+find.eq.chain.x = function(g, x0 = g$sdf$x[[1]], eq=first.non.null(g$spe, g$rne), t=1) {
+  restore.point("find.eq.chain.x")
+
+
+  if (has.col(eq,"t"))
+    eq = eq[eq$t==t,]
+
+
+  tdf = g$tdf
+  used.x = NULL
+  x = x0
+  n = length(x)
+
+  while(length(x)>length(used.x)) {
+    cur.x = setdiff(x, used.x)[1]
+    row = match(cur.x, g$sdf$x)
+    trans.mat = g$sdf$trans.mat[[row]]
+    ae = eq$ae[[row]]
+    xd = colnames(trans.mat)[trans.mat[ae,] > 0]
+    used.x = c(used.x, cur.x)
+    x = union(x,xd)
+  }
+  x
+}
 
 
 rel.diagram = function(g) {

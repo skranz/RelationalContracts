@@ -66,49 +66,56 @@ rel_compile = function(g,...) {
     g$x.df = NULL
   }
 
-
+  #def = g$state_defs[[1]]
   li = lapply(g$state_defs, function(def) {
     A1 = eval.rel.expression(def$A1,g, null.value = "")
+    na1 = compute.na(A1)
     A2 = eval.rel.expression(def$A2,g, null.value = "")
-    na1 = prod(sapply(A1, length))
-    na2 = prod(sapply(A2, length))
+    na2 = compute.na(A2)
 
     # Change order of A1 and A2 for compatibility
     # with repgame and dyngame
-    a.grid = as_data_frame(expand.grid(c(A2,A1),stringsAsFactors = FALSE))
+    a.grid = factor.cols.as.strings(expand.grid2(A2,A1))
     a.grid.cols = c(names(A1),names(A2))
     a.grid = a.grid[,a.grid.cols]
 
-    if (length(def$x)==1) {
+    if (length(def[["x"]])==1) {
       state = quick_df(x=def$x,na1=na1,na2=na2, A1=list(A1),A2=list(A2),a.grid=list(a.grid))
     } else {
-      stop("rel_state with multiple x not yet implemented.")
+      restore.point("multiple.state.A")
+      x = def[["x"]]
+      n = length(x)
+      if (n == 0)
+        stop("rel_state called without specifiying x.")
+      state = quick_df(x=x,na1=na1,na2=na2,A1=replicate(n,A1,simplify = FALSE),A2=replicate(n,A2,simplify = FALSE),a.grid=replicate(n,a.grid,simplify = FALSE))
     }
   })
 
   # Compute states defined by A.fun
-  def = g$state_fun_defs[[1]]
+  #def = g$state_fun_defs[[1]]
   li2 = lapply(g$state_fun_defs, function(def) {
     def$x = get.def.x(def$x,g)
 
-    if (def$vectorized) {
-      args = c(get.x.df(x,g,TRUE),list(g$param, def$args))
-      res = do.call(def$A.fun,args)
-
-      na1 = sapply(res$A1, function(A1) prod(sapply(A1, length)))
-      na2 = sapply(res$A2, function(A2) prod(sapply(A2, length)))
+    if (!is.null(def$vec.A.fun)) {
+      args = c(get.x.df(def$x,g,TRUE),list(g$param, def$args))
+      res = do.call(def$vec.A.fun,args)
+      na1 = sapply(res$A1, compute.na)
+      na2 = sapply(res$A2, compute.na)
       state = quick_df(x=x,na1=na1,na2=na2,A1=res$A1,A2=res$A2)
     } else {
       A1 = vector("list", length(def$x))
       A2 = vector("list", length(def$x))
       na1 = na2 = rep(NA, length(def$x))
       for (row in seq_along(def$x)) {
-        args = c(get.x.df(def$x[row],g, TRUE), list(x.df=(get.x.df(def$x[row],g)),x=def$x[row]),g$param, def$args)
+        args = c(get.x.df(def$x[row],g, TRUE), list(g$param, def$args))
+        check.rel(length(args$x)==1,"There is some error in your state definitions. Make sure that each state x has a unique name.")
+
+
         res = do.call(def$A.fun, args)
         A1[row] = list(res$A1)
         A2[row] = list(res$A2)
-        na1[row] = prod(sapply(res$A1, length))
-        na2[row] = prod(sapply(res$A2, length))
+        na1[row] = compute.na(res$A1)
+        na2[row] = compute.na(res$A2)
 
       }
       state = quick_df(x=def$x,na1=na1,na2=na2,A1=A1,A2=A2)
@@ -117,7 +124,7 @@ rel_compile = function(g,...) {
     # with repgame and dyngame
 
     state$a.grid = lapply(seq_len(NROW(state)), function(row) {
-      a.grid = as_data_frame(expand.grid(c(state$A2[[row]],state$A1[[row]]),stringsAsFactors = FALSE))
+      a.grid = factor.cols.as.strings(expand.grid2(state$A2[[row]],state$A1[[row]]))
       cols = c(names(A1),names(A2))
       a.grid = a.grid[,cols]
       a.grid
@@ -126,12 +133,21 @@ rel_compile = function(g,...) {
   })
 
   sdf = bind_rows(li,li2)
+  sdf$row = seq_len(NROW(sdf))
 
   g$a.labs.df = bind_rows(lapply(seq_len(NROW(sdf)),function(row) {
     quick_df(x=sdf$x[row],a = seq_len(NROW(sdf$a.grid[[row]])), lab=make.state.lab.a(sdf[row,]))
   }))
 
   nx = NROW(sdf)
+
+  ax.grid = bind_rows(lapply(seq_len(NROW(sdf)), function(row) {
+    cbind(quick_df(.x=sdf$x[row],.a=seq_len(NROW(sdf$a.grid[[row]]))), sdf$a.grid[[row]])
+  }))
+  empty.action = sapply(ax.grid[3:NCOL(ax.grid)], function(vals) {
+    all(vals == "" | is.na(vals))
+  })
+  g$ax.grid = ax.grid[c(".x",".a", names(empty.action)[!empty.action])]
 
 
   # 2. Evaluate and store payoff matrices
@@ -209,12 +225,26 @@ rel_compile = function(g,...) {
 
   li2 = lapply(seq_along(g$trans_fun_defs), function(ind) {
     def = g$trans_fun_defs[[ind]]
-    res = bind_rows(lapply(def$x, function(x) {
-      row = which(sdf$x == x)
-      a.grid = sdf$a.grid[[row]]
-      args = c(get.x.df(x,g, TRUE),list(a.df = a.grid),g$param, def$args)
-      res = do.call(def$trans.fun, args)
-    }))
+
+    if (!is.null(def$vec.trans.fun)) {
+      ax.df = g$ax.grid
+      if (!is.null(g$x.df)) {
+        ax.df = inner_join(g$x.df,ax.df, by=c("x"=".x"))
+      }
+      args = c(list(ax.df = ax.df),g$param, def$args)
+      res = do.call(def$vec.trans.fun, args)
+    } else {
+      res = bind_rows(lapply(def$x, function(x) {
+        row = which(sdf$x == x)
+        a.grid = sdf$a.grid[[row]]
+        args = c(get.x.df(x,g, TRUE),list(a.df = a.grid),g$param, def$args)
+        res = do.call(def$trans.fun, args)
+        check.rel(has.cols(res,c("xs","xd","prob")), "Your manual state transition function must return a data frame that has the cols 'xs','xd', 'prob' and the names of relevant action profiles.")
+        res
+
+      }))
+
+    }
     res$.def.ind = ind + length(g$trans_defs)
     res
   })
@@ -223,8 +253,11 @@ rel_compile = function(g,...) {
     filter(xs != xd) %>%
     unique()
 
-  sdf$is_terminal = !(sdf$x %in% tdf$xs)
-
+  if (NROW(tdf)>0) {
+    sdf$is_terminal = !(sdf$x %in% tdf$xs)
+  } else {
+    sdf$is_terminal = TRUE
+  }
   # Result of repeated game assuming the state is fixed
   # This will be a full characterization for all
   # discount factors
@@ -233,13 +266,6 @@ rel_compile = function(g,...) {
   sdf$trans.mat = vector("list",NROW(sdf))
 
 
-  ax.grid = bind_rows(lapply(seq_len(NROW(sdf)), function(row) {
-    cbind(quick_df(.x=sdf$x[row],.a=seq_len(NROW(sdf$a.grid[[row]]))), sdf$a.grid[[row]])
-  }))
-  empty.action = sapply(ax.grid[3:NCOL(ax.grid)], function(vals) {
-    all(vals == "" | is.na(vals))
-  })
-  g$ax.grid = ax.grid[c(".x",".a", names(empty.action)[!empty.action])]
 
 
   g$tdf = tdf
@@ -262,9 +288,19 @@ rel_compile = function(g,...) {
   g
 }
 
+compute.na = function(A) {
+  if (is.data.frame(A)) return(NROW(A))
+  prod(sapply(A, length))
+}
+
+
 compute.payoff.for.state = function(player=1,state, def, g) {
   restore.point("compute.payoff.matrix.for.state")
-  args = c(as.list(state$a.grid[[1]]),g$param)
+  if (!is.null(g$x.df)) {
+    args = c(as.list(state$a.grid[[1]]),g$param, as.list(g$x.df[state$row,]))
+  } else {
+    args = c(as.list(state$a.grid[[1]]),g$param,x=state$x)
+  }
   pi.expr = def[[paste0("pi", player)]]
   pi.val = eval.rel.expression(pi.expr,param=args)
 }
@@ -330,10 +366,61 @@ rel_state = function(g, x,A1=list(a1=""),A2=list(a2=""), pi1=NULL, pi2=NULL) {
 #' @param g a relational contracting game created with rel_game
 #' @param x The names of the states
 #' @param A.fun A function that returns action sets
-#' @param A.fun.vec Vectorized version
+#' @param A1 The action set of player 1. Can be a numeric or character vector
+#' @param A2 The action set of player 2. Can be a numeric or character vector
+
+#' @param pi1 Player 1's payoff. Value(s) or formula
+#' @param pi2 Player 2's payoff. Values(s) or formula
+
 #' @param A2 The action set of player 2. Can be a numeric or character vector
 #' @return Returns the updated game
-rel_states_fun = function(g, x,A.fun=NULL, pi.fun=NULL, trans.fun=NULL, vectorized=FALSE, ...) {
+rel_states = function(g, x,A1=NULL, A2=NULL, pi1=NULL, pi2=NULL, A.fun=NULL, pi.fun=NULL, trans.fun=NULL, vec.trans.fun=NULL, ...) {
+  args=list(...)
+  restore.point("rel_states")
+  if (is.data.frame(x)) {
+    x.df = x
+    x = x.df$x
+  } else {
+    x.df = NULL
+  }
+  if (!is.null(x.df))
+    g = add.to.rel.list(g,"x_df_def", x.df)
+
+  if (!is.null(A1) | !is.null(A2)) {
+    g = add.to.rel.list(g, "state_defs",list(x=x, A1=A1,A2=A2) )
+  }
+
+
+  if (!is.null(A.fun)) {
+    obj = list(x=x,A.fun=A.fun, args=args)
+    g = add.to.rel.list(g, "state_fun_defs",obj)
+  }
+
+  if (!is.null(pi1) | !is.null(pi2)) {
+    g = rel_payoff(g,x=x,pi1=pi1,pi2=pi2)
+  }
+
+  if (!is.null(pi.fun)) {
+    obj = list(x=x,pi.fun=pi.fun, args=args)
+    g = add.to.rel.list(g, "payoff_fun_defs",obj)
+  }
+  if (!is.null(trans.fun) | !is.null(vec.trans.fun)) {
+    obj = list(x=x,trans.fun=trans.fun, vec.trans.fun=vec.trans.fun, args=args)
+    g = add.to.rel.list(g, "trans_fun_defs",obj)
+  }
+
+  g
+}
+
+
+#' Add multiple states via functions
+#'
+#' @param g a relational contracting game created with rel_game
+#' @param x The names of the states
+#' @param A.fun A function that returns action sets
+#' @param pi.fun A function that returns for each state a data frame with with pi1 and pi2 and as many rows as action profiles
+#' @param trans.fun A function that specifies state transitions
+rel_states_fun = function(g, x,A.fun=NULL, pi.fun=NULL, trans.fun=NULL, ...) {
   args=list(...)
   restore.point("rel_state_fun")
   if (is.data.frame(x)) {
@@ -346,15 +433,15 @@ rel_states_fun = function(g, x,A.fun=NULL, pi.fun=NULL, trans.fun=NULL, vectoriz
     g = add.to.rel.list(g,"x_df_def", x.df)
 
   if (!is.null(A.fun)) {
-    obj = list(x=x,A.fun=A.fun, args=args, vectorized=vectorized)
+    obj = list(x=x,A.fun=A.fun, args=args)
     g = add.to.rel.list(g, "state_fun_defs",obj)
   }
   if (!is.null(pi.fun)) {
-    obj = list(x=x,pi.fun=pi.fun, args=args, vectorized=vectorized)
+    obj = list(x=x,pi.fun=pi.fun, args=args)
     g = add.to.rel.list(g, "payoff_fun_defs",obj)
   }
   if (!is.null(trans.fun)) {
-    obj = list(x=x,trans.fun=trans.fun, args=args, vectorized=vectorized)
+    obj = list(x=x,trans.fun=trans.fun, args=args)
     g = add.to.rel.list(g, "trans_fun_defs",obj)
   }
 
@@ -371,7 +458,7 @@ rel_states_fun = function(g, x,A.fun=NULL, pi.fun=NULL, trans.fun=NULL, vectoriz
 #' @param pi1 Player 1's payoff. Value(s) or formula
 #' @param pi2 Player 2's payoff. Values(s) or formula
 #' @return Returns the updated game
-rel_payoff = function(g, x=NULL,pi1=NULL,pi2=NULL) {
+rel_payoff = function(g, x=NULL,pi1=0,pi2=0) {
   obj = list(x=x,pi1=pi1,pi2=pi2)
   add.to.rel.list(g, "payoff_defs",obj)
 }
@@ -427,6 +514,8 @@ add.to.rel.list = function(g, var, obj) {
 
 eval.rel.expression = function(e,g=NULL, param=g$param, vectorized=FALSE, null.value = NULL, enclos=parent.frame()) {
   restore.point("eval.rel.expression")
+  if (is.data.frame(e)) return(e)
+
 
   if (is.list(e))
     return(lapply(e,eval.rel.expression, g=g, param=param, vectorized=vectorized, null.value=null.value, enclos=enclos))
@@ -454,9 +543,10 @@ eval.rel.expression = function(e,g=NULL, param=g$param, vectorized=FALSE, null.v
 compute.x.trans.mat = function(x,g, add.own=TRUE) {
   restore.point("compute.x.trans.mat")
   #if (x=="0_0") stop()
+  if (NROW(g$tdf)==0) return(NULL)
+
   df = g$tdf[g$tdf$xs==x,]
-  if (NROW(df)==0)
-    return(NULL)
+  if (NROW(df)==0) return(NULL)
 
   xd = unique(df$xd)
 

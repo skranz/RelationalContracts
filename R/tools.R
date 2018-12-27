@@ -1,3 +1,20 @@
+factor.cols.as.strings = function(df) {
+  mutate_if(df, is.factor, as.character)
+}
+
+# Expand grid with 2 arguments. One argument can be itself a data.frame
+expand.grid2 = function(A,B) {
+  if (!is.data.frame(A) & !is.data.frame(B)) {
+    expand.grid(A,B, stringsAsFactors = FALSE)
+  } else {
+    if (!is.data.frame(A)) A = expand.grid(A, stringsAsFactors = FALSE)
+    if (!is.data.frame(B)) B = expand.grid(B, stringsAsFactors = FALSE)
+    inds = expand.grid(a=seq_len(NROW(A)),b=seq_len(NROW(B)), stringsAsFactors = FALSE)
+    bind_cols(A[inds$a,,drop=FALSE], B[inds$b,,drop=FALSE])
+  }
+}
+
+
 quick_df = function(...) {
   as_data_frame(list(...))
 }
@@ -15,6 +32,11 @@ first.non.null = function(...) {
   return(NULL)
 
 }
+
+has.cols = function(x, cols) {
+  all(cols %in% colnames(x))
+}
+
 
 has.col = function(x, col) {
   col %in% colnames(x)

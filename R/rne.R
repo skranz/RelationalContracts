@@ -274,11 +274,14 @@ arms.race.example = function() {
   View(rne)
 }
 
+get.spe = function(g, action.details=FALSE, eq=g$spe) {
+  get.rne(g, action.details, eq)
+}
 
-get.rne = function(g, action.details=FALSE) {
+get.rne = function(g, action.details=FALSE, eq=g$rne) {
   restore.point("get.rne")
+  rne = eq
   if (action.details) {
-    rne=g$rne
     grid = select(rne, .x=x, .a=ae)
     add.ae = left_join(grid, g$ax.grid, by=c(".x",".a"))[,-c(1:2), drop=FALSE]
     colnames(add.ae) = paste0("ae.", colnames(add.ae))
@@ -291,17 +294,20 @@ get.rne = function(g, action.details=FALSE) {
     add.a2 = left_join(grid, g$ax.grid, by=c(".x",".a"))[,-c(1:2), drop=FALSE]
     colnames(add.a2) = paste0("a2.", colnames(add.a2))
 
-    rne = cbind(g$rne, add.ae, add.a1,add.a2)
+    rne = cbind(rne, add.ae, add.a1,add.a2)
     return(rne)
   } else {
-    return(g$rne)
+    return(rne)
   }
 }
 
 get.rne.details = function(g, x=NULL,t=NULL) {
   restore.point("get.rne.details")
 
-  if (is.null(g$rne.details)) return(NULL)
+  if (is.null(g$rne.details)) {
+    message("No details have been saved. Use the argument save.details=TRUE in your call to rel_rne or rel_capped_rne.")
+    return(NULL)
+  }
   if (is.null(x)) x = g$sdf$x
 
   if (!is.null(t)) {
@@ -484,14 +490,11 @@ rel_rne = function(g, delta=g$param$delta, rho=g$param$rho, beta1=g$param$beta1,
     rne$solved[row] = TRUE
   }
 
-  # Add some additional info
-  for (row in seq_len(NROW(rne))) {
-    rne$ae.lab = left_join(select(rne,x,a=ae), g$a.labs.df, by=c("x","a"))$lab
-    rne$a1.lab = left_join(select(rne,x,a=a1), g$a.labs.df, by=c("x","a"))$lab
-    rne$a2.lab = left_join(select(rne,x,a=a2), g$a.labs.df, by=c("x","a"))$lab
-  }
+  rne = add.rne.action.labels(g,rne)
 
   rne = select(rne,-solved)
+
+
   g$sdf = sdf
   g$rne = rne
 
@@ -501,7 +504,15 @@ rel_rne = function(g, delta=g$param$delta, rho=g$param$rho, beta1=g$param$beta1,
 }
 
 
-
+add.rne.action.labels = function(g, rne) {
+  # Add some additional info
+  for (row in seq_len(NROW(rne))) {
+    rne$ae.lab = left_join(select(rne,x,a=ae), g$a.labs.df, by=c("x","a"))$lab
+    rne$a1.lab = left_join(select(rne,x,a=a1), g$a.labs.df, by=c("x","a"))$lab
+    rne$a2.lab = left_join(select(rne,x,a=a2), g$a.labs.df, by=c("x","a"))$lab
+  }
+  rne
+}
 
 
 
@@ -515,7 +526,7 @@ rel_rne = function(g, delta=g$param$delta, rho=g$param$rho, beta1=g$param$beta1,
 #' @param g The game object
 #' @param T The number of periods until states can change
 #' @param save.details If yes, detailed information about the equilibrium for each state and period will be stored in g and can be retrieved via the function get.rne.details
-rel_capped_rne = function(g,T, save.details=FALSE, tol=1e-10,  delta=g$param$delta, rho=g$param$rho, res.field="rne") {
+rel_capped_rne = function(g,T, save.details=FALSE, tol=1e-10,  delta=g$param$delta, rho=g$param$rho, res.field="rne", tie.breaking=c("slack","random","first","last")) {
   restore.point("rel_capped_rne")
   if (!g$is_compiled) g = rel_compile(g)
 
@@ -622,7 +633,7 @@ rel_capped_rne = function(g,T, save.details=FALSE, tol=1e-10,  delta=g$param$del
       v2.hat = rep(v2.hat.short, each=na2)
 
       # Compute which action profiles are implementable
-      IC.holds = U.hat >= v1.hat + v2.hat
+      IC.holds = U.hat+tol >= v1.hat + v2.hat
 
       # Can at least one action profile be implemented?
 
@@ -648,10 +659,27 @@ rel_capped_rne = function(g,T, save.details=FALSE, tol=1e-10,  delta=g$param$del
       # Pick equilibrium actions
       # If indifferent choose the one with the largest
       # slack in the IC
+
+
       slack = U.hat - (v1.hat + v2.hat)
-      rne$ae[row] = which.max((1+slack) * (U.hat==U & IC.holds))
-      rne$a1[row] = which.max((1+slack) * (v1.hat==v1 & IC.holds))
-      rne$a2[row] = which.max((1+slack) * (v2.hat==v2 & IC.holds))
+      if (tie.breaking=="slack") {
+        tb = slack
+        const = 1
+      } else if (tie.breaking=="last") {
+        tb = seq_len(NROW(U.hat))
+      } else if (tie.breaking=="first") {
+        tb = rev(seq_len(NROW(U.hat)))
+      } else {
+
+        tb = runif(NROW(U.hat))
+        #restore.point("hdfhdf")
+        #if (t==1 & x=="0 0") stop()
+        const = 1
+      }
+
+      rne$ae[row] = which.max((const+tb) * (abs(U.hat-U)<tol & IC.holds))
+      rne$a1[row] = which.max((const+tb) * (abs(v1.hat-v1)<tol & IC.holds))
+      rne$a2[row] = which.max((const+tb) * (abs(v2.hat-v2)<tol & IC.holds))
 
 
       if (save.details) {
@@ -672,9 +700,9 @@ rel_capped_rne = function(g,T, save.details=FALSE, tol=1e-10,  delta=g$param$del
           x.df[x.df$x==x,],
           sdf$a.grid[[srow]],
           quick_df(
-            can.ae = (U.hat==U & IC.holds)*1 + (arows==rne$ae[row]),
-            can.a1 = (v1.hat==v1 & IC.holds)*1 + (arows==rne$a1[row]),
-            can.a2 = (v2.hat==v2 & IC.holds)*1 + (arows==rne$a2[row]),
+            can.ae = (abs(U.hat-U)<tol & IC.holds)*1 + (arows==rne$ae[row]),
+            can.a1 = (abs(v1.hat-v1)<tol & IC.holds)*1 + (arows==rne$a1[row]),
+            can.a2 = (abs(v2.hat-v2)<tol & IC.holds)*1 + (arows==rne$a2[row]),
             IC.holds=IC.holds,
             slack=slack,
 

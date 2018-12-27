@@ -1,4 +1,4 @@
-plot.spe.payoff.set = function (g,x=eq$x[1],t=1,  eq=g[[eq.field]], eq.field = "spe",xlim=NULL, ylim=NULL, add=FALSE, colors=c("#377EB8","#E41A1C", "#4DAF4A", "#984EA3", "#FF7F00", "#FFFF33", "#A65628", "#F781BF"),plot.r=TRUE, alpha=0.5, black.border=TRUE, add.state.label=TRUE, add.xlim=NULL, add.ylim=NULL, extend.lim.perc=0.05, ...) {
+plot.spe.payoff.set = function (g,x=eq$x[1],t=1,  eq=g[[eq.field]], eq.field = "spe",xlim=NULL, ylim=NULL, add=FALSE, colors=c("#377EB8","#E41A1C", "#4DAF4A", "#984EA3", "#FF7F00", "#FFFF33", "#A65628", "#F781BF"),plot.r=TRUE, alpha=0.8, black.border=TRUE, add.state.label=TRUE, add.xlim=NULL, add.ylim=NULL, extend.lim.perc=0.05, ...) {
   restore.point("plot.spe.payoff.set")
   old.par = par()
   on.exit(suppressWarnings(par(old.par)))

@@ -57,6 +57,17 @@ rel_spe = function(g, delta=g$param$delta,new.dyngame=FALSE, verbose=FALSE, plot
   g$param$delta = delta
   if (!g$is_compiled) g = rel_compile(g)
 
+  # We only have repeated games
+  if (all(g$sdf$is_terminal)) {
+    for (row in seq_len(NROW(g$sdf))) {
+      if (is.null(g$sdf$rep[[row]])) {
+        g$sdf$rep[[row]] = solve_x_repgame(g,state=g$sdf[row,])
+      }
+    }
+    g$spe = rep.games.to.rne.df(g)
+    return(g)
+  }
+
   if (is.null(g[["dyngame"]]) | new.dyngame)
     g$dyngame = make.rel.dyngame(g)
 
@@ -64,6 +75,29 @@ rel_spe = function(g, delta=g$param$delta,new.dyngame=FALSE, verbose=FALSE, plot
   g$spe = dyngame.sol.to.rel.sol(g)
   cat("\n")
   g
+}
+
+
+rep.games.to.rne.df = function(g, delta=g$param$delta, rho=g$param$rho, rows=which(g$sdf$is_terminal)) {
+  restore.point("rep.games.to.rne.df")
+  adj_delta = delta*(1-rho)
+
+  li = lapply(rows, function(row) {
+    rep = sdf$rep[[row]] %>%
+      filter(adj_delta >= delta_min, adj_delta < delta_max) %>%
+      select(r1,r2,U,v1=v1_rep,v2=v2_rep,ae,a1,a2)
+  })
+  res = bind_rows(li)
+  res = cbind(quick_df(x = g$sdf$x[rows]), res)
+
+  if (rho >0) {
+    w = ((1-delta) / (1-adj_delta))
+    res$v1 = w*res$v1 + (1-w)*res$r1
+    res$v2 = w*res$v2 + (1-w)*res$r2
+  }
+  res = add.rne.action.labels(g,res)
+
+  res
 }
 
 #' Solve for the set of SPE payoffs in every state and for optimal simple equilibria
