@@ -107,7 +107,7 @@ rel_compile = function(g,...) {
       A2 = vector("list", length(def$x))
       na1 = na2 = rep(NA, length(def$x))
       for (row in seq_along(def$x)) {
-        args = c(get.x.df(def$x[row],g, TRUE), list(g$param, def$args))
+        args = c(get.x.df(def$x[row],g, TRUE), g$param,def$args)
         check.rel(length(args$x)==1,"There is some error in your state definitions. Make sure that each state x has a unique name.")
 
 
@@ -124,7 +124,8 @@ rel_compile = function(g,...) {
     # with repgame and dyngame
 
     state$a.grid = lapply(seq_len(NROW(state)), function(row) {
-      a.grid = factor.cols.as.strings(expand.grid2(state$A2[[row]],state$A1[[row]]))
+      A1 = state$A1[[row]]; A2 = state$A2[[row]]
+      a.grid = factor.cols.as.strings(expand.grid2(A2,A1))
       cols = c(names(A1),names(A2))
       a.grid = a.grid[,cols]
       a.grid
@@ -148,6 +149,11 @@ rel_compile = function(g,...) {
     all(vals == "" | is.na(vals))
   })
   g$ax.grid = ax.grid[c(".x",".a", names(empty.action)[!empty.action])]
+
+  ax.df = g$ax.grid
+  if (!is.null(g$x.df)) {
+    ax.df = inner_join(g$x.df,ax.df, by=c("x"=".x"))
+  }
 
 
   # 2. Evaluate and store payoff matrices
@@ -177,13 +183,29 @@ rel_compile = function(g,...) {
   # Payoff functions
   def = g$payoff_fun_defs[[1]]
   for (def in g$payoff_fun_defs) {
-    for (x in def$x) {
-      row = which(sdf$x == x)
-      a.grid = sdf$a.grid[[row]]
-      args = c(get.x.df(x,g, TRUE),list(a.df = a.grid),g$param, def$args)
-      res = do.call(def$pi.fun, args)
-      pi1[row] = res["pi1"]
-      pi2[row] = res["pi2"]
+    if (!is.null(def$vec.pi.fun)) {
+      restore.point("vec.pi.fun not yet implemented!")
+      args = c(list(ax.df=ax.df),g$param, def$args)
+      res = do.call(def$vec.pi.fun, args)
+      check.rel(has.cols(res,c("x","pi1","pi2")),"Your vectorized payoff function vec.pi.fun must return a data frame with the columns 'x','pi1' and 'pi2'")
+      check.rel(NROW(res)==NROW(ax.df),"Your vectorized payoff function vec.pi.fun must return a data frame with as many rows as its argument ax.df")
+
+      res = group_by(res,x) %>%
+        summarize(pi1=list(pi1),pi2=list(pi2))
+      rows = match(res$x, sdf$x)
+
+      pi1[rows] = res$pi1
+      pi2[rows] = res$pi2
+
+    } else {
+      for (x in def$x) {
+        row = which(sdf$x == x)
+        a.grid = sdf$a.grid[[row]]
+        args = c(get.x.df(x,g, TRUE),list(a.df = a.grid),g$param, def$args)
+        res = do.call(def$pi.fun, args)
+        pi1[row] = res["pi1"]
+        pi2[row] = res["pi2"]
+      }
     }
   }
 
@@ -223,14 +245,10 @@ rel_compile = function(g,...) {
     df
   })
 
-  li2 = lapply(seq_along(g$trans_fun_defs), function(ind) {
-    def = g$trans_fun_defs[[ind]]
+  compile_trans_fun_def = function(ind, field="trans_fun_defs") {
+    def = g[[field]][[ind]]
 
     if (!is.null(def$vec.trans.fun)) {
-      ax.df = g$ax.grid
-      if (!is.null(g$x.df)) {
-        ax.df = inner_join(g$x.df,ax.df, by=c("x"=".x"))
-      }
       args = c(list(ax.df = ax.df),g$param, def$args)
       res = do.call(def$vec.trans.fun, args)
     } else {
@@ -247,28 +265,47 @@ rel_compile = function(g,...) {
     }
     res$.def.ind = ind + length(g$trans_defs)
     res
-  })
+  }
+
+  li2 = lapply(seq_along(g$trans_fun_defs),compile_trans_fun_def)
 
   tdf = bind_rows(li,li2) %>%
     filter(xs != xd) %>%
     unique()
+
+  non.states = setdiff(unique(c(tdf$xd,tdf$xs)),sdf$x)
+  check.rel(length(non.states)==0, paste0("You specify state transitions from or to unspecified states ", paste0(non.states, collapse=", "),". Make sure that you have not mis-spelled the state names."))
+
 
   if (NROW(tdf)>0) {
     sdf$is_terminal = !(sdf$x %in% tdf$xs)
   } else {
     sdf$is_terminal = TRUE
   }
+  g$tdf = tdf
+
   # Result of repeated game assuming the state is fixed
   # This will be a full characterization for all
   # discount factors
-  sdf$rep = vector("list",NROW(sdf))
 
+  sdf$rep = vector("list",NROW(sdf))
   sdf$trans.mat = vector("list",NROW(sdf))
 
+  # Separate state transitions for final period in
+  # a capped game
+  if (!is.null(g$final_trans_fun_defs)) {
+    li = lapply(seq_along(g$final_trans_fun_defs),compile_trans_fun_def, field="final_trans_fun_defs")
+
+    g$final.tdf = bind_rows(li) %>%
+      filter(xs != xd) %>%
+      unique()
+    sdf$final.trans.mat = vector("list",NROW(sdf))
+  } else {
+    g$final.tdf = NULL
+  }
 
 
 
-  g$tdf = tdf
   g$sdf = sdf
 
   # Compute adjusted discount factor
@@ -281,6 +318,10 @@ rel_compile = function(g,...) {
   for (row in 1:NROW(sdf)) {
     x = sdf$x[row]
     g$sdf$trans.mat[row] = list(compute.x.trans.mat(x=x,g=g))
+    if (!is.null(g$final.tdf)) {
+      g$sdf$final.trans.mat[row] = list(compute.x.trans.mat(x=x,g=g, tdf=g$final.tdf))
+    }
+
   }
 
 
@@ -374,7 +415,7 @@ rel_state = function(g, x,A1=list(a1=""),A2=list(a2=""), pi1=NULL, pi2=NULL) {
 
 #' @param A2 The action set of player 2. Can be a numeric or character vector
 #' @return Returns the updated game
-rel_states = function(g, x,A1=NULL, A2=NULL, pi1=NULL, pi2=NULL, A.fun=NULL, pi.fun=NULL, trans.fun=NULL, vec.trans.fun=NULL, ...) {
+rel_states = function(g, x,A1=NULL, A2=NULL, pi1=NULL, pi2=NULL, A.fun=NULL, pi.fun=NULL, vec.pi.fun=NULL, trans.fun=NULL, vec.trans.fun=NULL, final.trans.fun=NULL, vec.final.trans.fun=NULL, ...) {
   args=list(...)
   restore.point("rel_states")
   if (is.data.frame(x)) {
@@ -400,14 +441,19 @@ rel_states = function(g, x,A1=NULL, A2=NULL, pi1=NULL, pi2=NULL, A.fun=NULL, pi.
     g = rel_payoff(g,x=x,pi1=pi1,pi2=pi2)
   }
 
-  if (!is.null(pi.fun)) {
-    obj = list(x=x,pi.fun=pi.fun, args=args)
+  if (!is.null(pi.fun) | !is.null(vec.pi.fun)) {
+    obj = list(x=x,pi.fun=pi.fun, vec.pi.fun=vec.pi.fun, args=args)
     g = add.to.rel.list(g, "payoff_fun_defs",obj)
   }
   if (!is.null(trans.fun) | !is.null(vec.trans.fun)) {
     obj = list(x=x,trans.fun=trans.fun, vec.trans.fun=vec.trans.fun, args=args)
     g = add.to.rel.list(g, "trans_fun_defs",obj)
   }
+  if (!is.null(final.trans.fun) | !is.null(vec.final.trans.fun)) {
+    obj = list(x=x,trans.fun=final.trans.fun, vec.trans.fun=vec.final.trans.fun, args=args)
+    g = add.to.rel.list(g, "final_trans_fun_defs",obj)
+  }
+
 
   g
 }
@@ -464,8 +510,8 @@ rel_payoff = function(g, x=NULL,pi1=0,pi2=0) {
 }
 
 #' Version of rel_payoff that takes a function
-rel_payoff_fun = function(g,pi.fun,x=NULL, vectorized=FALSE,...) {
-  obj = list(x=x,pi.fun=pi.fun,type="fun", vectorized=vectorized)
+rel_payoff_fun = function(g,pi.fun=NULL,x=NULL,vec.pi.fun=NULL,...) {
+  obj = list(x=x,pi.fun=pi.fun,type="fun", vec.pi.fun=vec.pi.fun)
   add.to.rel.list(g, "payoff_fun_defs",obj)
 }
 
@@ -540,12 +586,12 @@ eval.rel.expression = function(e,g=NULL, param=g$param, vectorized=FALSE, null.v
 
 
 
-compute.x.trans.mat = function(x,g, add.own=TRUE) {
+compute.x.trans.mat = function(x,g, add.own=TRUE, tdf=g$tdf) {
   restore.point("compute.x.trans.mat")
   #if (x=="0_0") stop()
-  if (NROW(g$tdf)==0) return(NULL)
+  if (NROW(tdf)==0) return(NULL)
 
-  df = g$tdf[g$tdf$xs==x,]
+  df = tdf[tdf$xs==x,]
   if (NROW(df)==0) return(NULL)
 
   xd = unique(df$xd)

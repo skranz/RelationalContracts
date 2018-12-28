@@ -63,7 +63,7 @@ rne.diagram = function(g,t=1, show.own.loop=FALSE, show.terminal.loop=FALSE, eq.
   sdf=g$sdf
 
   if (just.eq.chain) {
-    use.x = find.eq.chain.x(g,x0 = x0,eq = rne)
+    use.x = find.eq.chain.x(g,x0 = x0,eq = rne, t=NULL)
   }
   if (!is.null(use.x)) {
     rne = rne[rne$x %in% use.x,]
@@ -119,7 +119,7 @@ find.eq.chain.x = function(g, x0 = g$sdf$x[[1]], eq=first.non.null(g$spe, g$rne)
   restore.point("find.eq.chain.x")
 
 
-  if (has.col(eq,"t"))
+  if (has.col(eq,"t") & !is.null(t))
     eq = eq[eq$t==t,]
 
 

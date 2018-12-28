@@ -106,7 +106,6 @@ plot.spe.payoff.set(g,x=c("xVul","x0"))
 ```{r}
 library(RelationalContracts)
 
-
 A.fun = function(x1,x2,stage, x.seq,...) {
   restore.point("A.fun")
   if (stage=="m") {
@@ -114,23 +113,59 @@ A.fun = function(x1,x2,stage, x.seq,...) {
     A2 = list(a2=x.seq[x.seq>=x2])
   } else if (stage=="e") {
     A1 = list(b1=c("b",""))
-    e=seq(0,1,by=0.1)
+    e=seq(0,1,by=0.05)
     A2 = quick_df(b2=c("b", rep("", length(e))),e=c(0,e))
   }
   list(A1=A1,A2=A2)
 }
 
-vec.trans.fun = function(ax.df,x.max,...) {
+
+vec.pi.fun = function(ax.df,...) {
+  restore.point("vec.pi.fun")
+  res = ax.df %>%
+    transmute(
+      x=x,
+      pi1= case_when(
+        stage=="m" ~ 0,
+        b1 == "b" | b2=="b" ~ -x1,
+        TRUE ~ e
+      ),
+      pi2=case_when(
+        stage=="m" ~ 0,
+        b1 == "b" | b2=="b" ~ -x2,
+        TRUE ~ - 1/2 * e^2
+      )
+    )
+  res
+}
+
+vec.trans.fun = function(ax.df, final=FALSE,...) {
   restore.point("trans.fun")
-  trans = ax.df %>% 
+  mt = ax.df %>% 
     filter(stage=="m") %>%
     select(x,a1,a2) %>%
     unique() %>%
-    transmute(xs=x,xd=paste0(a1, " ",a2),a1=a1,a2=a2, prob=1)
-  trans
+    transmute(xs=x,xd=paste0("e " ,a1, " ",a2),a1=a1,a2=a2, prob=1)
+
+  # If final round we stay in all e stages
+  if (final) return(mt)
+  
+  et = ax.df %>%
+    filter(stage=="e") %>%
+    select(x,x1,x2) %>%
+    unique() %>%
+    transmute(xs=x,xd=paste0("m ",x1," ",x2),prob=1)
+
+  bind_rows(et,mt)
 }
 
-x.seq = seq(0,1, by=0.5)
+vec.final.trans.fun = function(ax.df,...) {
+  vec.trans.fun(ax.df, final=TRUE,...)
+}
+
+
+x.seq = seq(0,1, by=0.1)
+#x.seq = c(0,0.01,0.05,0.1,0.2,0.5,1)
 x.df = as_data_frame(expand.grid(stage=c("e","m"),x1=x.seq,x2=x.seq, stringsAsFactors = FALSE)) %>%
   mutate(x= paste0(stage," ", x1," ", x2))
 
@@ -138,9 +173,9 @@ g = rel_game("Slowly Intensifying Repeated Principal-Agent") %>%
   rel_param(x.seq=x.seq) %>%
   rel_states(x.df,
     A.fun = A.fun,
-    pi1 = ~ ifelse(state=="m",0, ifelse(b1=="b" | b2=="b", -x1, e)),
-    pi2 = ~ ifelse(state=="m",0, ifelse(b1=="b" | b2=="b", -x2, - 1/2 * e^2)),
-    vec.trans.fun=vec.trans.fun
+    vec.pi.fun = vec.pi.fun,
+    vec.trans.fun=vec.trans.fun,
+    vec.final.trans.fun = vec.final.trans.fun
   )
 
 g=  rel_compile(g) 
@@ -148,14 +183,15 @@ g=  rel_compile(g)
 g = g %>%
   # Solve set of SPE payoffs
   #rel_spe(delta=0.1) %>%
-  rel_capped_rne(T=10,delta=0.1, rho=0.2, tie.breaking = "last",save.details = TRUE)
+  rel_capped_rne(T=10,delta=0.9, rho=0.3, tie.breaking = "random",save.details = !TRUE)
 
 
-de = get.rne.details(g,x="0 0") %>% filter(t==1, can.ae>0)
+
+rne = get.rne(g) %>% filter(t==2, x=="e 0 0")
+rne.diagram(g,t=1, just.eq.chain = TRUE)
+
+de = get.rne.details(g,x="m 0 0") %>% filter(t==1)
 de
-
-rne = get.rne(g) %>% filter(t==1, x=="0 0")
-rne.diagram(g, just.eq.chain = TRUE)
 
 
 spe = get.spe(g)

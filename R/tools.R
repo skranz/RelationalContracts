@@ -5,7 +5,7 @@ factor.cols.as.strings = function(df) {
 # Expand grid with 2 arguments. One argument can be itself a data.frame
 expand.grid2 = function(A,B) {
   if (!is.data.frame(A) & !is.data.frame(B)) {
-    expand.grid(A,B, stringsAsFactors = FALSE)
+    expand.grid(c(A,B), stringsAsFactors = FALSE)
   } else {
     if (!is.data.frame(A)) A = expand.grid(A, stringsAsFactors = FALSE)
     if (!is.data.frame(B)) B = expand.grid(B, stringsAsFactors = FALSE)

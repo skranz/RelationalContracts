@@ -589,13 +589,18 @@ rel_capped_rne = function(g,T, save.details=FALSE, tol=1e-10,  delta=g$param$del
   srow = 1
   # Compute all remaining periods
   for (t in rev(seq_len(T-1))) {
+    is.final = (!is.null(g$final.tdf)) & (t == T-1)
     for (srow in 1:NROW(sdf)) {
       x = sdf$x[srow]
 
       na1 = sdf$na1[srow]
       na2 = sdf$na2[srow]
-      trans.mat = sdf$trans.mat[[srow]]
-      #rownames(trans.mat) = make.state.lab.a(sdf[srow,])
+      if (!is.final) {
+        trans.mat = sdf$trans.mat[[srow]]
+      } else {
+        trans.mat = sdf$final.trans.mat[[srow]]
+      }
+        #rownames(trans.mat) = make.state.lab.a(sdf[srow,])
 
       if (is.null(trans.mat)) {
         trans.mat = matrix(1,na1*na2,1)
@@ -667,10 +672,12 @@ rel_capped_rne = function(g,T, save.details=FALSE, tol=1e-10,  delta=g$param$del
         const = 1
       } else if (tie.breaking=="last") {
         tb = seq_len(NROW(U.hat))
+        const = 1
       } else if (tie.breaking=="first") {
         tb = rev(seq_len(NROW(U.hat)))
+        const=1
       } else {
-
+        const = 1
         tb = runif(NROW(U.hat))
         #restore.point("hdfhdf")
         #if (t==1 & x=="0 0") stop()
