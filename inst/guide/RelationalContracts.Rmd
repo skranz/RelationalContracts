@@ -180,15 +180,21 @@ g = rel_game("Slowly Intensifying Repeated Principal-Agent") %>%
 
 g=  rel_compile(g) 
 
+delta = 0.7; rho=0.4
+capped.delta = delta^2; capped.rho = 1-(1-rho)^2
+
 g = g %>%
   # Solve set of SPE payoffs
   #rel_spe(delta=0.1) %>%
-  rel_capped_rne(T=10,delta=0.9, rho=0.3, tie.breaking = "random",save.details = !TRUE)
+  rel_capped_rne(T=10,delta=0.7, rho=0.4, tie.breaking = "random",save.details = !TRUE) %>%
+  rel_capped_spe(T=10, delta=0.7*0.6, tie.breaking="random")
 
 
 
 rne = get.rne(g) %>% filter(t==2, x=="e 0 0")
 rne.diagram(g,t=1, just.eq.chain = TRUE)
+
+spe.diagram(g,t=1,just.eq.chain = TRUE)
 
 de = get.rne.details(g,x="m 0 0") %>% filter(t==1)
 de

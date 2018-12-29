@@ -282,16 +282,16 @@ get.rne = function(g, action.details=FALSE, eq=g$rne) {
   restore.point("get.rne")
   rne = eq
   if (action.details) {
-    grid = select(rne, .x=x, .a=ae)
-    add.ae = left_join(grid, g$ax.grid, by=c(".x",".a"))[,-c(1:2), drop=FALSE]
+    grid = select(rne, x=x, .a=ae)
+    add.ae = left_join(grid, g$ax.grid, by=c("x",".a"))[,-c(1:2), drop=FALSE]
     colnames(add.ae) = paste0("ae.", colnames(add.ae))
 
-    grid = select(rne, .x=x, .a=a1)
-    add.a1 = left_join(grid, g$ax.grid, by=c(".x",".a"))[,-c(1:2), drop=FALSE]
+    grid = select(rne, x=x, .a=a1)
+    add.a1 = left_join(grid, g$ax.grid, by=c("x",".a"))[,-c(1:2), drop=FALSE]
     colnames(add.a1) = paste0("a1.", colnames(add.a1))
 
-    grid = select(rne, .x=x, .a=a2)
-    add.a2 = left_join(grid, g$ax.grid, by=c(".x",".a"))[,-c(1:2), drop=FALSE]
+    grid = select(rne, x=x, .a=a2)
+    add.a2 = left_join(grid, g$ax.grid, by=c("x",".a"))[,-c(1:2), drop=FALSE]
     colnames(add.a2) = paste0("a2.", colnames(add.a2))
 
     rne = cbind(rne, add.ae, add.a1,add.a2)

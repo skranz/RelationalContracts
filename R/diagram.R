@@ -45,8 +45,8 @@ examples.rel.mermaid.code = function() {
 
 }
 
-spe.diagram = function(g,t=1, show.own.loop=FALSE, show.terminal.loop=FALSE, eq.field = "spe") {
-  rne.diagram(g,t,show.own.loop, show.terminal.loop,eq.field)
+spe.diagram = function(g,t=1, show.own.loop=FALSE, show.terminal.loop=FALSE, eq.field = "spe", use.x=NULL, just.eq.chain=FALSE, x0=g$sdf$x[1]) {
+  rne.diagram(g,t,show.own.loop, show.terminal.loop,eq.field, use.x, just.eq.chain, x0)
 }
 
 rne.diagram = function(g,t=1, show.own.loop=FALSE, show.terminal.loop=FALSE, eq.field = "rne", use.x=NULL, just.eq.chain=FALSE, x0=g$sdf$x[1]) {
@@ -63,7 +63,12 @@ rne.diagram = function(g,t=1, show.own.loop=FALSE, show.terminal.loop=FALSE, eq.
   sdf=g$sdf
 
   if (just.eq.chain) {
-    use.x = find.eq.chain.x(g,x0 = x0,eq = rne, t=NULL)
+    chain.x = find.eq.chain.x(g,x0 = x0,eq = rne, t=NULL)
+    if (!is.null(use.x)) {
+      use.x = intersect(use.x, chain.x)
+    } else {
+      use.x = chain.x
+    }
   }
   if (!is.null(use.x)) {
     rne = rne[rne$x %in% use.x,]

@@ -143,16 +143,16 @@ rel_compile = function(g,...) {
   nx = NROW(sdf)
 
   ax.grid = bind_rows(lapply(seq_len(NROW(sdf)), function(row) {
-    cbind(quick_df(.x=sdf$x[row],.a=seq_len(NROW(sdf$a.grid[[row]]))), sdf$a.grid[[row]])
+    cbind(quick_df(x=sdf$x[row],.a=seq_len(NROW(sdf$a.grid[[row]]))), sdf$a.grid[[row]])
   }))
   empty.action = sapply(ax.grid[3:NCOL(ax.grid)], function(vals) {
     all(vals == "" | is.na(vals))
   })
-  g$ax.grid = ax.grid[c(".x",".a", names(empty.action)[!empty.action])]
+  g$ax.grid = ax.grid[c("x",".a", names(empty.action)[!empty.action])]
 
   ax.df = g$ax.grid
   if (!is.null(g$x.df)) {
-    ax.df = inner_join(g$x.df,ax.df, by=c("x"=".x"))
+    ax.df = inner_join(g$x.df,ax.df, by=c("x"="x"))
   }
 
 
@@ -586,7 +586,7 @@ eval.rel.expression = function(e,g=NULL, param=g$param, vectorized=FALSE, null.v
 
 
 
-compute.x.trans.mat = function(x,g, add.own=TRUE, tdf=g$tdf) {
+compute.x.trans.mat = function(x,g, add.own=TRUE, tdf=g$tdf, row= which(g$sdf$x == x)) {
   restore.point("compute.x.trans.mat")
   #if (x=="0_0") stop()
   if (NROW(tdf)==0) return(NULL)
@@ -595,8 +595,6 @@ compute.x.trans.mat = function(x,g, add.own=TRUE, tdf=g$tdf) {
   if (NROW(df)==0) return(NULL)
 
   xd = unique(df$xd)
-
-  row = which(g$sdf$x == x)
 
   a.grid = g$sdf$a.grid[[row]]
 
