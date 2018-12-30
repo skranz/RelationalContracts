@@ -52,7 +52,7 @@ get.def.x = function(x,g,x.df=g$x.df, sdf=g$sdf) {
 }
 
 #' Compiles a relational contracting game
-rel_compile = function(g,...) {
+rel_compile = function(g,..., compute.just.static=FALSE) {
   restore.point("rel_compile")
 
   # Set default parameters
@@ -60,10 +60,12 @@ rel_compile = function(g,...) {
   # 1. Create a data frame with all states
   #def = g$state_defs[[2]]
 
-  if (!is.null(g$x_df_def)) {
-    g$x.df = bind_rows(g$x_df_def)
-  } else {
-    g$x.df = NULL
+  if (is.null(g$x.df)) {
+    if (!is.null(g$x_df_def)) {
+      g$x.df = bind_rows(g$x_df_def)
+    } else {
+      g$x.df = NULL
+    }
   }
 
   #def = g$state_defs[[1]]
@@ -213,6 +215,11 @@ rel_compile = function(g,...) {
   sdf$pi1 = pi1
   sdf$pi2 = pi2
 
+  if (compute.just.static) {
+    g$sdf = sdf
+    return(g)
+  }
+
   # 3. Evaluate and store state transitions
   # We will store state transitions as a matrix
   # Rows correspond to action profiles and columns to destination states
@@ -324,6 +331,9 @@ rel_compile = function(g,...) {
 
   }
 
+  if (isTRUE(g$is.multi.stage)) {
+    g = add.rel.multistage.compile(g)
+  }
 
 
   g
@@ -415,7 +425,7 @@ rel_state = function(g, x,A1=list(a1=""),A2=list(a2=""), pi1=NULL, pi2=NULL) {
 
 #' @param A2 The action set of player 2. Can be a numeric or character vector
 #' @return Returns the updated game
-rel_states = function(g, x,A1=NULL, A2=NULL, pi1=NULL, pi2=NULL, A.fun=NULL, pi.fun=NULL, vec.pi.fun=NULL, trans.fun=NULL, vec.trans.fun=NULL, final.trans.fun=NULL, vec.final.trans.fun=NULL, ...) {
+rel_states = function(g, x,A1=NULL, A2=NULL, pi1=NULL, pi2=NULL, A.fun=NULL, pi.fun=NULL, vec.pi.fun=NULL, trans.fun=NULL, vec.trans.fun=NULL, final.trans.fun=NULL, vec.final.trans.fun=NULL, static.A.fun=NULL, static.pi.fun=NULL, vec.static.pi.fun=NULL,  ...) {
   args=list(...)
   restore.point("rel_states")
   if (is.data.frame(x)) {
@@ -454,6 +464,20 @@ rel_states = function(g, x,A1=NULL, A2=NULL, pi1=NULL, pi2=NULL, A.fun=NULL, pi.
     g = add.to.rel.list(g, "final_trans_fun_defs",obj)
   }
 
+  if (!is.null(static.A.fun)){
+    g$is.multi.stage = TRUE
+    static_defs = list()
+
+    obj = list(x=x,A.fun=static.A.fun, args=args)
+    static_defs = add.to.rel.list(static_defs,"state_fun_defs",obj)
+
+    if (!is.null(static.pi.fun) | !is.null(vec.static.pi.fun)) {
+      obj = list(x=x,pi.fun=static.pi.fun, vec.pi.fun=vec.static.pi.fun, args=args)
+      static_defs = add.to.rel.list(static_defs, "payoff_fun_defs",obj)
+    }
+
+    g$static_defs = static_defs
+  }
 
   g
 }

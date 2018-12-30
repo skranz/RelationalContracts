@@ -1,52 +1,51 @@
-# Consider a special class of multistage games
-# Actions that are relevant for state transitions are only specified in the final
-# stage
+# A special game with two action stages in a period
+#
+# In the first stage only static actions can be chosen that don't affect
+# the state tranistions, e.g. output in a Cournot model
+#
+# In the 2nd stage actions can be chosen that affect states, e.g. investments
+# in a Cournot game.
+#
+# Separating into two stages can reduce dimensionality and can allow to solve games
+# quicker and with less memory.
+#
 # New negotiations only take place in the first stage
 # No discounting between stages
 
 examples.multistage = function() {
   library(RelationalContracts)
 
-  A.fun = function(x1,x2,stage, x.seq,...) {
-    restore.point("A.fun")
-    if (stage=="m") {
-      A1 = list(a1=x.seq[x.seq>=x1])
-      A2 = list(a2=x.seq[x.seq>=x2])
-    } else if (stage=="e") {
-      A1 = list(b1=c("b",""))
-      e=seq(0,1,by=0.5)
-      A2 = quick_df(b2=c("b", rep("", length(e))),e=c(0,e))
-    }
+  static.A.fun = function(x1,x2, x.seq,...) {
+    restore.point("static.A.fun")
+    A1 = list(b1=c("b",""))
+    e=seq(0,1,by=0.5)
+    A2 = quick_df(b2=c("b", rep("", length(e))),e=c(0,e))
     list(A1=A1,A2=A2)
   }
 
-  vec.pi.fun = function(ax.df,...) {
+  A.fun = function(x1,x2,stage, x.seq,...) {
+    restore.point("static.A.fun")
+    A1 = list(a1=x.seq[x.seq>=x1])
+    A2 = list(a2=x.seq[x.seq>=x2])
+    list(A1=A1,A2=A2)
+  }
+
+  vec.static.pi.fun = function(ax.df,...) {
     restore.point("vec.pi.fun")
-    res = ax.df %>%
+    ax.df %>%
       transmute(
         x=x,
-        stage=stage,
-        pi1= case_when(
-          stage=="m" ~ 0,
-          b1 == "b" | b2=="b" ~ -x1,
-          TRUE ~ e
-        ),
-        pi2=case_when(
-          stage=="m" ~ 0,
-          b1 == "b" | b2=="b" ~ -x2,
-          TRUE ~ - 1/2 * e^2
-        )
+        pi1= ifelse(b1 == "b" | b2=="b",-x1,e),
+        pi2= ifelse(b1 == "b" | b2=="b",-x2,- 1/2 * e^2),
       )
-    res
   }
 
   vec.trans.fun = function(ax.df, final=FALSE,...) {
     restore.point("trans.fun")
-    mt = ax.df %>%
+    ax.df %>%
       select(x,a1,a2) %>%
       unique() %>%
       transmute(xs=x,xd=paste0(a1, " ",a2),a1=a1,a2=a2, prob=1)
-    bind_rows(et,mt)
   }
 
 
@@ -57,202 +56,43 @@ examples.multistage = function() {
 
   g = rel_game("Slowly Intensifying Repeated Principal-Agent") %>%
     rel_param(x.seq=x.seq) %>%
-    rel_stages(c("e","m")) %>%
     rel_states(x.df,
+      # Static effort stage
+      static.A.fun=static.A.fun,
+      vec.static.pi.fun = vec.static.pi.fun,
+      # Dynamic relationship intensification stage
       A.fun = A.fun,
-      vec.pi.fun = vec.pi.fun,
-      vec.trans.fun=vec.trans.fun,
-      vec.final.trans.fun = vec.final.trans.fun
+      pi1 = 0, pi2=0,
+      vec.trans.fun=vec.trans.fun
     )
 
-  g=  rel_compile_multistage(g)
+  g=  rel_compile(g)
   sdf = g$sdf
 
   solve.rep.multistage(g,x="0 0")
+  solve.rep.multistage(g,x="1 1")
   g$stages = c("e","m")
 }
 
-rel_stages = function(g, stages) {
-  g$stages = stages
+
+add.rel.multistage.compile = function(g,...) {
+  restore.point("add.rel.multistage.compile")
+
+  gs = g$static_defs
+  gs$x.df = g$x.df
+  gs = rel_compile(gs, compute.just.static = TRUE)
+
+  g$gs = gs
+
+  g$dyn.rep.li = compute.rep.game.action.lists(g$sdf)
+  g$static.rep.li = compute.rep.game.action.lists(gs$sdf)
+
   g
 }
 
-rel_compile_multistage = function(g,...) {
-  restore.point("rel_compile_multistage")
-
-  stages = g$stages
-  # Set default parameters
-
-  # 1. Create a data frame with all states
-  #def = g$state_defs[[2]]
-
-  if (!is.null(g$x_df_def)) {
-    g$x.df = bind_rows(g$x_df_def)
-  } else {
-    g$x.df = NULL
-  }
-
-  # Compute states defined by A.fun
-  def = g$state_fun_defs[[1]]
-  ns = length(g$stages)
-  nx = length(def$x)
-
-
-  A1 = vector("list", ns*nx)
-  A2 = vector("list", ns*nx)
-  a.grid = vector("list", ns*nx)
-  na1 = na2 = rep(NA, ns*nx)
-  row = xrow = 0
-  for (x in def$x) {
-    xrow = xrow+1
-    x.df = get.x.df(def$x[xrow],g, TRUE)
-    for (stage in g$stages) {
-      row = row+1
-      args = c(list(stage=stage),x.df, g$param,def$args)
-      res = do.call(def$A.fun, args)
-      A1[row] = list(res$A1)
-      A2[row] = list(res$A2)
-      na1[row] = compute.na(res$A1)
-      na2[row] = compute.na(res$A2)
-    }
-  }
-  sdf = quick_df(x=rep(def$x, each=ns),stage=rep(stages, times=nx),na1=na1,na2=na2,A1=A1,A2=A2)
-  # Change order of A1 and A2 for compatibility
-  # with repgame and dyngame
-
-  sdf$a.grid = lapply(seq_len(NROW(sdf)), function(row) {
-    A1 = sdf$A1[[row]]; A2 = sdf$A2[[row]]
-    a.grid = factor.cols.as.strings(expand.grid2(A2,A1))
-    cols = c(names(A1),names(A2))
-    a.grid = a.grid[,cols]
-    a.grid
-  })
-  sdf$row = seq_len(NROW(sdf))
-
-  g$a.labs.df = bind_rows(lapply(seq_len(NROW(sdf)),function(row) {
-    quick_df(x=sdf$x[row],a = seq_len(NROW(sdf$a.grid[[row]])), lab=make.state.lab.a(sdf[row,]))
-  }))
-
-  ax.grid = bind_rows(lapply(seq_len(NROW(sdf)), function(row) {
-    cbind(quick_df(x=sdf$x[row],stage=sdf$stage[row], .a=seq_len(NROW(sdf$a.grid[[row]]))), sdf$a.grid[[row]])
-  }))
-
-  empty.action = sapply(ax.grid[3:NCOL(ax.grid)], function(vals) {
-    all(vals == "" | is.na(vals))
-  })
-  g$ax.grid = ax.grid[c("x","stage", ".a", names(empty.action)[!empty.action])]
-
-  ax.df = g$ax.grid
-  if (!is.null(g$x.df)) {
-    ax.df = inner_join(g$x.df,ax.df, by=c("x"="x"))
-  }
-
-  # 2. Evaluate and store payoff matrices
-  pi1 = vector("list",nx*ns)
-  pi2 = vector("list",nx*ns)
-
-
-  # Payoff function
-  def = g$payoff_fun_defs[[1]]
-  if (!is.null(def$vec.pi.fun)) {
-    #restore.point("vec.pi.fun not yet implemented!")
-    args = c(list(ax.df=ax.df),g$param, def$args)
-    res = do.call(def$vec.pi.fun, args)
-    check.rel(has.cols(res,c("x","stage", "pi1","pi2")),"Your vectorized payoff function vec.pi.fun must return a data frame with the columns 'x','stage','pi1' and 'pi2'")
-    check.rel(NROW(res)==NROW(ax.df),"Your vectorized payoff function vec.pi.fun must return a data frame with as many rows as its argument ax.df")
-
-    res = group_by(res,x,stage) %>%
-      summarize(pi1=list(pi1),pi2=list(pi2))
-    rows = match.by.cols(res, sdf,cols = c("x","stage"))
-
-    pi1[rows] = res$pi1
-    pi2[rows] = res$pi2
-
-  } else {
-    for (x in def$x) {
-      for (stage in stages) {
-        row = which(sdf$x == x & sdf$stage==stage)
-        a.grid = sdf$a.grid[[row]]
-        args = c(get.x.df(x,g, TRUE),list(stage=stage,a.df = a.grid),g$param, def$args)
-        res = do.call(def$pi.fun, args)
-        pi1[row] = res["pi1"]
-        pi2[row] = res["pi2"]
-      }
-    }
-  }
-
-  sdf$pi1 = pi1
-  sdf$pi2 = pi2
-
-  # 3. Evaluate and store state transitions
-  # Note: Only last stage will be relevant for state transitions
-  last.stage = g$stages[length(g$stages)]
-  tax.df = ax.df[ax.df$stage == last.stage,,drop=FALSE]
-
-  compile_trans_fun_def = function(ind, field="trans_fun_defs") {
-    def = g[[field]][[ind]]
-
-    if (!is.null(def$vec.trans.fun)) {
-      args = c(list(ax.df = tax.df),g$param, def$args)
-      res = do.call(def$vec.trans.fun, args)
-    } else {
-      res = bind_rows(lapply(def$x, function(x) {
-        row = which(sdf$x == x & sdf$stage==last.stage)
-        a.grid = sdf$a.grid[[row]]
-        args = c(get.x.df(x,g, TRUE),list(a.df = a.grid),g$param, def$args)
-        res = do.call(def$trans.fun, args)
-        check.rel(has.cols(res,c("xs","xd","prob")), "Your manual state transition function must return a data frame that has the cols 'xs','xd', 'prob' and the names of relevant action profiles.")
-        res
-      }))
-    }
-    res$.def.ind = 1
-    res
-  }
-
-  li2 = lapply(seq_along(g$trans_fun_defs),compile_trans_fun_def)
-
-  tdf = bind_rows(li,li2) %>%
-    filter(xs != xd) %>%
-    unique()
-
-  non.states = setdiff(unique(c(tdf$xd,tdf$xs)),sdf$x)
-  check.rel(length(non.states)==0, paste0("You specify state transitions from or to unspecified states ", paste0(non.states, collapse=", "),". Make sure that you have not mis-spelled the state names."))
-
-
-  if (NROW(tdf)>0) {
-    sdf$is_terminal = !(sdf$x %in% tdf$xs)
-  } else {
-    sdf$is_terminal = TRUE
-  }
-  g$tdf = tdf
-
-  # Result of repeated game assuming the state is fixed.
-  # This will be a full characterization for all
-  # discount factors
-
-  sdf$rep = vector("list",NROW(sdf))
-  sdf$trans.mat = vector("list",NROW(sdf))
-
-  # Separate state transitions for final period in
-  # a capped game
-  if (!is.null(g$final_trans_fun_defs)) {
-    li = lapply(seq_along(g$final_trans_fun_defs),compile_trans_fun_def, field="final_trans_fun_defs")
-
-    g$final.tdf = bind_rows(li) %>%
-      filter(xs != xd) %>%
-      unique()
-    sdf$final.trans.mat = vector("list",NROW(sdf))
-  } else {
-    g$final.tdf = NULL
-  }
-
-  # Compute action lists for repeated games
-  ae.df.li = vector("list",NROW(sdf))
-  a1.df.li = vector("list",NROW(sdf))
-  a2.df.li = vector("list",NROW(sdf))
-
-  for (row in 1:NROW(sdf)) {
-    stage = sdf$stage[row]
+compute.rep.game.action.lists = function(sdf, rows=seq_len(NROW(sdf))) {
+  restore.point("compute.rep.game.action.lists")
+  li = lapply(rows, function(row) {
     pi1 = sdf$pi1[[row]]
     pi2 = sdf$pi2[[row]]
     na1 = sdf$na1[[row]]; na2 = sdf$na2[[row]]
@@ -263,7 +103,7 @@ rel_compile_multistage = function(g,...) {
     # Liquidity requirement
     L = c1+c2-G
 
-    a.df = quick_df(stage=stage,.a=seq_along(pi1),G=G,c1=c1,c2=c2,L=L)
+    a.df = quick_df(.a=seq_along(pi1),G=G,c1=c1,c2=c2,L=L)
 
 
     ae.df = a.df %>% arrange(-G)
@@ -277,75 +117,112 @@ rel_compile_multistage = function(g,...) {
     a2.df = a.df %>% arrange(c2)
     minL = c(Inf,cummin(a2.df$L[-NROW(a.df)]))
     a2.df = a2.df[a2.df$L < minL,,drop=FALSE]
-
-    ae.df.li[[row]] = ae.df
-    a1.df.li[[row]] = a1.df
-    a2.df.li[[row]] = a2.df
-
-  }
-  sdf$ae.df.li = ae.df.li
-  sdf$a1.df.li = a1.df.li
-  sdf$a2.df.li = a2.df.li
-
-
-  g$sdf = sdf
-
-  # Compute adjusted discount factor
-  g$param$adj_delta = g$param$delta * (1-g$param$rho)
-
-  g$is_compiled =TRUE
-
-
-  # Compute all transition matrices
-  for (row in sdf$row[sdf$stage==last.stage]) {
-    x = sdf$x[row]
-    g$sdf$trans.mat[row] = list(compute.x.trans.mat(x=x,g=g,row=row))
-    if (!is.null(g$final.tdf)) {
-      g$sdf$final.trans.mat[row] = list(compute.x.trans.mat(x=x,g=g, tdf=g$final.tdf,row=row))
-    }
-  }
-
-
-
-  g
+    list(ae.df=ae.df, a1.df=a1.df, a2.df=a2.df)
+  })
+  li
 }
 
 
-
-# Solving a repeated multistage game with perfect monitoring
+# Solving a repeated simply static dynamic multistage game with perfect monitoring
 solve.rep.multistage = function(g,x, delta=g$param$delta, rho=g$param$rho, tol=1e-10) {
   restore.point("solve.rep.multistage")
-  stages = g$stages
-  ns = length(stages)
 
-  delta = delta*(1-rho)
-  sdf = g$sdf
-  # reverse stage order
-  rows = which(sdf$x == x)
+  row = which(g$sdf$x==x)
 
-  # Action lists for each stage
-  ae.df.li = sdf$ae.df.li[rows]
-  ae.df = bind_rows(ae.df.li)
-  ae.len = sapply(ae.df.li,NROW)
-  ae.pos = c(1,ae.len[-ns])
+  # Dynamic and static action lists containing ae.df, a1.df, a2.df
+  s.li = g$static.rep.li[[row]]
+  d.li = g$dyn.rep.li[[row]]
 
-  a1.df.li = sdf$a1.df.li[rows]
-  a1.df = bind_rows(a1.df.li)
-  a1.len = sapply(a1.df.li,NROW)
-  a1.pos = c(1,a1.len[-ns])
+  # Number of list elements
+  s.len = sapply(s.li, NROW)
+  d.len = sapply(d.li, NROW)
 
-  a2.df.li = sdf$a2.df.li[rows]
-  a2.df = bind_rows(a2.df.li)
-  a2.len = sapply(a2.df.li,NROW)
-  a2.pos = c(1,a2.len[-ns])
+  # Starting pos in each list
+  a.pos = matrix(1,2,3)
+  # Length each list as matrix
+  a.len = rbind(s=s.len,d=d.len)
 
-  M = rev(cumsum(rev(ae.df$G[ae.pos]-a1.df$c1[a1.pos]-a2.df$c2[a2.pos])))
-  M1 = M[1]
-  M_
+  # Number of considered action profile combinations
+  ncomb = prod(s.len)*prod(d.len)
 
-  # Critical interest rates
-  r.ae = M
+  res.li = vector("list",ncomb)
 
+  cur.comb = 0
+  lowest.delta = Inf
+  # Go through all combinations of possible action profiles
+  while(all(a.pos<= a.len)) {
+    s.ae = s.li$ae.df[a.pos[1,1],]
+    s.a1 = s.li$a1.df[a.pos[1,2],]
+    s.a2 = s.li$a2.df[a.pos[1,3],]
+
+    d.ae = d.li$ae.df[a.pos[2,1],]
+    d.a1 = d.li$a1.df[a.pos[2,2],]
+    d.a2 = d.li$a2.df[a.pos[2,3],]
+
+    Md = d.ae$G - d.a1$c1 - d.a2$c2
+    Ms = s.ae$G - s.a1$c1 - s.a2$c2
+
+    # We have a stage game NE in both stages
+    if (Ms==0 && Md==0) {
+      cur.comb = cur.comb+1
+
+      res.li[[cur.comb]] = quick_df(
+        comb=cur.comb,
+        delta.min = 0,
+        U = s.ae$G+d.ae$G,
+        v1 = s.a1$c1+d.a1$c1,
+        v2 = s.a2$c2+d.a2$c2,
+        s.ae=s.ae$.a,
+        s.a1=s.a1$.a,
+        s.a2=s.a2$.a,
+        d.ae=d.ae$.a,
+        d.a1=d.a1$.a,
+        d.a2=d.a2$.a
+      )
+      break
+    }
+
+    # Critical interest rates
+    sr.ae = (Md+Ms) / (s.ae$L - Md)
+    sr.a1 = (Md+Ms) / (s.a1$L - Md)
+    sr.a2 = (Md+Ms) / (s.a2$L - Md)
+
+    dr.ae = (Md+Ms) / (d.ae$L)
+    dr.a1 = (Md+Ms) / (d.a1$L)
+    dr.a2 = (Md+Ms) / (d.a2$L)
+
+    r.crit = matrix(c(sr.ae,dr.ae,sr.a1,dr.a1,sr.a2,dr.a2),2,3)
+    delta.crit = 1 / (1+r.crit)
+    max.delta.crit = max(delta.crit)
+
+    # Combination does reduce delta
+    if (max.delta.crit < lowest.delta) {
+      lowest.delta = max.delta.crit
+      cur.comb = cur.comb+1
+
+      res.li[[cur.comb]] = quick_df(
+        comb=cur.comb,
+        delta.min = lowest.delta,
+        U = s.ae$G+d.ae$G,
+        v1 = s.a1$c1+d.a1$c1,
+        v2 = s.a2$c2+d.a2$c2,
+        s.ae=s.ae$.a,
+        s.a1=s.a1$.a,
+        s.a2=s.a2$.a,
+        d.ae=d.ae$.a,
+        d.a1=d.a1$.a,
+        d.a2=d.a2$.a
+      )
+    }
+
+    replace = which(delta.crit == max.delta.crit,arr.ind = TRUE)
+    a.pos[replace] = a.pos[replace]+1
+
+  }
+
+  res = bind_rows(res.li)
+
+  res
 
 }
 
