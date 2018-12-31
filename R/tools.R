@@ -1,5 +1,9 @@
 factor.cols.as.strings = function(df) {
-  mutate_if(df, is.factor, as.character)
+  #mutate_if(df, is.factor, as.character)
+  factor.cols = sapply(df, is.factor)
+  if (sum(factor.cols)>0)
+    df[factor.cols] = lapply(df[factor.cols], as.character)
+  df
 }
 
 # Expand grid with 2 arguments. One argument can be itself a data.frame

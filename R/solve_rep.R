@@ -1,7 +1,7 @@
 
 # Solve the repeated game that would stay forever in state x
-solve_x_repgame = function(g,x,  state = g$sdf[g$sdf$x == x,]) {
-  restore.point("solve_x_repgame")
+solve.x.repgame = function(g,x,  state = g$sdf[g$sdf$x == x,]) {
+  restore.point("solve.x.repgame")
 
   g1 = t(matrix(state$pi1[[1]], state$na2,state$na1))
   g2 = t(matrix(state$pi2[[1]], state$na2,state$na1))

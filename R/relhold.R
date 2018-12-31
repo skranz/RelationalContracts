@@ -28,7 +28,7 @@ example.relhold = function() {
 
   g
 
-  solve_x_repgame(g,"xL")
+  solve.x.repgame(g,"xL")
 
   g
 

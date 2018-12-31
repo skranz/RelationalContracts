@@ -61,7 +61,7 @@ rel_spe = function(g, delta=g$param$delta,new.dyngame=FALSE, verbose=FALSE, plot
   if (all(g$sdf$is_terminal)) {
     for (row in seq_len(NROW(g$sdf))) {
       if (is.null(g$sdf$rep[[row]])) {
-        g$sdf$rep[[row]] = solve_x_repgame(g,state=g$sdf[row,])
+        g$sdf$rep[[row]] = solve.x.repgame(g,state=g$sdf[row,])
       }
     }
     g$spe = rep.games.to.rne.df(g)
@@ -103,7 +103,7 @@ rep.games.to.rne.df = function(g, delta=g$param$delta, rho=g$param$rho, rows=whi
 #' Solve for the set of SPE payoffs in every state and for optimal simple equilibria
 #'
 #' This function is just an interface to the dyngame package
-rel_capped_spe = function(g,T, delta=g$param$delta,...) {
+rel_capped_spe = function(g,T, delta=g$param$delta, ...) {
   restore.point("rel_capped_spe")
   g$param$delta = delta
   old_rho = g$param$rho

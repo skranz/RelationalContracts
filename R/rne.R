@@ -126,7 +126,7 @@ example.rne = function() {
 
   rne = g$rne
   rne
-  solve_x_repgame(g,"xL")
+  solve.x.repgame(g,"xL")
 
 
 
@@ -365,7 +365,7 @@ rel_rne = function(g, delta=g$param$delta, rho=g$param$rho, beta1=g$param$beta1,
   for (row in rows) {
 
     if (is.null(sdf$rep[[row]])) {
-      sdf$rep[[row]] = solve_x_repgame(g,state=sdf[row,])
+      sdf$rep[[row]] = solve.x.repgame(g,state=sdf[row,])
     }
 
     # Compute U, v, r
@@ -526,12 +526,31 @@ add.rne.action.labels = function(g, rne) {
 #' @param g The game object
 #' @param T The number of periods until states can change
 #' @param save.details If yes, detailed information about the equilibrium for each state and period will be stored in g and can be retrieved via the function get.rne.details
-rel_capped_rne = function(g,T, save.details=FALSE, tol=1e-10,  delta=g$param$delta, rho=g$param$rho, res.field="rne", tie.breaking=c("slack","random","first","last")) {
+rel_capped_rne = function(g,T, save.details=FALSE, tol=1e-10,  delta=g$param$delta, rho=g$param$rho, adjusted.delta=NULL, res.field="rne", tie.breaking=c("slack","random","first","last")[1]) {
   restore.point("rel_capped_rne")
   if (!g$is_compiled) g = rel_compile(g)
 
+  if (!is.null(adjusted.delta)) {
+    if (!is.null(rho)) {
+      if (rho > 1-adjusted.delta) {
+        stop("For and adjusted.delta of ", adjusted.delta, " the negotatiation probability rho can be at most ", 1-adjusted.delta)
+      }
+      delta = adjusted.delta / (1-rho)
+    } else {
+      if (delta < adjusted.delta) {
+        stop("If you provide only an delta and adjusted.delta and set rho=NULL then delta cannot be smaller than adjusted.delta")
+      }
+      rho = 1-adjusted.delta / delta
+    }
+  }
   g$param$delta = delta
   g$param$rho = rho
+
+  if (isTRUE(g$is.multi.stage)) {
+    g = rel.capped.rne.multistage(g,T,save.details,tol, delta, rho, res.field, tie.breaking)
+    return(g)
+  }
+
 
   sdf = g$sdf
   adj_delta = (1-rho)*delta
@@ -550,14 +569,12 @@ rel_capped_rne = function(g,T, save.details=FALSE, tol=1e-10,  delta=g$param$del
   if (save.details)
     rne.details = vector("list",NROW(rne))
 
-  a.rne = data_frame(row=integer(0))
-
   # First solve repeated games for all states
   # These are the continuation payoffs in state T
   rows = 1:NROW(sdf)
   for (row in rows) {
     if (is.null(sdf$rep[[row]])) {
-      sdf$rep[[row]] = solve_x_repgame(g,state=sdf[row,])
+      sdf$rep[[row]] = solve.x.repgame(g,state=sdf[row,])
     }
 
     # Compute U, v, r

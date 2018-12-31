@@ -49,11 +49,12 @@ spe.diagram = function(g,t=1, show.own.loop=FALSE, show.terminal.loop=FALSE, eq.
   rne.diagram(g,t,show.own.loop, show.terminal.loop,eq.field, use.x, just.eq.chain, x0)
 }
 
-rne.diagram = function(g,t=1, show.own.loop=FALSE, show.terminal.loop=FALSE, eq.field = "rne", use.x=NULL, just.eq.chain=FALSE, x0=g$sdf$x[1]) {
+rne.diagram = function(g,t=1, show.own.loop=FALSE, show.terminal.loop=FALSE, eq.field = "rne", use.x=NULL, just.eq.chain=FALSE, x0=g$sdf$x[1], label.fun=NULL, tooltip.fun=NULL) {
   restore.point("rne.diagram")
 
   library(DiagrammeR)
 
+  is.multi.stage = isTRUE(g$is.multi.stage)
 
   rne = g[[eq.field]]
 
@@ -75,13 +76,21 @@ rne.diagram = function(g,t=1, show.own.loop=FALSE, show.terminal.loop=FALSE, eq.
     sdf = sdf[sdf$x %in% use.x,]
   }
   n = NROW(sdf)
-  lab = paste0(sdf$x, " \n", round(rne$r1,2), " ", round(rne$r2,2))
-  tooltip = paste0(
-    rne$x,
-    "<br>ae: ",rne$ae.lab,
-    "<br>a1: ", rne$a1.lab, "<br>a2: ", rne$a2.lab,
-    "<br>v1=",round(rne$v1,2)," v2=",round(rne$v2,2),
-    "<br>U=", round(rne$U,2))
+  if (is.null(label.fun)) {
+    lab = paste0(sdf$x, " \n", round(rne$r1,2), " ", round(rne$r2,2))
+  } else {
+    lab = label.fun(rne, g)
+  }
+  if (is.null(tooltip.fun)) {
+    tooltip = paste0(
+      rne$x,
+      "<br>ae: ",rne$ae.lab,
+      "<br>a1: ", rne$a1.lab, "<br>a2: ", rne$a2.lab,
+      "<br>v1=",round(rne$v1,2)," v2=",round(rne$v2,2),
+      "<br>U=", round(rne$U,2))
+  } else {
+    tooltip = tooltip.fun(rne,g)
+  }
 
   ndf = data.frame(id=1:n, label=lab, type="node", shape="box", title=tooltip)
 
@@ -91,7 +100,11 @@ rne.diagram = function(g,t=1, show.own.loop=FALSE, show.terminal.loop=FALSE, eq.
     x = sdf$x[[row]]
 
     rne.row = which(rne$x==x)[1]
-    ae = rne$ae[[rne.row]]
+    if (!is.multi.stage) {
+      ae = rne$ae[[rne.row]]
+    } else {
+      ae = rne$d.ae[[rne.row]]
+    }
     if (is.null(trans.mat)) {
       if (!show.terminal.loop)
         return(NULL)
@@ -133,11 +146,17 @@ find.eq.chain.x = function(g, x0 = g$sdf$x[[1]], eq=first.non.null(g$spe, g$rne)
   x = x0
   n = length(x)
 
+  is.multi.stage = isTRUE(g$is.multi.stage)
   while(length(x)>length(used.x)) {
     cur.x = setdiff(x, used.x)[1]
     row = match(cur.x, g$sdf$x)
     trans.mat = g$sdf$trans.mat[[row]]
-    ae = eq$ae[[row]]
+
+    if (!is.multi.stage) {
+      ae = eq$ae[[row]]
+    } else {
+      ae = eq$d.ae[[row]]
+    }
     xd = colnames(trans.mat)[trans.mat[ae,] > 0]
     used.x = c(used.x, cur.x)
     x = union(x,xd)
