@@ -10,3 +10,4 @@ License: GPL >= 2.0
 Encoding: UTF-8
 LazyData: true
 Depends: restorepoint, dplyr, repgame, matrixStats
+Suggests: RelationalContractsCpp

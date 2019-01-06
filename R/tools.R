@@ -1,3 +1,29 @@
+
+# Compute best reply payoffs from a matrix
+find.best.reply.payoffs = function(i,pi,na1,na2) {
+  if (i==1) {
+    # Player 1's actions are columns
+    pi.mat = matrix(pi,na2,na1)
+    c.short = rowMaxs(pi.mat)
+    c = rep(c.short, times=na1)
+  } else {
+    # Player 2's actions are rows
+    pi.mat = matrix(pi,na2,na1)
+    c.short = colMaxs(pi.mat)
+    c = rep(c.short, each=na2)
+  }
+  c
+}
+
+# Helper function for trans.mat multiplication
+trans.mat.mult = function(trans.mat, vec) {
+  if (NROW(trans.mat)==0) {
+    return(vec)
+  }
+  as.vector(trans.mat %*% vec)
+}
+
+
 factor.cols.as.strings = function(df) {
   #mutate_if(df, is.factor, as.character)
   factor.cols = sapply(df, is.factor)
@@ -63,13 +89,21 @@ match.by.cols = function(x.df, v.df, cols=NULL, cols1=cols, cols2=cols) {
 paste.df.cols = function (mat, cols = 1:NCOL(mat),sep="", empty.sep=FALSE, ...) {
   restore.point("paste.df.cols")
   if (NROW(cols) == 2) {
-    sep1 = ifelse(!empty.sep | nchar(mat[[cols[1]]])>0 | nchar(mat[[cols[2]]])>0, sep,"")
-    return(paste0(mat[[cols[1]]],sep1, mat[[cols[2]]], ...))
+    if (empty.sep) {
+      sep1 = ifelse(!empty.sep | nchar(mat[[cols[1]]])>0 | nchar(mat[[cols[2]]])>0, sep,"")
+      return(paste0(mat[[cols[1]]],sep1, mat[[cols[2]]], ...))
+    } else {
+      return(paste0(mat[[cols[1]]],mat[[cols[2]]],sep=sep, ...))
+    }
   } else if (NROW(cols) == 3) {
-    sep1 = ifelse(!empty.sep | nchar(mat[[cols[1]]])>0 | nchar(mat[[cols[2]]])>0, sep,"")
-    sep2 = ifelse(!empty.sep | nchar(mat[[cols[2]]])>0 | nchar(mat[[cols[3]]])>0, sep,"")
-    return(paste0(mat[[cols[1]]],sep1, mat[[cols[2]]],sep2, mat[[cols[3]]],
+    if (empty.sep) {
+      sep1 = ifelse(!empty.sep | nchar(mat[[cols[1]]])>0 | nchar(mat[[cols[2]]])>0, sep,"")
+      sep2 = ifelse(!empty.sep | nchar(mat[[cols[2]]])>0 | nchar(mat[[cols[3]]])>0, sep,"")
+      return(paste0(mat[[cols[1]]],sep1, mat[[cols[2]]],sep2, mat[[cols[3]]],
           ...))
+    } else {
+      return(paste0(mat[[cols[1]]],mat[[cols[2]]],mat[[cols[3]]],sep=sep, ...))
+    }
   } else {
       code = paste("mat[[", cols, "]]", collapse = ",sep,")
       code = paste("paste0(", code, ",sep=sep,...)", sep = "")

@@ -504,17 +504,6 @@ rel_rne = function(g, delta=g$param$delta, rho=g$param$rho, beta1=g$param$beta1,
 }
 
 
-add.rne.action.labels = function(g, rne) {
-  # Add some additional info
-  for (row in seq_len(NROW(rne))) {
-    rne$ae.lab = left_join(select(rne,x,a=ae), g$a.labs.df, by=c("x","a"))$lab
-    rne$a1.lab = left_join(select(rne,x,a=a1), g$a.labs.df, by=c("x","a"))$lab
-    rne$a2.lab = left_join(select(rne,x,a=a2), g$a.labs.df, by=c("x","a"))$lab
-  }
-  rne
-}
-
-
 
 #' Solve an RNE for a capped version of the game
 #'
@@ -526,7 +515,7 @@ add.rne.action.labels = function(g, rne) {
 #' @param g The game object
 #' @param T The number of periods until states can change
 #' @param save.details If yes, detailed information about the equilibrium for each state and period will be stored in g and can be retrieved via the function get.rne.details
-rel_capped_rne = function(g,T, save.details=FALSE, tol=1e-10,  delta=g$param$delta, rho=g$param$rho, adjusted.delta=NULL, res.field="rne", tie.breaking=c("slack","random","first","last")[1]) {
+rel_capped_rne = function(g,T, save.details=FALSE, tol=1e-10,  delta=g$param$delta, rho=g$param$rho, adjusted.delta=NULL, res.field="rne", tie.breaking=c("slack","random","first","last")[1], use.cpp=TRUE) {
   restore.point("rel_capped_rne")
   if (!g$is_compiled) g = rel_compile(g)
 
@@ -547,7 +536,7 @@ rel_capped_rne = function(g,T, save.details=FALSE, tol=1e-10,  delta=g$param$del
   g$param$rho = rho
 
   if (isTRUE(g$is.multi.stage)) {
-    g = rel.capped.rne.multistage(g,T,save.details,tol, delta, rho, res.field, tie.breaking)
+    g = capped.rne.multistage(g,T, tol=tol, res.field=res.field, tie.breaking=tie.breaking, use.cpp=use.cpp, save.details=save.details)
     return(g)
   }
 
@@ -914,3 +903,58 @@ solve.weakly.monotone.state = function(x,rne,g, sdf, tol=1e-12) {
   }
   return(list(ok=FALSE))
 }
+
+# Solve the last period where all stages remain a repeated game
+capped.rne.rep.period = function(g, delta=g$param$delta, rho=g$param$rho) {
+  restore.point("capped.rne.rep.period")
+
+  if (is.null(g$rep.games.df))
+    stop("Please first call solve.all.rep.multistage.")
+  adj_delta = delta*(1-rho)
+
+  w = ((1-delta) / (1-adj_delta))
+  res = g$rep.games.df %>%
+    filter(adj_delta >= delta_min, adj_delta < delta_max) %>%
+    mutate(
+      v1 = w*v1_rep + (1-w)*r1,
+      v2 = w*v2_rep + (1-w)*r2
+    )
+  if (isTRUE(g$is.multi.stage)) {
+    cols = c("x","r1","r2","U","v1","v2","s.ae","s.a1","s.a2","d.ae","d.a1","d.a2")
+  } else {
+    cols = c("x","r1","r2","U","v1","v2")
+  }
+  res[,cols,drop=FALSE]
+
+}
+
+# Internal function to find approbriate action profiles
+# for a current state of an RNE
+# Is called from r_capped_rne_iterations
+r_rne_find_actions = function(U,v1,v2,U.hat,v1.hat,v2.hat, IC.holds, next.r1=NULL, next.r2=NULL, trans.mat=NULL, dest.rows=NULL, tie.breaking=c("slack","random","first","last")[1], tol=1e-12) {
+  restore.point("r_rne_find_actions")
+  # Pick dynamic equilibrium actions
+  # using the specified tie.breaking rule
+  # TO DO: Add more tie.breaking rules
+  slack = U.hat - (v1.hat + v2.hat)
+  const = 1
+  if (tie.breaking=="slack") {
+    tb = slack
+  } else if (tie.breaking=="last") {
+    tb = seq_len(NROW(U.hat))
+  } else if (tie.breaking=="first") {
+    tb = rev(seq_len(NROW(U.hat)))
+  } else if (tie.breaking=="equal_r") {
+    next_r_diff = -abs(next.r1-next.r2)
+    tb = trans.mat.mult(trans.mat,next_r_diff[dest.rows])
+    const = min(tb) + max(tb)-min(tb)
+  } else {
+    tb = runif(NROW(U.hat))
+  }
+  ae = which.max((const+tb) * (abs(U.hat-U)<tol & IC.holds))
+  a1 = which.max((const+tb) * (abs(v1.hat-v1)<tol & IC.holds))
+  a2 = which.max((const+tb) * (abs(v2.hat-v2)<tol & IC.holds))
+  c(ae,a1,a2)
+}
+
+

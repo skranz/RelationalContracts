@@ -39,41 +39,4 @@ solve.x.repgame = function(g,x,  state = g$sdf[g$sdf$x == x,]) {
   res
 }
 
-make.state.lab.ai = function(state) {
-  restore.point("make.state.lab.ai")
-  A1 = state$A1[[1]]
-  if (is.data.frame(A1)) {
-    a1.lab = paste.df.cols(A1, sep="_")
-  } else if (length(A1)==1) {
-    a1.lab = as.character(A1[[1]])
-  } else {
-    A1.grid = expand.grid(A1)
-    a1.lab = paste.matrix.cols(A1.grid, sep="_")
-  }
-  A2 = state$A2[[1]]
-  if (is.data.frame(A2)) {
-    a2.lab = paste.df.cols(A2, sep="_")
-  } else if (length(A2)==1) {
-    a2.lab = as.character(A2[[1]])
-  } else {
-    A2.grid = expand.grid(A2)
-    a2.lab = paste.matrix.cols(A2.grid, sep="_")
-  }
-  list(a1.lab, a2.lab)
-}
-
-make.state.lab.a = function(state, sep=" ", empty.sep=TRUE) {
-  restore.point("make.state.lab.a")
-  a.grid = state$a.grid[[1]]
-
-  for (col in seq_len(NCOL(a.grid))) {
-    if (is.character(a.grid[[col]])) {
-      a.grid[[col]][a.grid[[col]]=="-"] = ""
-    }
-  }
-
-  paste.df.cols(a.grid, sep=sep, empty.sep=TRUE)
-
-}
-
 

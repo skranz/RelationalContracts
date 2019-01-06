@@ -315,8 +315,6 @@ rel_compile = function(g,..., compute.just.static=FALSE) {
 
   g$sdf = sdf
 
-  # Compute adjusted discount factor
-  g$param$adj_delta = g$param$delta * (1-g$param$rho)
 
   g$is_compiled =TRUE
 
