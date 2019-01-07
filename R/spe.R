@@ -61,7 +61,7 @@ rel_spe = function(g, delta=g$param$delta,new.dyngame=FALSE, verbose=FALSE, plot
   if (all(g$sdf$is_terminal)) {
     for (row in seq_len(NROW(g$sdf))) {
       if (is.null(g$sdf$rep[[row]])) {
-        g$sdf$rep[[row]] = solve.x.repgame(g,state=g$sdf[row,])
+        g$sdf$rep[[row]] = solve.x.repgame(g,row=row)
       }
     }
     g$spe = rep.games.to.rne.df(g)

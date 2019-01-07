@@ -28,8 +28,6 @@ example.relhold = function() {
 
   g
 
-  solve.x.repgame(g,"xL")
-
   g
 
 }
@@ -215,6 +213,11 @@ rel_compile = function(g,..., compute.just.static=FALSE) {
   sdf$pi1 = pi1
   sdf$pi2 = pi2
 
+  if (is.null(g$x.df)) {
+    g$x.df = quick_df(x=sdf$x)
+  }
+
+
   if (compute.just.static) {
     g$sdf = sdf
     return(g)
@@ -375,7 +378,7 @@ rel_game = function(name="Game", param=NULL, ...) {
 #' @return Returns the updated game
 rel_param = function(g, delta=non.null(param[["delta"]], 0.9), rho=non.null(param[["rho"]], 0), beta1=non.null(param[["beta1"]],1/2), param=g[["param"]],...) {
   restore.point("rel_param")
-  param = list(delta=delta, rho=rho,beta1=beta1, beta2=1-beta1,...)
+  param = list(delta=delta, rho=rho,beta1=beta1, ...)
   g$param = param
   g
 }
@@ -610,7 +613,7 @@ eval.rel.expression = function(e,g=NULL, param=g$param, vectorized=FALSE, null.v
 
 compute.x.trans.mat = function(x,g, add.own=TRUE, tdf=g$tdf, row= which(g$sdf$x == x)) {
   restore.point("compute.x.trans.mat")
-  #if (x=="0_0") stop()
+  #if (x=="x0") stop()
   if (NROW(tdf)==0) return(NULL)
 
   df = tdf[tdf$xs==x,]

@@ -82,6 +82,9 @@ examples.multistage = function() {
 }
 
 
+# Called at the end of rel_compile
+# if we have a repeated multistage game
+# Compiles static stage
 add.rel.multistage.compile = function(g,...) {
   restore.point("add.rel.multistage.compile")
 
@@ -98,57 +101,12 @@ add.rel.multistage.compile = function(g,...) {
   g
 }
 
-#' Solve an RNE for a capped version of a multistage game
-capped.rne.multistage = function(g,T, tol=1e-10,  delta=g$param$delta, rho=g$param$rho, res.field="rne", tie.breaking=c("equal_r", "slack","random","first","last","max_r1","max_r2")[1], use.cpp=TRUE, save.details=FALSE, add.iterations=FALSE) {
-  restore.point("capped.rne.multistage")
-  if (!g$is_compiled) g = rel_compile(g)
 
-  g = solve.all.rep.multistage(g)
-
-  g$param$delta = delta
-  g$param$rho = rho
-
-  sdf = g$sdf
-  adj_delta = (1-rho)*delta
-  beta1 = g$param$beta1
-  beta2 = 1-beta1
-
-  if (add.iterations) {
-    rne = g[[res.field]]
-    if (is.null(rne)) add.iterations=FALSE
-  }
-  if (!add.iterations) {
-    rne = capped.rne.rep.period(g,delta=delta, rho=rho)
-    T = T-1
-  }
-
-  res = capped.rne.multistage.iterations(g,T, rne=rne,save.details=save.details, use.cpp=use.cpp,tie.breaking = tie.breaking,tol = tol)
-  rne = res$rne
-  details = res$details
-
-  rne = add.rne.action.labels(g,rne)
-  if (!is.null(g$x.df))
-    rne = left_join(rne, g$x.df, by="x")
-
-  g$sdf = sdf
-  g[[res.field]] = rne
-  g[[paste0(res.field,".details")]] = details
-  g
-}
-
-
-capped.rne.multistage.iterations = function(g,T=1,rne=g$rne, tie.breaking="slack", debug_row=-1, tol=1e-12, use.cpp=TRUE, save.details=FALSE) {
+capped.rne.multistage.iterations = function(g,T=1,rne=g$rne, tie.breaking, debug_row=-1, tol=1e-12, use.cpp=TRUE, save.details=FALSE) {
   restore.point("capped.rne.multistage.iterations")
 
   if (T<=0) {
     return(list(rne=rne,details=NULL))
-  }
-
-  if (use.cpp) {
-    if (!require(RelationalContractsCpp)) {
-      warning("Cannot use faster C++ functions since the package RelationalContractsCpp is not installed.")
-      use.cpp = FALSE
-    }
   }
 
   # TO DO: Compile transmats before in a useful form
@@ -167,7 +125,7 @@ capped.rne.multistage.iterations = function(g,T=1,rne=g$rne, tie.breaking="slack
     T.cpp = T-save.details
 
     if (T.cpp > 0) {
-      rne = cpp_capped_rne_multistage_iterations(T=T, sdf=sdf,rne=rne,transmats=transmats,
+      rne = cpp_capped_rne_multistage_iterations(T=T.cpp, sdf=sdf,rne=rne,transmats=transmats,
         static_rep_li = g$static.rep.li,
         delta=g$param$delta, rho=g$param$rho,beta1 = g$param$beta1,
         tie_breaking=tie.breaking, tol=tol, debug_row=debug_row)
@@ -178,15 +136,18 @@ capped.rne.multistage.iterations = function(g,T=1,rne=g$rne, tie.breaking="slack
       res = list(rne=rne, details=NULL)
     }
   } else {
-    res = r.capped.rne.multistage.iterations(T=T, g=g, rne=rne, tie.breaking=tie.breaking, save.details=save.details)
+    res = r.capped.rne.multistage.iterations(T=T, g=g, rne=rne, tie.breaking=tie.breaking,tol=tol, save.details=save.details)
   }
   res
 }
 
 # Iterate capped RNE over T periods using pure R
 # Return res_rne
-r.capped.rne.multistage.iterations = function(T, g, rne, tie.breaking=tie.breaking, use.final=!is.null(g$final.tdf), save.details=FALSE) {
+r.capped.rne.multistage.iterations = function(T, g, rne, tie.breaking, use.final=!is.null(g$final.tdf),delta=g$param$delta, rho=g$param$rho,beta1 = g$param$beta1, tol=1e-12, save.details=FALSE) {
   restore.point("r.capped.multistage.rne.iterations")
+
+  delta=g$param$delta
+  rho=g$param$rho
 
   sdf = g$sdf
 
@@ -199,6 +160,7 @@ r.capped.rne.multistage.iterations = function(T, g, rne, tie.breaking=tie.breaki
 
   if (save.details) {
     details.li = vector("list",NROW(sdf))
+    x.df = g$x.df
   }
 
   # Compute all remaining periods
@@ -285,7 +247,7 @@ r.capped.rne.multistage.iterations = function(T, g, rne, tie.breaking=tie.breaki
       v2 = (1-delta)*s.2$c2 + dv2
 
       r1 = v1 + beta1*(U-v1-v2)
-      r2 = v2 + beta2*(U-v1-v2)
+      r2 = v2 + (1-beta1)*(U-v1-v2)
 
 
       rne_U[row] = U;
@@ -300,24 +262,25 @@ r.capped.rne.multistage.iterations = function(T, g, rne, tie.breaking=tie.breaki
 
       if (save.details & iter==T) {
         pi1 = sdf$pi1[[row]]
-        Er1 = as.vector(trans.mat %*% (rne.r1[dest.rows]))
+        Er1 = trans.mat.mult(trans.mat, next_r1[dest.rows])
         # Continuation payoff if new negotiation in next period
         u1_neg = (1-delta)*pi1 + delta*Er1
 
         pi2 = sdf$pi2[[row]]
-        Er2 = as.vector(trans.mat %*% (rne.r2[dest.rows]))
+        Er2 = trans.mat.mult(trans.mat, next_r2[dest.rows])
         # Continuation payoff if new negotiation in next period
         u2_neg = (1-delta)*pi2 + delta*Er2
 
+        slack = U.hat - (v1.hat + v2.hat)
+
         arows = seq_along(IC.holds)
         details.li[[row]] = cbind(
-          quick_df(t=t),
           x.df[x.df$x==x,],
-          sdf$a.grid[[srow]],
+          sdf$a.grid[[row]],
           quick_df(
-            d.can.ae = (abs(U.hat-dU)<tol & IC.holds)*1 + (arows==rne.d.ae[row]),
-            d.can.a1 = (abs(v1.hat-dv1)<tol & IC.holds)*1 + (arows==rne.d.a1[row]),
-            d.can.a2 = (abs(v2.hat-dv2)<tol & IC.holds)*1 + (arows==rne.d.a2[row]),
+            d.can.ae = (abs(U.hat-dU)<tol & IC.holds)*1 + (arows==d.a[1]),
+            d.can.a1 = (abs(v1.hat-dv1)<tol & IC.holds)*1 + (arows==d.a[2]),
+            d.can.a2 = (abs(v2.hat-dv2)<tol & IC.holds)*1 + (arows==d.a[3]),
             IC.holds=IC.holds,
             slack=slack,
 
@@ -346,7 +309,7 @@ r.capped.rne.multistage.iterations = function(T, g, rne, tie.breaking=tie.breaki
     if (iter < T) {
       next_U = rne_U
       next_v1 = rne_v1; next_v2 = rne_v2
-      next_r1 = rne_r1; next_R2 = rne_r2
+      next_r1 = rne_r1; next_r2 = rne_r2
     }
   }
   res_rne = cbind(quick_df(x=sdf$x,r1=rne_r1,r2=rne_r2, U=rne_U, v1=rne_v1,v2=rne$v2),rne_actions)
@@ -381,7 +344,6 @@ rel.capped.rne.multistage.old = function(g,T, save.details=FALSE, tol=1e-10,  de
   sdf = g$sdf
   adj_delta = (1-rho)*delta
   beta1 = g$param$beta1
-  beta2 = 1-beta1
 
   if (save.details) {
     x.df = non.null(g$x.df, quick_df(x=sdf$x))
@@ -573,7 +535,7 @@ rel.capped.rne.multistage.old = function(g,T, save.details=FALSE, tol=1e-10,  de
       v2 = (1-delta)*s.2$c2 + dv2
 
       r1 = v1 + beta1*(U-v1-v2)
-      r2 = v2 + beta2*(U-v1-v2)
+      r2 = v2 + (1-beta1)*(U-v1-v2)
 
 
       rne.U[row] = U;
