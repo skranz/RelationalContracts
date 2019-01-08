@@ -45,14 +45,10 @@ example.rne = function() {
     rel_state("x1", A1=NULL,A2=NULL) %>%
     rel_payoff("x1",pi1=0, pi2=0) %>%
     rel_compile() %>%
-    rel_capped_rne(T=2, save.details = !TRUE, use.cpp=FALSE)
+    rel_capped_rne(T=100, save.details = FALSE, use.cpp=TRUE)
 
-  g_rel = rel_capped_rne(g,T=2, use.cpp=!TRUE)
-
-
-  g$sdf$trans.mat
-  g_rel$sdf$trans.mat
   (rne=g$rne)
+  g$sdf$trans.mat
 
   de = get.rne.details(g)
 
@@ -512,7 +508,7 @@ r_rne_find_actions = function(U,v1,v2,U.hat,v1.hat,v2.hat, IC.holds, next.r1=NUL
   if (tie.breaking=="equal_r") {
     next_r_diff = -abs(next.r1-next.r2)
     tb = trans.mat.mult(trans.mat,next_r_diff[dest.rows])
-    const = -min(tb) + max(tb)-min(tb)
+    const = 1+-min(tb) + max(tb)-min(tb)
   } else if (tie.breaking=="random") {
     tb = runif(NROW(U.hat))
   } else if (tie.breaking=="slack") {
@@ -523,10 +519,10 @@ r_rne_find_actions = function(U,v1,v2,U.hat,v1.hat,v2.hat, IC.holds, next.r1=NUL
     tb = rev(seq_len(NROW(U.hat)))
   } else if (tie_breaking=="max_r1") {
     tb = trans.mat.mult(trans.mat,next.r1[dest.rows])
-    const = -min(tb) + max(tb)-min(tb)
+    const = 1-min(tb) + max(tb)-min(tb)
   } else if (tie_breaking=="max_r2") {
     tb = trans.mat.mult(trans.mat,next.r2[dest.rows])
-    const = -min(tb) + max(tb)-min(tb)
+    const = 1-min(tb) + max(tb)-min(tb)
   } else {
     stop(paste0("Unknown tie.breaking rule ", tie.breaking))
   }

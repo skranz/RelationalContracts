@@ -4,19 +4,24 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, dev="svg")
+knitr::opts_chunk$set(echo = TRUE, dev="svg", error=TRUE, warning=FALSE)
 library(dplyr)
 library(RelationalContracts)
 library(dyngame)
 library(repgame)
+
+```
+
+```{r include=FALSE, eval=FALSE}
+
+rmarkdown::render("D:/libraries/RelationalHoldup/RelationalContracts/inst/guide/RelationalContracts.Rmd")
 ```
 
 # Overview
 
-This Vignette shows how the R package `RelationalContracting` can be used for game theoretic analysis of relationships that are modelled by infinite horizon games. 
+This vignette illustrates how the R package `RelationalContracting` can be used for game theoretic analysis of relationships that are modelled by infinite horizon games. I also want to give a short introduction to the general idea and motivation for relational contracts,  assuming that the reader already had some exposure to game theory.
 
-Besides the traditional characterization of all subgame perfect equilibrium payoffs, the package also allows to solve for repeated negotiation equilibria (RNE), which Susanne Goldlücke and me proposed as a sensible equilibrium selection in a recent research paper. We will motivate and explore this concept with several examples in this Vignette.
-
+Furthermore, I want to motivate the idea of repeated negotiation equilibria introduced in my recent paper with Susanne Goldluecke that views relational contracts as informal agreements that are repeatedly newly negotiated during the relationship. This leads to a different equilibrium selection than the traditional selection of Pareto-optimal subgame perfect equilibria. In particular, I want to motivate the concept by the `Vulnerability Paradoxon` and related rather implausible predictions by Pareto-optimal subgame perfect equilibria.
 
 # A Principal-Agent Relationship
 
@@ -29,53 +34,66 @@ Economists use game-theoretic models to better understand the trade-offs arising
 
 ## A Simple Model
 
-We start with a simple example of an infinitely repeated principal agent game.
+We start with a simple example of an infinitely repeated principal agent game. An agent (player 2) works for a principal (player 1) and can choose every period some work effort $e$ between 0 and 1. The principal's stage game payoff is equal to the agent's effort of $$\pi_1 = e.$$ The agent incurs quadratic effort cost and has payoffs $$\pi_2 = - \frac 1 2 e^2.$$
 
-An agent works for a principal and can choose every period some work effort $e$ between 0 and 1. The principal's stage game payoff is equal to the agent's effort of $$\pi_1 = e.$$ The agent incurs quadratic effort cost and has payoffs $$\pi_2 = - \frac 1 2 e^2.$$
+At the beginning and end of each period, both parties can voluntary transfer money to each other. We follow the common assumption in relational contracting models and assume that both parties are risk-neutral and thus simply add the net transfers to their stage game payoffs.
 
-At the beginning of each period, both parties can voluntary transfer money to each other. We follow the common assumption in relational contracting models and assume that both parties are risk-neutral and thus simply add the net transfers to their stage game payoffs.
-
-For example, assume the principal transfers an amount $p_1$ to the agent at the beginning of the period and the agent transfers nothing. The transfer could be a bonus payment for positive effort by the agent in the previous period. If the agent chooses effort $e$  in the current period, the principals' total payoffs in the current period are then $e - p_1$ and the agent's $- \frac 1 2 e^2 + p_1$
+For example, assume the principal transfers an amount $p_1$ to the agent and the agent transfers nothing. The transfer could be a bonus payment for positive effort by the agent in the previous period. If the agent chooses effort $e$  in the current period, the principals' total payoffs in the current period are then $e - p_1$ and the agent's $- \frac 1 2 e^2 + p_1$
 
 We assume that principal and agent interact for infinitely many periods and discount future payoffs with a discount factor $\delta$ between 0 and 1.
 
 ## Solving in R
 
-We can use the R package `RelationalContracts` to find the set of all subgame perfect equilibrium (SPE) payoffs of this repeated principal-agent game.
-
-The following code specifies the repeated game and solves for all SPE payoffs for a discount factor of $\delta = 0.2$
+We can use the R package `RelationalContracts` to find the set of all subgame perfect equilibrium (SPE) payoffs of this repeated principal-agent game. The following code specifies the repeated game
 ```{r}
 library(RelationalContracts)
 
 g = rel_game("Repeated Principal-Agent Game") %>%
   rel_state("x0",
-    # Agent's action space (player 2)
+    # Agent's (player 2) action space
+    # Discrete effort levels between 0 and 1 
     A2 = list(e=seq(0,1,by=0.01)),
+    # Principal (player 1) has no actions 
+    # beyond transfers
+    A1 = NULL,
     
-    # Stage game payoffs of both players
-    pi1 = ~ e,
-    pi2 = ~ -(1/2)*e^2
-  ) %>%
-  # Solve set of SPE payoffs
-  rel_spe(delta=0.2)
+    # Stage game payoffs
+    pi1 = ~ e, # Principal
+    pi2 = ~ -(1/2)*e^2 # Agent
+  )
 ```
-The following command shows the set of all subgame perfect equilibrium (SPE) payoffs in our repeated game with discount factor $\delta=0.2$:
+Note that we always specfiy action sets and payoffs for a particular state. While a repeated game has just a single state, which we have called "x0", our later examples will involve dynamic games with multiple states.
+
+The following code finds all subgame perfect equilibrium (SPE) payoffs of our repeated game given a discount factor of $\delta=0.2$ and shows this payoff set:
 ```{r fig.width=5, fig.height=5}
+g = rel_spe(g,delta=0.2)
 plot.spe.payoff.set(g)
 ```
-This payoff set is computed using the algorithms described in our articles Goldlücke and Kranz (2012, 2018). Under our assumption of risk-neutrality and the possibility of monetary transfers, the SPE payoff set always has this special triangular form (a simplex) in which the Pareto-frontier has a slope of -1.
 
-Not only are there many possible equilibrium payoffs but most payoffs can be implemented with many different strategy profiles that specify the equilibrium. Yet, as described in our articles it sufficies to find a particular *optimal simple strategy profile* to find the whole SPE payoff set. The following code gives a summary of this strategy profile:
+The SPE payoff set is computed using the algorithms described in our articles Goldluecke and Kranz (2012, 2018). Under our assumption of risk-neutrality and the possibility of monetary transfers, the SPE payoff set always has this special triangular form (a simplex) in which the Pareto-frontier has a slope of -1.
+
+Not only are there many possible equilibrium payoffs but most payoffs can be implemented with many different equilibria (i.e. different strategy profiles). Yet, as described in our articles, it sufficies to find a particular *optimal simple strategy profile* to find the whole SPE payoff set. The following code gives a summary of this strategy profile:
 
 ```{r}
 get.spe(g,action.details = TRUE) %>%
-  select("ae.e", "a1.e", "a2.e","U","v1","v2")
+  select("ae.e", "a1.e","U","v1","v2")
 ```
+Let us first understand Pareto-optimal subgame perfect equilibria. On the equilibrium path, the agent will always choose the effort level `ae.e=0.39`. This is the highest incentive compatible effort level given the earlier specified discount factor `delta=0.2`. The results don't show the payments that take place on the equilibrium path. But it follows from the theoretical results that in this game it is easiest (i.e. possible for the largest range of discount factors) to implement a desired effort level if the principal reimburses the agent his cost of the equilbrium effort. You can think of this payment as a bonus payment for the effort. The crucial assumption for why relational contracting is needed is that such a bonus payment cannot be enforced by formal contracts, since the actual effort choice by the agent is not verifiable by a legal court.
 
+If no other payments were conducted, the corresponding equilibrium payoff would be the lower right point of the equilibrium payoff set. The principal would get the whole surplus `U=ae.e - 0.5*ae.e^2=0.31` and the agent a payoff of 0.
 
+To grant the agent some surplus, one can use incentive compatible upfront payments that the principal transfers to the agent at the beginning of the very first period. One could equivalently think of those upfront payments as a formal contract between principal and agent that grants the agent a fixed wage in addition to the bonus each period. The fixed wage is independent of which effort level is chosen. By modifying this fixed wage, every point on the Pareto-frontier of the Payoff set can be reached. For example, a fixed wage of `0.5*U = 0.157` would split the surplus equally.
 
+If the principal deviates from a required payment, she will be punished by the agent. In our example, one could effectively punish by repeating the stage game Nash equilibrium in which the agent chooses zero effort, `a1.e=0` and no payments are made in all future periods, a so called Nash-reversion grim-trigger punishment. We call `a1.e` the principal's punishment profile. Both principal and agent would then get continuation payoffs of `v1=v2=0`.
+
+Alternatively, the agent could choose zero effort for just one period and one could then give the principal the option to stop the punishment by paying a fine to the agent that must be at least as high as neccessary to make the original deviation not worthwhile. Using such a scheme with fines always allows to implement the harshest possible punishment, which in some games can even be strictly harsher than Nash-reversion grim-trigger. Furthermore such punishments with fines are renegotiation-proof according to Levin's (2003) concept of strong optimality.
+
+The stage game Nash equilibrium that the agent always chooses zero effort and no payments are made is a subgame perfect equilibrium in which both parties get a payoff of 0. This corresponds to the lower-left point on the equilibrium payoff set. One can reach any point below the Pareto-frontier, e.g. by using a public correlation device to mix between a Pareto-efficient equilibrium and this worst equilibrium. Of course, Pareto-dominated equilibrium payoffs can be implemented with many other equilibria, e.g. equilibria that just prescribe lower effort levels on the equilibrium path.
 
 ## Effect of Vulnerability 
+
+One can use game theoretic models to study which institutions and formal contracts allow relational contracting to achieve better outcomes. To compare the outcomes under different institutions, it is typically assumed in the relational contracting literature that a relational contract corresponds to a Pareto-optimal subgame perfect equilibrium. The idea is that similar to formal contracts, also informal contracts can be derived by negotiation and coordination between players at the beginning of their relationship. An informal contract just has to obey the incentive compatibilty constraints imposed by a subgame perfect equilibrium. If players can coordinate their behavior, it seems on first sight a quite sensible approximation, that players don't leave money on the table and coordinate to pick a Pareto-optimal SPE as relational contract.  
+
 
 ```{r}
 vul_payoff = -1
@@ -103,173 +121,3 @@ plot.spe.payoff.set(g,x=c("xVul","x0"))
 ```
 
 # Slowly Intensifying Relationships
-```{r}
-library(RelationalContracts)
-
-A.fun = function(x1,x2,stage, x.seq,...) {
-  restore.point("A.fun")
-  if (stage=="m") {
-    A1 = list(a1=x.seq[x.seq>=x1])
-    A2 = list(a2=x.seq[x.seq>=x2])
-  } else if (stage=="e") {
-    A1 = list(b1=c("b",""))
-    e=seq(0,1,by=0.05)
-    A2 = quick_df(b2=c("b", rep("", length(e))),e=c(0,e))
-  }
-  list(A1=A1,A2=A2)
-}
-
-
-vec.pi.fun = function(ax.df,...) {
-  restore.point("vec.pi.fun")
-  res = ax.df %>%
-    transmute(
-      x=x,
-      pi1= case_when(
-        stage=="m" ~ 0,
-        b1 == "b" | b2=="b" ~ -x1,
-        TRUE ~ e
-      ),
-      pi2=case_when(
-        stage=="m" ~ 0,
-        b1 == "b" | b2=="b" ~ -x2,
-        TRUE ~ - 1/2 * e^2
-      )
-    )
-  res
-}
-
-vec.trans.fun = function(ax.df, final=FALSE,...) {
-  restore.point("trans.fun")
-  mt = ax.df %>% 
-    filter(stage=="m") %>%
-    select(x,a1,a2) %>%
-    unique() %>%
-    transmute(xs=x,xd=paste0("e " ,a1, " ",a2),a1=a1,a2=a2, prob=1)
-
-  # If final round we stay in all e stages
-  if (final) return(mt)
-  
-  et = ax.df %>%
-    filter(stage=="e") %>%
-    select(x,x1,x2) %>%
-    unique() %>%
-    transmute(xs=x,xd=paste0("m ",x1," ",x2),prob=1)
-
-  bind_rows(et,mt)
-}
-
-vec.final.trans.fun = function(ax.df,...) {
-  vec.trans.fun(ax.df, final=TRUE,...)
-}
-
-
-x.seq = seq(0,1, by=0.1)
-#x.seq = c(0,0.01,0.05,0.1,0.2,0.5,1)
-x.df = as_data_frame(expand.grid(stage=c("e","m"),x1=x.seq,x2=x.seq, stringsAsFactors = FALSE)) %>%
-  mutate(x= paste0(stage," ", x1," ", x2))
-
-g = rel_game("Slowly Intensifying Repeated Principal-Agent") %>%
-  rel_param(x.seq=x.seq) %>%
-  rel_states(x.df,
-    A.fun = A.fun,
-    vec.pi.fun = vec.pi.fun,
-    vec.trans.fun=vec.trans.fun,
-    vec.final.trans.fun = vec.final.trans.fun
-  )
-
-g=  rel_compile(g) 
-
-delta = 0.7; rho=0.4
-capped.delta = delta^2; capped.rho = 1-(1-rho)^2
-
-g = g %>%
-  # Solve set of SPE payoffs
-  #rel_spe(delta=0.1) %>%
-  rel_capped_rne(T=10,delta=0.7, rho=0.4, tie.breaking = "random",save.details = !TRUE) %>%
-  rel_capped_spe(T=10, delta=0.7*0.6, tie.breaking="random")
-
-
-
-rne = get.rne(g) %>% filter(t==2, x=="e 0 0")
-rne.diagram(g,t=1, just.eq.chain = TRUE)
-
-spe.diagram(g,t=1,just.eq.chain = TRUE)
-
-de = get.rne.details(g,x="m 0 0") %>% filter(t==1)
-de
-
-
-spe = get.spe(g)
-
-spe.diagram(g)
-```
-
-
-$\delta = 0.2$
-```{r}
-library(RelationalContracts)
-
-vec.trans.fun = function(ax.df,x.max, x.step,...) {
-  restore.point("trans.fun")
-  #if (x=="0_0") stop()
-  trans = ax.df %>%
-    unique() %>%
-    mutate(
-      xd1 = case_when(
-        a1=="big" ~ x.max,
-        a1=="small" ~ pmin(x1+x.step,x.max),
-        TRUE ~ x1  
-      ),
-      xd2 = case_when(
-        a2=="big" ~ x.max,
-        a2=="small" ~ pmin(x2+x.step,x.max),
-        TRUE ~ x2  
-      ),
-      xd = paste0(xd1, " ",xd2),
-      prob=1
-    ) %>%
-    select(xs=x,xd,a1,a2, prob)
-  trans
-}
-
-x.max = 2
-x.step = 0.25
-x.seq = seq(0,x.max, by=x.step)
-x.df = as_data_frame(expand.grid(x1=x.seq,x2=x.seq))
-x.df$x = paste0(x.df$x1," ", x.df$x2)
-
-A1 = list(a1=c("boycot","stay","small","big"))
-A2 = expand.grid(a2=c("boycot","stay","small","big"),
-  e=seq(0,1,by=0.1), stringsAsFactors = FALSE) %>%
-  filter(!(a2=="boycot" & e>0))
-
-g = rel_game("Slowly Intensifying Repeated Principal-Agent") %>%
-  rel_param(x.max=x.max, x.step=x.step) %>%
-  rel_states(x.df,
-    A1=A1,
-    A2=A2,
-    pi1 = ~ ifelse(a1=="boycot" | a2=="boycot", -x1, e),
-    pi2 = ~ ifelse(a1=="boycot" | a2=="boycot", -x2, - 1/2 * e^2),
-    vec.trans.fun=vec.trans.fun
-  )
-
-g=  rel_compile(g) 
-
-g = g %>%
-  # Solve set of SPE payoffs
-  #rel_spe(delta=0.1) %>%
-  rel_capped_rne(T=10,delta=0.1, rho=0.2, tie.breaking = "last",save.details = TRUE)
-
-
-de = get.rne.details(g,x="0 0") %>% filter(t==1, can.ae>0)
-de
-
-rne = get.rne(g) %>% filter(t==1, x=="0 0")
-rne.diagram(g, just.eq.chain = TRUE)
-
-
-spe = get.spe(g)
-
-spe.diagram(g)
-```

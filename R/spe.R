@@ -81,6 +81,7 @@ rel_spe = function(g, delta=g$param$delta,new.dyngame=FALSE, verbose=FALSE, plot
 rep.games.to.rne.df = function(g, delta=g$param$delta, rho=g$param$rho, rows=which(g$sdf$is_terminal)) {
   restore.point("rep.games.to.rne.df")
   adj_delta = delta*(1-rho)
+  sdf = g$sdf
 
   li = lapply(rows, function(row) {
     rep = sdf$rep[[row]] %>%

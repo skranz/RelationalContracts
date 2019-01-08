@@ -1,4 +1,23 @@
+examples.rne_capped = function() {
+  e.seq = seq(0,1, by=0.1); xL=0; xH=0.2
+  g = rel_game("Weakly Monotone Vulnerability Paradox") %>%
+    # Initial State
+    rel_state("xL", A1=list(move=c("stay","vul")),A2=list(e=e.seq)) %>%
+    rel_payoff("xL",pi1=~e, pi2=~ -0.5*e*e*(e>=0)) %>%
+    rel_transition("xL","xH",move="vul") %>%
+    # High vulnerability
+    rel_state("xH", A1=NULL,A2=list(e=unique(c(-xH,e.seq)))) %>%
+    rel_payoff("xH",pi1=~e, pi2=~ -0.5*e*e*(e>=0)) %>%
+    rel_compile()
 
+  g = rel_rne(g, delta=0.9, rho=0.9)
+  (rne=g$rne)
+
+
+  g = rel_capped_rne(g,T=100, delta=0.9, rho=0.9,use.cpp=!TRUE)
+  (rne=g$rne)
+
+}
 
 arms.race.example = function() {
 
@@ -182,14 +201,14 @@ capped.rne.iterations = function(g,T=1,rne=g$rne, tie.breaking, debug_row=-1, to
     T.cpp = T-save.details
 
     if (T.cpp > 0) {
-      rne = cpp_capped_rne_iterations(T=T.cpp, sdf=sdf,rne=rne,transmats=transmats,
+      res_rne = cpp_capped_rne_iterations(T=T.cpp, sdf=sdf,rne=rne,transmats=transmats,
         delta=g$param$delta, rho=g$param$rho,beta1 = g$param$beta1,
         tie_breaking=tie.breaking, tol=tol, debug_row=debug_row)
     }
     if (save.details) {
       res = r.capped.rne.iterations(T=1, g=g, rne=rne, tie.breaking=tie.breaking, save.details=save.details, tol=tol)
     } else {
-      res = list(rne=rne, details=NULL)
+      res = list(rne=res_rne, details=NULL)
     }
   } else {
     res = r.capped.rne.iterations(T=T, g=g, rne=rne, tie.breaking=tie.breaking, save.details=save.details)
@@ -216,6 +235,7 @@ r.capped.rne.iterations = function(T, g, rne, tie.breaking, use.final=!is.null(g
     x.df = g$x.df
   }
 
+  iter=1;row=2;
   # Compute all remaining periods
   for (iter in seq_len(T)) {
     for (row in 1:NROW(sdf)) {
