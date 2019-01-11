@@ -4,8 +4,8 @@
 #' This data frame contains the relevant information to compute
 #' equilibrium payoffs and equilibria for all
 #' discount factors for all states.
-rel_solve_all_repeated_games = function(g, overwrite=FALSE) {
-  restore.point("rel_solve_all_repeated_games")
+rel_solve_all_repgames = function(g, overwrite=FALSE) {
+  restore.point("rel_solve_all_repgames")
   if (!overwrite & !is.null(g$rep.games.df))
     return(g)
 
@@ -25,7 +25,20 @@ rel_solve_all_repeated_games = function(g, overwrite=FALSE) {
   g
 }
 
-
+#' Get the results of all repeated games assuming the state is fixed
+#'
+#' Returns for all discount factors the optimal simple strategy profiles
+#' maximum joint payoffs and punishment profiles
+get.repgames.results = function(g, action.details=TRUE) {
+  if (is.null(g$rep.games.df)) {
+    stop("Please first call rel_solve_all_repgames")
+  }
+  res = g$rep.games.df
+  if (action.details) {
+    res = add.action.details(g,res,c("ae","a1","a2"))
+  }
+  res
+}
 
 # Solve the repeated game that would stay forever in state x
 solve.x.repgame = function(g,x=NULL,row=NULL) {

@@ -144,7 +144,7 @@ rel_capped_rne = function(g,T, tol=1e-10,  delta=g$param$delta, rho=g$param$rho,
 
 
   # Solve repeated games for all states
-  g = rel_solve_all_repeated_games(g)
+  g = rel_solve_all_repgames(g)
 
   sdf = g$sdf
   adj_delta = (1-rho)*delta
