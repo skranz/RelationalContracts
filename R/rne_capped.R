@@ -218,7 +218,7 @@ capped.rne.iterations = function(g,T=1,rne=g$rne, tie.breaking, debug_row=-1, to
 
 # Iterate capped RNE over T periods using pure R
 # Return res_rne
-r.capped.rne.iterations = function(T, g, rne, tie.breaking, use.final=!is.null(g$final.tdf),delta=g$param$delta, rho=g$param$rho,beta1 = g$param$beta1, tol=1e-12, save.details=FALSE) {
+r.capped.rne.iterations = function(T, g, rne, tie.breaking,delta=g$param$delta, rho=g$param$rho,beta1 = g$param$beta1, tol=1e-12, save.details=FALSE) {
   restore.point("r.capped.rne.iterations")
 
   sdf = g$sdf
@@ -243,11 +243,7 @@ r.capped.rne.iterations = function(T, g, rne, tie.breaking, use.final=!is.null(g
 
       na1 = sdf$na1[row]
       na2 = sdf$na2[row]
-      if (use.final & iter==1) {
-        trans.mat = sdf$final.trans.mat[[row]]
-      } else {
-        trans.mat = sdf$trans.mat[[row]]
-      }
+      trans.mat = sdf$trans.mat[[row]]
       if (is.null(trans.mat)) {
         xd = x
       } else {
@@ -474,18 +470,13 @@ rel_capped_rne_old = function(g,T, save.details=FALSE, tol=1e-10,  delta=g$param
   srow = 1
   # Compute all remaining periods
   for (t in rev(seq_len(T-1))) {
-    is.final = (!is.null(g$final.tdf)) & (t == T-1)
     for (srow in 1:NROW(sdf)) {
       x = sdf$x[srow]
 
       na1 = sdf$na1[srow]
       na2 = sdf$na2[srow]
-      if (!is.final) {
-        trans.mat = sdf$trans.mat[[srow]]
-      } else {
-        trans.mat = sdf$final.trans.mat[[srow]]
-      }
-        #rownames(trans.mat) = make.state.lab.a(sdf[srow,])
+      trans.mat = sdf$trans.mat[[srow]]
+      #rownames(trans.mat) = make.state.lab.a(sdf[srow,])
 
       if (is.null(trans.mat)) {
         trans.mat = matrix(1,na1*na2,1)

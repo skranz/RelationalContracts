@@ -301,21 +301,6 @@ rel_compile = function(g,..., compute.just.static=FALSE) {
   sdf$rep = vector("list",NROW(sdf))
   sdf$trans.mat = vector("list",NROW(sdf))
 
-  # Separate state transitions for final period in
-  # a capped game
-  if (!is.null(g$final_trans_fun_defs)) {
-    li = lapply(seq_along(g$final_trans_fun_defs),compile_trans_fun_def, field="final_trans_fun_defs")
-
-    g$final.tdf = bind_rows(li) %>%
-      filter(xs != xd) %>%
-      unique()
-    sdf$final.trans.mat = vector("list",NROW(sdf))
-  } else {
-    g$final.tdf = NULL
-  }
-
-
-
   g$sdf = sdf
 
 
@@ -326,10 +311,6 @@ rel_compile = function(g,..., compute.just.static=FALSE) {
   for (row in 1:NROW(sdf)) {
     x = sdf$x[row]
     g$sdf$trans.mat[row] = list(compute.x.trans.mat(x=x,g=g))
-    if (!is.null(g$final.tdf)) {
-      g$sdf$final.trans.mat[row] = list(compute.x.trans.mat(x=x,g=g, tdf=g$final.tdf))
-    }
-
   }
 
   if (isTRUE(g$is.multi.stage)) {
@@ -426,7 +407,7 @@ rel_state = function(g, x,A1=list(a1=""),A2=list(a2=""), pi1=NULL, pi2=NULL) {
 
 #' @param A2 The action set of player 2. Can be a numeric or character vector
 #' @return Returns the updated game
-rel_states = function(g, x,A1=NULL, A2=NULL, pi1=NULL, pi2=NULL, A.fun=NULL, pi.fun=NULL, vec.pi.fun=NULL, trans.fun=NULL, vec.trans.fun=NULL, final.trans.fun=NULL, vec.final.trans.fun=NULL, static.A.fun=NULL, static.pi.fun=NULL, vec.static.pi.fun=NULL,  ...) {
+rel_states = function(g, x,A1=NULL, A2=NULL, pi1=NULL, pi2=NULL, A.fun=NULL, pi.fun=NULL, vec.pi.fun=NULL, trans.fun=NULL, vec.trans.fun=NULL, static.A.fun=NULL, static.pi.fun=NULL, vec.static.pi.fun=NULL,  ...) {
   args=list(...)
   restore.point("rel_states")
   if (is.data.frame(x)) {
@@ -459,10 +440,6 @@ rel_states = function(g, x,A1=NULL, A2=NULL, pi1=NULL, pi2=NULL, A.fun=NULL, pi.
   if (!is.null(trans.fun) | !is.null(vec.trans.fun)) {
     obj = list(x=x,trans.fun=trans.fun, vec.trans.fun=vec.trans.fun, args=args)
     g = add.to.rel.list(g, "trans_fun_defs",obj)
-  }
-  if (!is.null(final.trans.fun) | !is.null(vec.final.trans.fun)) {
-    obj = list(x=x,trans.fun=final.trans.fun, vec.trans.fun=vec.final.trans.fun, args=args)
-    g = add.to.rel.list(g, "final_trans_fun_defs",obj)
   }
 
   if (!is.null(static.A.fun)){
