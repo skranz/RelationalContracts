@@ -59,6 +59,78 @@ plot.spe.payoff.set = function (g,x=eq$x[1],t=1,  eq=g[[eq.field]], eq.field = "
   }
 }
 
+
+animate.capped.rne.history = function(g,x=g$sdf$x[1], hist = g$rne.history, colors=c("#377EB8","#E41A1C", "#4DAF4A", "#984EA3", "#FF7F00", "#FFFF33", "#A65628", "#F781BF"), alpha=0.4, add.state.label=TRUE, add.grid=FALSE, add.diag=FALSE, add.plot=NULL) {
+  add.plot = substitute(add.plot)
+
+  restore.point("capped.rne.history.animation")
+
+
+  if (NROW(hist)==0) {
+    stop("No results for periods t>1 have been saved. Call rel_capped_rne with the option save.history=TRUE.")
+  }
+
+
+
+  if (!is.null(x)) {
+    dat = hist[hist$x %in% x,]
+  } else {
+    dat = hist
+    x = rev(g$sdf$x)
+  }
+  if (NROW(dat)==0) {
+    stop("None of your selected states exists.")
+  }
+  dat$x.ord = match(dat$x,x)
+
+  poly = rbind(
+    transmute(dat, point=1,x=x,x.ord=x.ord, t=t, px=v1,py=v2,r1=r1,r2=r2),
+    transmute(dat, point=2,x=x,x.ord=x.ord, t=t, px=U-v2,py=v2,r1=r1,r2=r2),
+    transmute(dat, point=3,x=x,x.ord=x.ord,t=t, px=v1,py=U-v1,r1=r1,r2=r2)
+  ) %>% arrange(desc(t),x.ord,point)
+
+  poly$x = factor(poly$x,levels=x)
+
+  x.ind = match(poly$x, g$sdf$x)
+  poly$fill = colors[x.ind]
+  if (length(alpha)>1) {
+    poly$alpha = alpha[x.ind]
+  } else {
+    poly$alpha = alpha
+  }
+  poly$frame = max(poly$t)-poly$t
+
+  poly$state = poly$x
+  library(ggplot2)
+  library(plotly)
+
+  suppressWarnings({
+    gg = ggplot(poly, aes(x = px, y = py, fill=x, alpha=alpha, frame=frame))
+    gg = gg+
+        geom_point(aes(x=r1,y=r2,frame=frame), color="black", show.legend = FALSE) +
+        geom_polygon(color="black") +
+        scale_alpha_continuous(guide=FALSE) +
+        xlab("u1") + ylab("u2") + theme_bw()
+    if (!add.grid) {
+      gg = gg + theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"))
+    }
+    if (!is.null(add.plot)) {
+      code = paste0("gg + ", deparse1(add.plot))
+      gg = eval(parse(text = code))
+    }
+
+    if (add.diag) {
+      gg = gg + geom_abline(intercept = 0, slope=1, colour="black", alpha=0.4)
+    }
+  })
+  ggplotly(gg) %>%
+    config(displayModeBar = F) %>%
+    animation_slider(
+      currentvalue = list(prefix = "Periods before Cap ", font = list(color="black", size="0.6em"))
+    )
+
+}
+
 extend.range = function(range, perc=0.05) {
   range[1] = range[1] - perc*abs(diff(range))
   range[2] = range[2] + perc*abs(diff(range))

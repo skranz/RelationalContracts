@@ -1,37 +1,39 @@
-#' Solves for all states the repeated game assuming the state is fixed
+#' Solves for all specified states the repeated game assuming the state is fixed
 #'
 #' @returns Returns a game object that contains a field 'rep.games.df'.
 #' This data frame contains the relevant information to compute
 #' equilibrium payoffs and equilibria for all
 #' discount factors for all states.
-rel_solve_all_repgames = function(g, overwrite=FALSE) {
-  restore.point("rel_solve_all_repgames")
-  if (!overwrite & !is.null(g$rep.games.df))
-    return(g)
-
-  if (isTRUE(g$is.multi.stage))
-    return(solve.all.rep.multistage(g, overwrite=overwrite))
+rel_solve_repgames = function(g,x=g$sdf$x, overwrite=FALSE, rows=match(x, g$sdf$x)) {
+  restore.point("rel_solve_repgames")
+  if (!isTRUE(g$is_compiled)) stop("Please first call rel_compile")
 
 
-  sdf = g$sdf
-  li = lapply(1:NROW(sdf), function(row) {
-    if (is.null(sdf$rep[[row]])) {
-      solve.x.repgame(g,row=row)
-    } else {
-      sdf$rep[[row]]
+  is.multi.stage = isTRUE(g$is.multi.stage)
+  added = 0
+  for (row in rows) {
+    if (is.null(g$sdf$rep[[row]]) | overwrite) {
+      added = added+1
+      if (is.multi.stage) {
+        g$sdf$rep[[row]] = solve.x.rep.multistage(g,row=row)
+      } else {
+        g$sdf$rep[[row]] = solve.x.repgame(g,row=row)
+      }
     }
-  })
-  g$rep.games.df = bind_rows(li)
+  }
+  if (added >0)
+    g$rep.games.df = bind_rows(g$sdf$rep)
   g
 }
 
-#' Get the results of all repeated games assuming the state is fixed
+
+#' Get the results of all solved repeated games assuming the state is fixed
 #'
 #' Returns for all discount factors the optimal simple strategy profiles
 #' maximum joint payoffs and punishment profiles
 get.repgames.results = function(g, action.details=TRUE) {
   if (is.null(g$rep.games.df)) {
-    stop("Please first call rel_solve_all_repgames")
+    stop("Please first call rel_solve_repgames")
   }
   res = g$rep.games.df
   if (action.details) {

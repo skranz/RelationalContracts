@@ -32,7 +32,7 @@ examples.rel.mermaid.code = function() {
 
   g = rel_game("Arms Race") %>%
     rel_param(delta=0.99, rho=0.9, c=0, k=0.1,x.max=x.max, success.prob=0.5) %>%
-    rel_states_fun(x.df,A.fun=A.fun, pi.fun=pi.fun, trans.fun=trans.fun) %>%
+    rel_states(x.df,A.fun=A.fun, pi.fun=pi.fun, trans.fun=trans.fun) %>%
     rel_compile() %>%
     rel_capped_rne(T=50)
 
@@ -45,21 +45,17 @@ examples.rel.mermaid.code = function() {
 
 }
 
-spe.diagram = function(g,t=1, show.own.loop=FALSE, show.terminal.loop=FALSE, eq.field = "spe", use.x=NULL, just.eq.chain=FALSE, x0=g$sdf$x[1]) {
-  rne.diagram(g,t,show.own.loop, show.terminal.loop,eq.field, use.x, just.eq.chain, x0)
+spe.diagram = function(g,t=1, show.own.loop=FALSE, show.terminal.loop=FALSE, eq = g$spe, use.x=NULL, just.eq.chain=FALSE, x0=g$sdf$x[1]) {
+  rne.diagram(g,t,show.own.loop, show.terminal.loop,eq=eq, use.x, just.eq.chain, x0)
 }
 
-rne.diagram = function(g,t=1, show.own.loop=FALSE, show.terminal.loop=FALSE, eq.field = "rne", use.x=NULL, just.eq.chain=FALSE, x0=g$sdf$x[1], label.fun=NULL, tooltip.fun=NULL) {
+rne.diagram = function(g,show.own.loop=FALSE, show.terminal.loop=FALSE, eq = g$rne, use.x=NULL, just.eq.chain=FALSE, x0=g$sdf$x[1], label.fun=NULL, tooltip.fun=NULL) {
   restore.point("rne.diagram")
 
   library(DiagrammeR)
 
   is.multi.stage = isTRUE(g$is.multi.stage)
-
-  rne = g[[eq.field]]
-
-  if (has.col(rne,"t"))
-    rne = rne[rne$t==t,]
+  rne = eq
 
   sdf=g$sdf
 
@@ -105,7 +101,7 @@ rne.diagram = function(g,t=1, show.own.loop=FALSE, show.terminal.loop=FALSE, eq.
     } else {
       ae = rne$d.ae[[rne.row]]
     }
-    if (is.null(trans.mat)) {
+    if (NROW(trans.mat)==0) {
       if (!show.terminal.loop)
         return(NULL)
       dest = x
@@ -178,7 +174,7 @@ rel.diagram = function(g) {
   tr = lapply(seq_len(NROW(sdf)), function(row) {
     trans.mat = sdf$trans.mat[[row]]
     x = sdf$x[[row]]
-    if (is.null(trans.mat)) {
+    if (NROW(trans.mat)==0) {
       dest = x
     } else {
       dest = colnames(trans.mat)
@@ -193,30 +189,3 @@ rel.diagram = function(g) {
   render_graph(graph, output="visNetwork")
 }
 
-
-rel.mermaid.code = function(g, orient = c("LR","TD")[1]) {
-  mm = paste0("graph ", orient)
-  sdf = g$sdf
-  x =g$sdf$x
-  mm = c(mm, paste0(x,"((",x,"))", collapse=";"))
-
-  prob.str = function(prob) {
-    uprob = unique(prob)
-    if (length(uprob)==1)
-      return(paste0(round(uprob*100,1),"%"))
-    return(paste0(round(range(prob*100),1),"%", collapse="-"))
-  }
-
-  tr = sapply(seq_len(NROW(sdf)), function(row) {
-    trans.mat = sdf$trans.mat[[row]]
-    x = sdf$x[[row]]
-    if (is.null(trans.mat)) {
-      dest = x
-    } else {
-      dest = colnames(trans.mat)
-    }
-    paste0(x,"-->", dest, collapse="\n")
-  })
-  mm = c(mm,tr)
-  mm = paste0(mm, collapse="\n")
-}

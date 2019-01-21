@@ -102,19 +102,23 @@ add.rel.multistage.compile = function(g,...) {
 }
 
 
-capped.rne.multistage.iterations = function(g,T=1,rne=g$rne, tie.breaking, debug_row=-1, tol=1e-12, use.cpp=TRUE, save.details=FALSE) {
+capped.rne.multistage.iterations = function(g,T=1,rne=g$rne, tie.breaking, debug_row=-1, tol=1e-12, use.cpp=TRUE, save.details=FALSE, save.history=FALSE) {
   restore.point("capped.rne.multistage.iterations")
 
   if (T<=0) {
-    return(list(rne=rne,details=NULL))
+    return(list(rne=rne,details=NULL, history=NULL))
   }
+  if (save.history & use.cpp) {
+    use.cpp = FALSE
+  }
+
 
   # TO DO: Compile transmats before in a useful form
   sdf = g$sdf
   if (use.cpp) {
     transmats = lapply(1:NROW(sdf), function(row) {
       trans.mat = sdf$trans.mat[[row]]
-      if (is.null(trans.mat)) {
+      if (NROW(trans.mat)==0) {
         x = sdf$x[row]; na1 = sdf$na1[row]; na2 = sdf$na2[row]
         trans.mat = matrix(1,na1*na2,1)
         colnames(trans.mat) = x
@@ -136,14 +140,14 @@ capped.rne.multistage.iterations = function(g,T=1,rne=g$rne, tie.breaking, debug
       res = list(rne=rne, details=NULL)
     }
   } else {
-    res = r.capped.rne.multistage.iterations(T=T, g=g, rne=rne, tie.breaking=tie.breaking,tol=tol, save.details=save.details)
+    res = r.capped.rne.multistage.iterations(T=T, g=g, rne=rne, tie.breaking=tie.breaking,tol=tol, save.details=save.details, save.history=save.history)
   }
   res
 }
 
 # Iterate capped RNE over T periods using pure R
 # Return res_rne
-r.capped.rne.multistage.iterations = function(T, g, rne, tie.breaking, delta=g$param$delta, rho=g$param$rho,beta1 = g$param$beta1, tol=1e-12, save.details=FALSE) {
+r.capped.rne.multistage.iterations = function(T, g, rne, tie.breaking, delta=g$param$delta, rho=g$param$rho,beta1 = g$param$beta1, tol=1e-12, save.details=FALSE, save.history=FALSE) {
   restore.point("r.capped.multistage.rne.iterations")
 
   delta=g$param$delta
@@ -162,6 +166,9 @@ r.capped.rne.multistage.iterations = function(T, g, rne, tie.breaking, delta=g$p
     details.li = vector("list",NROW(sdf))
     x.df = g$x.df
   }
+  if (save.history) {
+    history.li = vector("list",T)
+  }
 
   # Compute all remaining periods
   for (iter in seq_len(T)) {
@@ -171,7 +178,7 @@ r.capped.rne.multistage.iterations = function(T, g, rne, tie.breaking, delta=g$p
       na1 = sdf$na1[row]
       na2 = sdf$na2[row]
       trans.mat = sdf$trans.mat[[row]]
-      if (is.null(trans.mat)) {
+      if (NROW(trans.mat)==0) {
         xd = x
       } else {
         xd = colnames(trans.mat)
@@ -251,7 +258,7 @@ r.capped.rne.multistage.iterations = function(T, g, rne, tie.breaking, delta=g$p
       rne_r1[row] = r1; rne_r2[row] = r2
 
       # Find actions
-      if (iter == T) {
+      if (iter == T | save.history) {
         d.a = r_rne_find_actions(U,v1,v2,U.hat,v1.hat,v2.hat, IC.holds, next_r1, next_r2, trans.mat, dest.rows, tie.breaking, tol=1e-12)
         rne_actions[row,] = c(s.e$.a,s.1$.a,s.2$.a, d.a)
       }
@@ -302,6 +309,12 @@ r.capped.rne.multistage.iterations = function(T, g, rne, tie.breaking, delta=g$p
       }
 
     }
+    if (save.history) {
+      res_rne = cbind(quick_df(t=T-iter+1,x=sdf$x,r1=rne_r1,r2=rne_r2, U=rne_U, v1=rne_v1,v2=rne_v2),rne_actions)
+      res_rne = add.rne.action.labels(g,res_rne)
+      history.li[[iter]] = res_rne
+    }
+
     if (iter < T) {
       next_U = rne_U
       next_v1 = rne_v1; next_v2 = rne_v2
@@ -311,12 +324,11 @@ r.capped.rne.multistage.iterations = function(T, g, rne, tie.breaking, delta=g$p
   res_rne = cbind(quick_df(x=sdf$x,r1=rne_r1,r2=rne_r2, U=rne_U, v1=rne_v1,v2=rne$v2),rne_actions)
   res_rne = add.rne.action.labels(g,res_rne)
 
-  if (save.details) {
-    details = bind_rows(details.li)
-    return(list(rne=res_rne, details=details))
-  } else {
-    return(list(rne=res_rne, details=NULL))
-  }
+  details = if (save.details) bind_rows(details.li)
+  history = if (save.history) bind_rows(history.li)
+
+  return(list(rne=res_rne, details=details, history=history))
+
 
 }
 
@@ -415,7 +427,7 @@ rel.capped.rne.multistage.old = function(g,T, save.details=FALSE, tol=1e-10,  de
       trans.mat = sdf$trans.mat[[srow]]
       #rownames(trans.mat) = make.state.lab.a(sdf[srow,])
 
-      if (is.null(trans.mat)) {
+      if (NROW(trans.mat)==0) {
         trans.mat = matrix(1,na1*na2,1)
         colnames(trans.mat) = x
       }

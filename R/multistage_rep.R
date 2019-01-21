@@ -38,25 +38,6 @@ compute.rep.game.action.lists = function(sdf, rows=seq_len(NROW(sdf))) {
   li
 }
 
-# Solves the repeated game for all states assuming that the state
-# is fixed, for all discount factors.
-solve.all.rep.multistage = function(g, overwrite=FALSE) {
-  restore.point("solve.all.rep.multistage")
-  if (!overwrite & !is.null(g$rep.games.df))
-    return(g)
-
-  sdf = g$sdf
-  li = lapply(1:NROW(sdf), function(row) {
-    if (is.null(sdf$rep[[row]])) {
-      solve.x.rep.multistage(g,row=row)
-    } else {
-      sdf$rep[[row]]
-    }
-  })
-  g$rep.games.df = bind_rows(li)
-  g
-}
-
 # Solving a repeated simply static dynamic multistage game with perfect monitoring
 solve.x.rep.multistage = function(g,x=NULL,row=NULL, tol=1e-10, beta1=g$param$beta1, make.strat.lab=FALSE) {
   restore.point("solve.x.rep.multistage")

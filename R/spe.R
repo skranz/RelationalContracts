@@ -197,7 +197,7 @@ make.rel.dyngame = function(g, symmetric=FALSE) {
     trans.mat = sdf$trans.mat[[ row ]]
     tau = matrix(0,NROW(avm),NROW(g$sdf))
 
-    if (is.null(trans.mat)) {
+    if (NROW(trans.mat)==0) {
       tau[,row] = 1
     } else {
       dest = xd.cols[colnames(trans.mat)]

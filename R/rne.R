@@ -220,8 +220,8 @@ rel_rne = function(g, delta=g$param$delta, rho=g$param$rho, adjusted.delta=NULL,
     stop("For games with a static and dynamic stage, so far only capped RNE can be computed, via the function re_capped_rne.")
   }
   res = compute.delta.rho(delta, rho, adjusted.delta)
-  g$param$delta = res$delta
-  g$param$rho = res$rho
+  g$param$delta = delta = res$delta
+  g$param$rho = rho = res$rho
 
   g$param$beta1 = beta1
   sdf = g$sdf
@@ -234,13 +234,11 @@ rel_rne = function(g, delta=g$param$delta, rho=g$param$rho, adjusted.delta=NULL,
 
   # First solve repeated games for all terminal states
   rows = which(sdf$is_terminal)
+  g = rel_solve_repgames(g,rows=rows)
+  sdf=g$sdf
   row = rows[1]
+
   for (row in rows) {
-
-    if (is.null(sdf$rep[[row]])) {
-      sdf$rep[[row]] = solve.x.repgame(g,row=row)
-    }
-
     # Compute U, v, r
     rep = sdf$rep[[row]] %>%
       filter(adj_delta >= delta_min, adj_delta < delta_max)
@@ -550,13 +548,15 @@ compute.delta.rho = function(delta=NULL, rho=NULL, adjusted.delta=NULL) {
     if (!is.null(rho)) {
       if (rho > 1-adjusted.delta) {
         stop("For and adjusted.delta of ", adjusted.delta, " the negotatiation probability rho can be at most ", 1-adjusted.delta)
+      } else if (rho == 1-adjusted.delta) {
+        warning(call.=FALSE, paste0("For adjusted.delta = ", adjusted.delta, " and rho = ", rho,", we have delta = 1, which can be problematic. Better pick a lower rho."))
       }
       delta = adjusted.delta / (1-rho)
     } else {
       if (delta < adjusted.delta) {
         stop("If you provide only an delta and adjusted.delta and set rho=NULL then delta cannot be smaller than adjusted.delta")
       }
-      rho = 1-adjusted.delta / delta
+      rho = 1- (adjusted.delta / delta)
     }
   }
   list(delta=delta, rho=rho)

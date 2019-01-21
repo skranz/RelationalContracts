@@ -58,13 +58,15 @@ rel_compile = function(g,..., compute.just.static=FALSE) {
   # 1. Create a data frame with all states
   #def = g$state_defs[[2]]
 
-  if (is.null(g$x.df)) {
+  x.df = g$x.df
+  if (is.null(x.df)) {
     if (!is.null(g$x_df_def)) {
-      g$x.df = bind_rows(g$x_df_def)
+      x.df = bind_rows(g$x_df_def)
     } else {
-      g$x.df = NULL
+      x.df = NULL
     }
   }
+  g$x.df = x.df
 
   #def = g$state_defs[[1]]
   li = lapply(g$state_defs, function(def) {
@@ -151,9 +153,26 @@ rel_compile = function(g,..., compute.just.static=FALSE) {
   g$ax.grid = ax.grid[c("x",".a", names(empty.action)[!empty.action])]
 
   ax.df = g$ax.grid
-  if (!is.null(g$x.df)) {
+  if (!is.null(x.df)) {
     ax.df = inner_join(g$x.df,ax.df, by=c("x"="x"))
   }
+
+  if (is.null(x.df)) {
+    x.df = quick_df(x=sdf$x)
+  }
+  g$x.df = x.df
+
+  # 1b. Add x.T states for capped games
+  x.T = rep(NA_character_, NROW(sdf))
+
+  x.T.df = bind_rows(lapply(g$xT_defs, function(def) {
+    as_data_frame(def)
+  }))
+  if (NROW(x.T.df)>0) {
+    rows = match(x.T.df$x, sdf$x)
+    x.T[rows] = x.T.df$x.T
+  }
+  sdf$x.T = x.T
 
 
   # 2. Evaluate and store payoff matrices
@@ -213,14 +232,20 @@ rel_compile = function(g,..., compute.just.static=FALSE) {
   sdf$pi1 = pi1
   sdf$pi2 = pi2
 
-  if (is.null(g$x.df)) {
-    g$x.df = quick_df(x=sdf$x)
-  }
-
-
   if (compute.just.static) {
     g$sdf = sdf
     return(g)
+  }
+
+  # Compute after cap state's payoffs
+
+  after_cap_payoffs = bind_rows(g$default_after_cap_payoffs, bind_rows(lapply(g$after_cap_payoffs_defs,as_data_frame)))
+
+  if (NROW(after_cap_payoffs)>0) {
+    rows = which(is.na(after_cap_payoffs$x.T))
+    after_cap_payoffs$x.T[rows] = paste0(".#.",rows)
+    g$after_cap_payoffs = after_cap_payoffs
+
   }
 
   # 3. Evaluate and store state transitions
@@ -283,11 +308,11 @@ rel_compile = function(g,..., compute.just.static=FALSE) {
     filter(xs != xd) %>%
     unique()
 
-  non.states = setdiff(unique(c(tdf$xd,tdf$xs)),sdf$x)
-  check.rel(length(non.states)==0, paste0("You specify state transitions from or to unspecified states ", paste0(non.states, collapse=", "),". Make sure that you have not mis-spelled the state names."))
-
-
   if (NROW(tdf)>0) {
+    non.states = setdiff(unique(c(tdf$xd,tdf$xs)),sdf$x)
+    check.rel(length(non.states)==0, paste0("You specify state transitions from or to unspecified states ", paste0(non.states, collapse=", "),". Make sure that you have not mis-spelled the state names."))
+
+
     sdf$is_terminal = !(sdf$x %in% tdf$xs)
   } else {
     sdf$is_terminal = TRUE
@@ -329,12 +354,17 @@ compute.na = function(A) {
 
 compute.payoff.for.state = function(player=1,state, def, g) {
   restore.point("compute.payoff.matrix.for.state")
+  pi.expr = def[[paste0("pi", player)]]
+  if (is.matrix(pi.expr)) {
+    return(as.vector(t(pi.expr)))
+  }
+
   if (!is.null(g$x.df)) {
     args = c(as.list(state$a.grid[[1]]),g$param, as.list(g$x.df[state$row,]))
   } else {
     args = c(as.list(state$a.grid[[1]]),g$param,x=state$x)
   }
-  pi.expr = def[[paste0("pi", player)]]
+
   pi.val = eval.rel.expression(pi.expr,param=args)
 }
 
@@ -357,7 +387,8 @@ rel_game = function(name="Game", param=NULL, ...) {
 #' @param rho The negotiation probability
 #' @param ... other parameters that can e.g. be used in payoff functions
 #' @return Returns the updated game
-rel_param = function(g, delta=non.null(param[["delta"]], 0.9), rho=non.null(param[["rho"]], 0), beta1=non.null(param[["beta1"]],1/2), param=g[["param"]],...) {
+rel_param = function(g,..., delta=non.null(param[["delta"]], 0.9), rho=non.null(param[["rho"]], 0), beta1=non.null(param[["beta1"]],1/2), param=g[["param"]]) {
+
   restore.point("rel_param")
   param = list(delta=delta, rho=rho,beta1=beta1, ...)
   g$param = param
@@ -372,8 +403,11 @@ rel_param = function(g, delta=non.null(param[["delta"]], 0.9), rho=non.null(para
 #' @param x The name of the state
 #' @param A1 The action set of player 1. Can be a numeric or character vector
 #' @param A2 The action set of player 2. Can be a numeric or character vector
+#' @param pi1 Player 1's payoff. Value(s) or formula
+#' @param pi2 Player 2's payoff. Values(s) or formula
+#' @param x.T Relevant when solving a capped game. Which terminal state shall be set in period T onwards. By default, we stay in state x.
 #' @return Returns the updated game
-rel_state = function(g, x,A1=list(a1=""),A2=list(a2=""), pi1=NULL, pi2=NULL) {
+rel_state = function(g, x,A1=list(a1=""),A2=list(a2=""), pi1=NULL, pi2=NULL, x.T=NULL) {
   if (!is.list(A1)) A1 = list(a1=A1)
   if (!is.list(A2)) A2 = list(a2=A2)
   if (is.data.frame(x)) {
@@ -385,8 +419,11 @@ rel_state = function(g, x,A1=list(a1=""),A2=list(a2=""), pi1=NULL, pi2=NULL) {
   if (!is.null(x.df))
     g = add.to.rel.list(g,"x_df_def", x.df)
 
+  if (!is.null(x.T))
+    g = add.to.rel.list(g, "xT_defs",list(x=x,x.T=x.T))
 
-  g = add.to.rel.list(g, "state_defs",list(x=x, A1=A1,A2=A2) )
+
+  g = add.to.rel.list(g, "state_defs",list(x=x, A1=A1,A2=A2))
 
   if (!is.null(pi1) | !is.null(pi2)) {
     g = rel_payoff(g,x=x,pi1=pi1,pi2=pi2)
@@ -394,20 +431,51 @@ rel_state = function(g, x,A1=list(a1=""),A2=list(a2=""), pi1=NULL, pi2=NULL) {
   g
 }
 
+#' Specify the SPE payoff set of the truncated game in a after-cap state xT. An after cap state xT is linked to one or several states x via the argument xT in rel_state and rel_states. An after-cap state is a terminal state that replaces the linked state(s) x once period T is reached. While we could specify a complete repeated game that is played in xT, it also suffices to specify just an SPE payoff set of the truncated game of the after-cap state xT. If the SPE payoff sets of all after-cap states are sufficiently large, we have guarenteed convergence to a unique RNE payoff (that is then independent of the after-cap SPE payoff sets) in period t=1 if T grows large.
+#' @param g a relational contracting game created with rel_game
+#' @param xT The name of the after-cap state. Is refereed to as the argument xT in rel_state and rel_states
+#' @param U The highest joint payoff in the truncated repeated game starting from period T.
+#' @param v1 The lowest SPE payoff of player 1 in the truncated game. These are average discounted payoffs using delta as discount factor.
+#' @param v2 Like v1, but for player 2.
+#' @param v1.rep Alternative to v1. Player 1 lowest SPE payoff in the repeated game with adjusted discount factor delta*(1-rho). Will be automatically converted into v1_trunc based on rho, delta, and bargaining weight. Are often easier to specify.
+#' @param v2.rep Like v1.rep, but for player 2.
+#' @return Returns the updated game
+rel_after_cap_payoffs = function(g,x=NA, U, v1=NA, v2=NA, v1.rep=NA, v2.rep=NA, x.T=NA) {
+  restore.point("rel_after_cap_payoffs")
+
+  if (is.na(v1.rep) & is.na(v1))
+    stop("You must specify either v1 or v1.rep.")
+  if (is.na(v2.rep) & is.na(v2))
+    stop("You must specify either v2 or v2.rep.")
+
+  def = list(U=U, v1=v1, v2=v2, v1.rep=v1.rep, v2.rep=v2.rep,x=x,x.T=x.T)
+  if (is.na(x)) {
+    g$default_after_cap_payoffs = def
+  } else {
+    g = add.to.rel.list(g,"after_cap_payoffs_defs",def)
+  }
+
+  g
+}
+
+
+
 #' Add multiple states via functions
 #'
 #' @param g a relational contracting game created with rel_game
 #' @param x The names of the states
-#' @param A.fun A function that returns action sets
 #' @param A1 The action set of player 1. Can be a numeric or character vector
 #' @param A2 The action set of player 2. Can be a numeric or character vector
-
+#' @param A.fun Alternative to specify fixed A1 and A2, a function that returns action sets
 #' @param pi1 Player 1's payoff. Value(s) or formula
 #' @param pi2 Player 2's payoff. Values(s) or formula
-
-#' @param A2 The action set of player 2. Can be a numeric or character vector
+#' @param pi.fun Alternative to specify pi1 and pi2 as formula, a function that returns for each state a data frame with with pi1 and pi2 and as many rows as action profiles
+#' @param vec.pi.fun Alternative to pi.fun. A vectorized function that returns payoffs directly for all combinations of states and action profiles.
+#' @param trans.fun A function that specifies state transitions
+#' @param vec.trans.fun Alternative to trans.fun, a vectorized function that specifies state transitions
+#' @param x.T Relevant when solving a capped game. Which terminal state shall be set in period T onwards. By default, we stay in state x.
 #' @return Returns the updated game
-rel_states = function(g, x,A1=NULL, A2=NULL, pi1=NULL, pi2=NULL, A.fun=NULL, pi.fun=NULL, vec.pi.fun=NULL, trans.fun=NULL, vec.trans.fun=NULL, static.A.fun=NULL, static.pi.fun=NULL, vec.static.pi.fun=NULL,  ...) {
+rel_states = function(g, x,A1=NULL, A2=NULL, pi1=NULL, pi2=NULL, A.fun=NULL, pi.fun=NULL, vec.pi.fun=NULL, trans.fun=NULL, vec.trans.fun=NULL, static.A.fun=NULL, static.pi.fun=NULL, vec.static.pi.fun=NULL,x.T=NULL,  ...) {
   args=list(...)
   restore.point("rel_states")
   if (is.data.frame(x)) {
@@ -419,8 +487,11 @@ rel_states = function(g, x,A1=NULL, A2=NULL, pi1=NULL, pi2=NULL, A.fun=NULL, pi.
   if (!is.null(x.df))
     g = add.to.rel.list(g,"x_df_def", x.df)
 
+  if (!is.null(x.T))
+    g = add.to.rel.list(g, "xT_defs",list(x=x,x.T=x.T))
+
   if (!is.null(A1) | !is.null(A2)) {
-    g = add.to.rel.list(g, "state_defs",list(x=x, A1=A1,A2=A2) )
+    g = add.to.rel.list(g, "state_defs",list(x=x, A1=A1,A2=A2))
   }
 
 
@@ -459,45 +530,6 @@ rel_states = function(g, x,A1=NULL, A2=NULL, pi1=NULL, pi2=NULL, A.fun=NULL, pi.
 
   g
 }
-
-
-#' Add multiple states via functions
-#'
-#' @param g a relational contracting game created with rel_game
-#' @param x The names of the states
-#' @param A.fun A function that returns action sets
-#' @param pi.fun A function that returns for each state a data frame with with pi1 and pi2 and as many rows as action profiles
-#' @param trans.fun A function that specifies state transitions
-rel_states_fun = function(g, x,A.fun=NULL, pi.fun=NULL, trans.fun=NULL, ...) {
-  args=list(...)
-  restore.point("rel_state_fun")
-  if (is.data.frame(x)) {
-    x.df = x
-    x = x.df$x
-  } else {
-    x.df = NULL
-  }
-  if (!is.null(x.df))
-    g = add.to.rel.list(g,"x_df_def", x.df)
-
-  if (!is.null(A.fun)) {
-    obj = list(x=x,A.fun=A.fun, args=args)
-    g = add.to.rel.list(g, "state_fun_defs",obj)
-  }
-  if (!is.null(pi.fun)) {
-    obj = list(x=x,pi.fun=pi.fun, args=args)
-    g = add.to.rel.list(g, "payoff_fun_defs",obj)
-  }
-  if (!is.null(trans.fun)) {
-    obj = list(x=x,trans.fun=trans.fun, args=args)
-    g = add.to.rel.list(g, "trans_fun_defs",obj)
-  }
-
-
-  g
-}
-
-
 
 #' Add a payoff function to one or several states
 #'
@@ -586,16 +618,21 @@ eval.rel.expression = function(e,g=NULL, param=g$param, vectorized=FALSE, null.v
 }
 
 
-
-
 compute.x.trans.mat = function(x,g, add.own=TRUE, tdf=g$tdf, row= which(g$sdf$x == x)) {
   restore.point("compute.x.trans.mat")
   #if (x=="x0") stop()
-  if (NROW(tdf)==0) return(NULL)
+  if (NROW(tdf)==0) {
+    empty = matrix(0,0,1)
+    colnames(empty) = x
+    return(empty)
+  }
 
   df = tdf[tdf$xs==x,]
-  if (NROW(df)==0) return(NULL)
-
+  if (NROW(df)==0) {
+    empty = matrix(0,0,1)
+    colnames(empty) = x
+    return(empty)
+  }
   xd = unique(df$xd)
 
   a.grid = g$sdf$a.grid[[row]]

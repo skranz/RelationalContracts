@@ -1,3 +1,7 @@
+expand_grid = function(...,stringsAsFactors=FALSE) {
+  expand.grid(...,stringsAsFactors = stringsAsFactors) %>%
+    as_tibble()
+}
 
 # Compute best reply payoffs from a matrix
 find.best.reply.payoffs = function(i,pi,na1,na2) {
@@ -15,6 +19,10 @@ find.best.reply.payoffs = function(i,pi,na1,na2) {
   c
 }
 
+deparse1 = function (call, collapse = "")
+{
+    paste0(deparse(call, width = 500), collapse = collapse)
+}
 # Helper function for trans.mat multiplication
 trans.mat.mult = function(trans.mat, vec) {
   if (NROW(trans.mat)==0) {

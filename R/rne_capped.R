@@ -1,12 +1,33 @@
 examples.rne_capped = function() {
+  e = seq(0,1, by=0.1)
+  g = rel_game("Simple Principal Agent Game") %>%
+    # Initial State
+    rel_state("x0",A2=list(e=e),pi1=~e, pi2=~ -0.5*e*e*(e>=0), x.T="xT") %>%
+    rel_after_cap_payoffs("xT",U=max(e-0.5*e*e), v1.rep=0,v2.rep=0) %>%
+    rel_compile()
+
+  g = rel_capped_rne(g, T=100, delta=.5, rho=0.5, save.history = TRUE)
+
+  capped.rne.history.animation(g)
+  (rne=g$rne)
+
+
+  g = rel_rne(g, adjusted.delta = 0.1, rho=0.89)
+  (rne=g$rne)
+
+  g = rel_rne(g, adjusted.delta = 0.1, rho=0.1)
+  (rne=g$rne)
+
+
+
   e.seq = seq(0,1, by=0.1); xL=0; xH=0.2
   g = rel_game("Weakly Monotone Vulnerability Paradox") %>%
     # Initial State
-    rel_state("xL", A1=list(move=c("stay","vul")),A2=list(e=e.seq)) %>%
+    rel_state("xL", A1=list(move=c("stay","vul")),A2=list(e=e.seq), x.T="xH") %>%
     rel_payoff("xL",pi1=~e, pi2=~ -0.5*e*e*(e>=0)) %>%
     rel_transition("xL","xH",move="vul") %>%
     # High vulnerability
-    rel_state("xH", A1=NULL,A2=list(e=unique(c(-xH,e.seq)))) %>%
+    rel_state("xH", A1=NULL,A2=list(e=unique(c(-xH,e.seq))), x.T="xL") %>%
     rel_payoff("xH",pi1=~e, pi2=~ -0.5*e*e*(e>=0)) %>%
     rel_compile()
 
@@ -14,10 +35,46 @@ examples.rne_capped = function() {
   (rne=g$rne)
 
 
-  g = rel_capped_rne(g,T=100, delta=0.9, rho=0.9,use.cpp=!TRUE)
+  g = rel_capped_rne(g,T=50, delta=0.9, rho=0.9,use.cpp=FALSE, save.history = TRUE)
   (rne=g$rne)
+  (hist = g$rne.history)
+
+  capped.rne.history.animation(g)
+
+
+  reveal = seq(0,1,by=0.05)
+  #reveal = c(0,0.51)
+  g = rel_game("Blackmailing with Endogenous Brinkmanship") %>%
+    rel_param(delta=0.9, rho=0.5) %>%
+    # Initial State
+    rel_state("x0", A1=list(reveal=reveal),A2=NULL, x.T="xT") %>%
+    rel_payoff("x0",pi1=0, pi2=1) %>%
+    rel_transition("x0","x1",reveal=reveal, prob=reveal) %>%
+    # Evidence Revealed
+    rel_state("x1", A1=NULL,A2=NULL,x.T="xT") %>%
+    rel_payoff("x1",pi1=0, pi2=0) %>%
+    # Some state
+    rel_state("xT", A1=list(g1=c(0,1)),A2=list(g2=c(0,1)),x.T="x0") %>%
+    rel_payoff("xT",pi1= ~ g2, pi2= ~g1 ) %>%
+    rel_compile() %>%
+    rel_capped_rne(T=100, save.history = TRUE, use.cpp=TRUE)
+
+  capped.rne.history.animation(g,x=NULL)
+
+  hist = g$rne.history
+  de = get.rne.details(g, x="xL")
+
+
+  g = rel_game("Simple Principal Agent Game") %>%
+    # Initial State
+    rel_state("x0",A2=list(e=e),pi1=~e, pi2=~ -0.5*e*e*(e>=0), signals=c("success"), x.T="xT") %>%
+    rel_signal_prob("x0", success=)
+    rel_after_cap_payoffs("xT",U=max(e-0.5*e*e), v1.rep=0,v2.rep=0) %>%
+    rel_compile()
+
 
 }
+
 
 arms.race.example = function() {
 
@@ -89,7 +146,7 @@ arms.race.example = function() {
 
   g = rel_game("Arms Race") %>%
     rel_param(delta=0.995, rho=0.4, c=0, k=2,x.max=x.max, success.prob=1) %>%
-    rel_states_fun(x.df,A.fun=A.fun, pi.fun=pi.fun, trans.fun=trans.fun) %>%
+    rel_states(x.df,A.fun=A.fun, pi.fun=pi.fun, trans.fun=trans.fun) %>%
     rel_compile() %>%
     rel_capped_rne(T=100)
 
@@ -123,17 +180,15 @@ arms.race.example = function() {
   View(rne)
 }
 
-
-
 #' Solve an RNE for a capped version of a multistage game
-rel_capped_rne = function(g,T, tol=1e-10,  delta=g$param$delta, rho=g$param$rho, adjusted.delta=NULL, res.field="rne", tie.breaking=c("equal_r", "slack","random","first","last","max_r1","max_r2")[1], use.cpp=TRUE, save.details=FALSE, add.iterations=FALSE) {
+rel_capped_rne = function(g,T, tol=1e-10,  delta=g$param$delta, rho=g$param$rho, adjusted.delta=NULL, res.field="rne", tie.breaking=c("equal_r", "slack","random","first","last","max_r1","max_r2")[1], use.cpp=TRUE, save.details=FALSE, add.iterations=FALSE, save.history=FALSE) {
   restore.point("rel_capped_rne")
   if (!g$is_compiled) g = rel_compile(g)
 
 
   res = compute.delta.rho(delta, rho, adjusted.delta)
-  g$param$delta = res$delta
-  g$param$rho = res$rho
+  g$param$delta = delta = res$delta
+  g$param$rho = rho = res$rho
 
   if (use.cpp) {
     if (!require(RelationalContractsCpp)) {
@@ -143,10 +198,7 @@ rel_capped_rne = function(g,T, tol=1e-10,  delta=g$param$delta, rho=g$param$rho,
   }
 
 
-  # Solve repeated games for all states
-  g = rel_solve_all_repgames(g)
 
-  sdf = g$sdf
   adj_delta = (1-rho)*delta
   beta1 = g$param$beta1
   beta2 = 1-beta1
@@ -156,14 +208,21 @@ rel_capped_rne = function(g,T, tol=1e-10,  delta=g$param$delta, rho=g$param$rho,
     if (is.null(rne)) add.iterations=FALSE
   }
   if (!add.iterations) {
-    rne = capped.rne.rep.period(g,delta=delta, rho=rho)
+    g = prepare.after.cap(g)
+    rne = capped.rne.period.T(g,delta=delta, rho=rho)
     T = T-1
   }
 
   if (!isTRUE(g$is.multi.stage)) {
-    res = capped.rne.iterations(g,T, rne=rne,save.details=save.details, use.cpp=use.cpp,tie.breaking = tie.breaking,tol = tol)
+    res = capped.rne.iterations(g,T, rne=rne,save.details=save.details, use.cpp=use.cpp,tie.breaking = tie.breaking,tol = tol, save.history = save.history)
   } else {
-    res = capped.rne.mutltistage.iterations(g,T, rne=rne,save.details=save.details, use.cpp=use.cpp,tie.breaking = tie.breaking,tol = tol)
+    res = capped.rne.multistage.iterations(g,T, rne=rne,save.details=save.details, use.cpp=use.cpp,tie.breaking = tie.breaking,tol = tol, save.history=save.history)
+  }
+  if (save.history) {
+    start.rne = bind_cols(t=rep(T+1,NROW(rne)),add.rne.action.labels(g,rne))
+    history = bind_rows(start.rne, res$history)
+  } else {
+    history = NULL
   }
   rne = res$rne
   details = res$details
@@ -172,25 +231,31 @@ rel_capped_rne = function(g,T, tol=1e-10,  delta=g$param$delta, rho=g$param$rho,
   if (!is.null(g$x.df))
     rne = left_join(rne, g$x.df, by="x")
 
-  g$sdf = sdf
   g[[res.field]] = rne
   g[[paste0(res.field,".details")]] = details
+  g[[paste0(res.field,".history")]] = history
   g
 }
 
-capped.rne.iterations = function(g,T=1,rne=g$rne, tie.breaking, debug_row=-1, tol=1e-12, use.cpp=TRUE, save.details=FALSE) {
+capped.rne.iterations = function(g,T=1,rne=g$rne, tie.breaking, debug_row=-1, tol=1e-12, use.cpp=!save.history, save.details=FALSE, save.history = FALSE) {
   restore.point("capped.rne.iterations")
 
   if (T<=0) {
     return(list(rne=rne,details=NULL))
   }
 
+  if (save.history & use.cpp) {
+    #cat("Note since save.history=TRUE, I use pure R functions instead of C++.")
+    use.cpp = FALSE
+  }
+
+
   # TO DO: Compile transmats before in a useful form
   sdf = g$sdf
   if (use.cpp) {
     transmats = lapply(1:NROW(sdf), function(row) {
       trans.mat = sdf$trans.mat[[row]]
-      if (is.null(trans.mat)) {
+      if (NROW(trans.mat)==0) {
         x = sdf$x[row]; na1 = sdf$na1[row]; na2 = sdf$na2[row]
         trans.mat = matrix(1,na1*na2,1)
         colnames(trans.mat) = x
@@ -211,14 +276,14 @@ capped.rne.iterations = function(g,T=1,rne=g$rne, tie.breaking, debug_row=-1, to
       res = list(rne=res_rne, details=NULL)
     }
   } else {
-    res = r.capped.rne.iterations(T=T, g=g, rne=rne, tie.breaking=tie.breaking, save.details=save.details)
+    res = r.capped.rne.iterations(T=T, g=g, rne=rne, tie.breaking=tie.breaking, save.details=save.details, save.history = save.history)
   }
   res
 }
 
 # Iterate capped RNE over T periods using pure R
 # Return res_rne
-r.capped.rne.iterations = function(T, g, rne, tie.breaking,delta=g$param$delta, rho=g$param$rho,beta1 = g$param$beta1, tol=1e-12, save.details=FALSE) {
+r.capped.rne.iterations = function(T, g, rne, tie.breaking,delta=g$param$delta, rho=g$param$rho,beta1 = g$param$beta1, tol=1e-12, save.details=FALSE, save.history=FALSE) {
   restore.point("r.capped.rne.iterations")
 
   sdf = g$sdf
@@ -234,8 +299,11 @@ r.capped.rne.iterations = function(T, g, rne, tie.breaking,delta=g$param$delta, 
     details.li = vector("list",NROW(sdf))
     x.df = g$x.df
   }
+  if (save.history) {
+    history.li = vector("list",T)
+  }
 
-  iter=1;row=2;
+  iter=1;row=1;
   # Compute all remaining periods
   for (iter in seq_len(T)) {
     for (row in 1:NROW(sdf)) {
@@ -244,11 +312,7 @@ r.capped.rne.iterations = function(T, g, rne, tie.breaking,delta=g$param$delta, 
       na1 = sdf$na1[row]
       na2 = sdf$na2[row]
       trans.mat = sdf$trans.mat[[row]]
-      if (is.null(trans.mat)) {
-        xd = x
-      } else {
-        xd = colnames(trans.mat)
-      }
+      xd = colnames(trans.mat)
       dest.rows = match(xd, sdf$x)
 
       # Include code to compute U v and r for the current state
@@ -297,7 +361,7 @@ r.capped.rne.iterations = function(T, g, rne, tie.breaking,delta=g$param$delta, 
       rne_r1[row] = r1; rne_r2[row] = r2
 
       # Find actions
-      if (iter == T) {
+      if (iter == T | save.history) {
         rne_actions[row,] = r_rne_find_actions(U,v1,v2,U.hat,v1.hat,v2.hat, IC.holds, next_r1, next_r2, trans.mat, dest.rows, tie.breaking, tol=1e-12)
       }
 
@@ -348,48 +412,139 @@ r.capped.rne.iterations = function(T, g, rne, tie.breaking,delta=g$param$delta, 
       }
 
     }
+    if (save.history) {
+      res_rne = cbind(quick_df(t=T-iter+1,x=sdf$x,r1=rne_r1,r2=rne_r2, U=rne_U, v1=rne_v1,v2=rne_v2),rne_actions)
+      res_rne = add.rne.action.labels(g,res_rne)
+      history.li[[iter]] = res_rne
+    }
+
+
     if (iter < T) {
       next_U = rne_U
       next_v1 = rne_v1; next_v2 = rne_v2
       next_r1 = rne_r1; next_r2 = rne_r2
     }
   }
-  res_rne = cbind(quick_df(x=sdf$x,r1=rne_r1,r2=rne_r2, U=rne_U, v1=rne_v1,v2=rne$v2),rne_actions)
+  res_rne = cbind(quick_df(x=sdf$x,r1=rne_r1,r2=rne_r2, U=rne_U, v1=rne_v1,v2=rne_v2),rne_actions)
   res_rne = add.rne.action.labels(g,res_rne)
+  details = if (save.details) bind_rows(details.li)
+  history = if (save.history) bind_rows(history.li)
 
-  if (save.details) {
-    details = bind_rows(details.li)
-    return(list(rne=res_rne, details=details))
-  } else {
-    return(list(rne=res_rne, details=NULL))
-  }
+  return(list(rne=res_rne, details=details, history=history))
 
 }
 
+# Solve all required repeated games and default
+# after.cap.payoffs
+# TO DO: Also implement for multistage
+prepare.after.cap = function(g) {
+  restore.point("prepare.after.cap")
+  sdf = g$sdf
+  has.default = !is.null(g$default_after_cap_payoffs)
+  x.T = sdf$x.T
+  if (!is.null(g$after_cap_payoffs)) {
+    ac.rows = match(sdf$x, g$after_cap_payoffs$x)
+    x.T[!is.na(ac.rows)] = g$after_cap_payoffs$x.T[ac.rows[!is.na(ac.rows)]]
+  }
+
+  # No default after-cap payoff set is specified
+  # If no after cap payoff set is linked
+  # use repeated game with fixed state after cap
+  if (!has.default) {
+    rows = is.na(x.T)
+    x.T[rows] = sdf$x[rows]
+  # A default after-cap payoff set is specified
+  } else {
+    rows = is.na(x.T)
+    x.T[rows] = g$after_cap_payoffs$x.T[1]
+  }
+
+  sdf$x.T =x.T
+  g$sdf = sdf
+
+  # Solve repeated games for all required states
+  need.rep.rows = which(sdf$x %in% x.T)
+  g = rel_solve_repgames(g, rows = need.rep.rows)
+
+  g
+}
 
 
-# Solve the last period where all stages remain a repeated game
-capped.rne.rep.period = function(g, delta=g$param$delta, rho=g$param$rho) {
-  restore.point("capped.rne.rep.period")
+# Solve for period T onwards, where the SPE payoff set of the truncated game
+# stays constant
+capped.rne.period.T = function(g, delta=g$param$delta, rho=g$param$rho) {
+  restore.point("capped.rne.period.T")
 
-  if (is.null(g$rep.games.df))
-    stop("Please first call rel_solve_all_repeated_games to solve the repeated games for all states, assuming the state stays fixed.")
+  beta1 = g$param$beta1
   adj_delta = delta*(1-rho)
-
   w = ((1-delta) / (1-adj_delta))
-  res = g$rep.games.df %>%
-    filter(adj_delta >= delta_min, adj_delta < delta_max) %>%
-    mutate(
-      v1 = w*v1_rep + (1-w)*r1,
-      v2 = w*v2_rep + (1-w)*r2
-    )
+
+  sdf = g$sdf
+  xT = unique(sdf$x.T)
+  need.rep.x = intersect(sdf$x, xT)
+  if (length(need.rep.x)>0) {
+    rep.df = g$rep.games.df %>%
+      filter(x %in% need.rep.x, adj_delta >= delta_min, adj_delta < delta_max) %>%
+      mutate(
+        v1 = w*v1_rep + (1-w)*r1,
+        v2 = w*v2_rep + (1-w)*r2
+      )
+  } else {
+    rep.df = NULL
+  }
+  # Have some special after cap states
+  after.cap.x = setdiff(xT,rep.df$x)
+  if (length(after.cap.x)>0) {
+    if (!all(after.cap.x %in% g$after_cap_payoffs$x.T)) {
+      stop(paste0("You have not specified the after-cap payoffs for x.T = ", paste0(setdiff(after.cap.x, g$after_cap_payoffs$x.T), collapse=", ")))
+    }
+
+    acp = g$after_cap_payoffs
+
+    has.v = !is.na(acp$v1)
+
+    r1 = acp$v1 + beta1*(acp$U-acp$v1-acp$v2)
+    r1[!has.v] = (acp$v1.rep + beta1*(acp$U-acp$v1.rep-acp$v2.rep))[!has.v]
+    r2 = acp$U-r1
+
+    # Compute punishment payoffs of the truncated game
+    acp$v1[!has.v] = (w*acp$v1.rep + (1-w)*r1)[!has.v]
+    acp$v2[!has.v] = (w*acp$v2.rep + (1-w)*r2)[!has.v]
+
+    if (isTRUE(g$is.multi.stage)) {
+      res.acp = transmute(acp,
+        x=x.T, r1=r1,r2=r2,U=U, v1=v1, v2=v2,
+        s.ae=NA_integer_, s.a1=NA_integer_, s.a2 =NA_integer_,
+        d.ae=NA_integer_, d.a1=NA_integer_, d.a2 =NA_integer_
+      )
+    } else {
+      res.acp = transmute(acp,
+        x=x.T, r1=r1,r2=r2,U=U, v1=v1, v2=v2,
+        ae=NA_integer_, a1=NA_integer_, a2 =NA_integer_
+      )
+    }
+
+    res = bind_rows(rep.df, res.acp)
+  } else {
+    res = rep.df
+  }
+
   if (isTRUE(g$is.multi.stage)) {
     cols = c("x","r1","r2","U","v1","v2","s.ae","s.a1","s.a2","d.ae","d.a1","d.a2")
   } else {
     cols = c("x","r1","r2","U","v1","v2","ae","a1","a2")
   }
-  res[,cols,drop=FALSE]
 
+  # All states repeat themselves
+  if (all(sdf$x==sdf$x.T)) {
+    res = res[,cols,drop=FALSE]
+  } else {
+    rows = match(sdf$x.T,res$x)
+    res = res[rows,cols, drop=FALSE]
+    res$x = g$sdf$x
+  }
+  return(res)
+  #return(list(res=res,g=g, g.changed=g.changed))
 }
 
 #' Solve an RNE for a capped version of the game
@@ -478,7 +633,7 @@ rel_capped_rne_old = function(g,T, save.details=FALSE, tol=1e-10,  delta=g$param
       trans.mat = sdf$trans.mat[[srow]]
       #rownames(trans.mat) = make.state.lab.a(sdf[srow,])
 
-      if (is.null(trans.mat)) {
+      if (NROW(trans.mat)==0) {
         trans.mat = matrix(1,na1*na2,1)
         colnames(trans.mat) = x
       }
