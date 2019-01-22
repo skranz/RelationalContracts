@@ -248,6 +248,12 @@ rel_compile = function(g,..., compute.just.static=FALSE) {
 
   }
 
+  after_cap_actions = lapply(g$after_cap_actions_defs,as_data_frame) %>% bind_rows
+  if (NROW(after_cap_actions)>0) {
+    g$after_cap_actions = after_cap_actions
+  }
+
+
   # 3. Evaluate and store state transitions
   # We will store state transitions as a matrix
   # Rows correspond to action profiles and columns to destination states
@@ -431,32 +437,6 @@ rel_state = function(g, x,A1=list(a1=""),A2=list(a2=""), pi1=NULL, pi2=NULL, x.T
   g
 }
 
-#' Specify the SPE payoff set of the truncated game in a after-cap state xT. An after cap state xT is linked to one or several states x via the argument xT in rel_state and rel_states. An after-cap state is a terminal state that replaces the linked state(s) x once period T is reached. While we could specify a complete repeated game that is played in xT, it also suffices to specify just an SPE payoff set of the truncated game of the after-cap state xT. If the SPE payoff sets of all after-cap states are sufficiently large, we have guarenteed convergence to a unique RNE payoff (that is then independent of the after-cap SPE payoff sets) in period t=1 if T grows large.
-#' @param g a relational contracting game created with rel_game
-#' @param xT The name of the after-cap state. Is refereed to as the argument xT in rel_state and rel_states
-#' @param U The highest joint payoff in the truncated repeated game starting from period T.
-#' @param v1 The lowest SPE payoff of player 1 in the truncated game. These are average discounted payoffs using delta as discount factor.
-#' @param v2 Like v1, but for player 2.
-#' @param v1.rep Alternative to v1. Player 1 lowest SPE payoff in the repeated game with adjusted discount factor delta*(1-rho). Will be automatically converted into v1_trunc based on rho, delta, and bargaining weight. Are often easier to specify.
-#' @param v2.rep Like v1.rep, but for player 2.
-#' @return Returns the updated game
-rel_after_cap_payoffs = function(g,x=NA, U, v1=NA, v2=NA, v1.rep=NA, v2.rep=NA, x.T=NA) {
-  restore.point("rel_after_cap_payoffs")
-
-  if (is.na(v1.rep) & is.na(v1))
-    stop("You must specify either v1 or v1.rep.")
-  if (is.na(v2.rep) & is.na(v2))
-    stop("You must specify either v2 or v2.rep.")
-
-  def = list(U=U, v1=v1, v2=v2, v1.rep=v1.rep, v2.rep=v2.rep,x=x,x.T=x.T)
-  if (is.na(x)) {
-    g$default_after_cap_payoffs = def
-  } else {
-    g = add.to.rel.list(g,"after_cap_payoffs_defs",def)
-  }
-
-  g
-}
 
 
 
@@ -575,6 +555,49 @@ rel_transition = function(g, xs,xd,...,prob=1) {
 rel_transition_fun = function(g, trans.fun,x=NULL,..., vectorized=FALSE) {
   obj = list(x=x,trans.fun=trans.fun,vectorized=vectorized, args=list(...))
   add.to.rel.list(g, "trans_fun_defs",obj)
+}
+
+#' Specify the SPE payoff set(s) of the truncated game(s) after a cap in period T. While we could specify a complete repeated game that is played after the cap, it also suffices to specify just an SPE payoff set of the truncated game of the after-cap state.
+#' @param g a relational contracting game created with rel_game
+#' @param x The state(s) for which this after-cap payoff set is applied. If NA (default) and also x.T is NA, it applies to all states.
+#' @param U The highest joint payoff in the truncated repeated game starting from period T.
+#' @param v1 The lowest SPE payoff of player 1 in the truncated game. These are average discounted payoffs using delta as discount factor.
+#' @param v2 Like v1, but for player 2.
+#' @param v1.rep Alternative to v1. Player 1 lowest SPE payoff in the repeated game with adjusted discount factor delta*(1-rho). Will be automatically converted into v1_trunc based on rho, delta, and bargaining weight. Are often easier to specify.
+#' @param v2.rep Like v1.rep, but for player 2.
+#' @param x.T Instead of specifiying the argument x, we can specify as x.T a name of the after-cap state. This can be  refereed to as the argument x.T in rel_state and rel_states
+#' @return Returns the updated game
+rel_after_cap_payoffs = function(g,x=NA, U, v1=NA, v2=NA, v1.rep=NA, v2.rep=NA, x.T=NA) {
+  restore.point("rel_after_cap_payoffs")
+
+  if (is.na(v1.rep) & is.na(v1))
+    stop("You must specify either v1 or v1.rep.")
+  if (is.na(v2.rep) & is.na(v2))
+    stop("You must specify either v2 or v2.rep.")
+
+  def = list(U=U, v1=v1, v2=v2, v1.rep=v1.rep, v2.rep=v2.rep,x=x,x.T=x.T)
+  if (is.na(x)) {
+    g$default_after_cap_payoffs = def
+  } else {
+    g = add.to.rel.list(g,"after_cap_payoffs_defs",def)
+  }
+
+  g
+}
+
+
+#' Fix action profiles for the equilibrium path (ae) and during punishment (a1.hat and a2.hat) that are assumed to be played after the cap in period T onwards. The punishment profile a1.hat is the profile in which player 1 already plays a best-reply (in a1 he might play a non-best reply). From the specified action profiles in all states, we can compute the relevant after-cap payoffs U(x), v1(x) and v2(x) assuming that state transitions would continue.
+#' @param g a relational contracting game created with rel_game
+#' @param x The state(s) for which this after-cap payoff set is applied. If NA (default) and also x.T is NA, it applies to all states.
+#' @param ae A named list that specifies the equilibrum action profiles.
+#' @param a1.hat A named list that specifies the action profile when player 1 is punished.
+#' @param a2.hat A named list that specifies the action profile when player 2 is punished.
+#' @param x.T Instead of specifiying the argument x, we can specify as x.T a name of the after-cap state. This can be  refereed to as the argument x.T in rel_state and rel_states
+#' @return Returns the updated game
+rel_after_cap_actions = function(g,x=NA, ae, a1.hat,a2.hat, x.T=NA) {
+  restore.point("rel_after_cap_actions")
+  def = nlist(ae=list(ae),a1.hat=list(a1.hat),a2.hat=list(a2.hat),x=x,x.T=x.T)
+  add.to.rel.list(g,"after_cap_actions_defs",def)
 }
 
 

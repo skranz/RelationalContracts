@@ -1,4 +1,26 @@
 examples.rne_capped = function() {
+  g = rel_game("Principal-Agent Variation") %>%
+    rel_state("x0",A2=list(e=c(0,1)),pi1=~ e, pi2=~ -0.5*e) %>%
+    rel_state("x1",A1=list(b=c(0,1)),pi1=0.3, pi2=0.3) %>%
+    rel_transition("x0","x1", e=1) %>%
+    rel_transition("x1","x0") %>%
+    rel_after_cap_actions(
+      ae=list(e=~max(e),b=1),
+      a1=list(e=0,b=0),
+      a2=list(e=0,b=0)
+    ) %>%
+    rel_compile() %>%
+    rel_capped_rne(T=20,adjusted.delta = 0.54, rho=0, save.history = TRUE)
+
+  (rne=g$rne)
+  (hist=g$rne.history)
+  animate.capped.rne.history(g,x=NULL)
+
+
+  g = rel_spe(g)
+  (spe=g$spe)
+
+
   e = seq(0,1, by=0.1)
   g = rel_game("Simple Principal Agent Game") %>%
     # Initial State
@@ -439,6 +461,10 @@ r.capped.rne.iterations = function(T, g, rne, tie.breaking,delta=g$param$delta, 
 # TO DO: Also implement for multistage
 prepare.after.cap = function(g) {
   restore.point("prepare.after.cap")
+
+  if (!is.null(g$after_cap_actions))
+    return(g)
+
   sdf = g$sdf
   has.default = !is.null(g$default_after_cap_payoffs)
   x.T = sdf$x.T
@@ -475,11 +501,20 @@ prepare.after.cap = function(g) {
 capped.rne.period.T = function(g, delta=g$param$delta, rho=g$param$rho) {
   restore.point("capped.rne.period.T")
 
+  if (!is.null(g$after_cap_actions)) {
+    res = compute.after.cap.action.payoffs(g)
+    return(res)
+  }
+
   beta1 = g$param$beta1
   adj_delta = delta*(1-rho)
   w = ((1-delta) / (1-adj_delta))
 
   sdf = g$sdf
+
+
+
+
   xT = unique(sdf$x.T)
   need.rep.x = intersect(sdf$x, xT)
   if (length(need.rep.x)>0) {
@@ -546,6 +581,185 @@ capped.rne.period.T = function(g, delta=g$param$delta, rho=g$param$rho) {
   return(res)
   #return(list(res=res,g=g, g.changed=g.changed))
 }
+
+# Computes after.cap.payoffs given some fixed action
+# profiles
+compute.after.cap.action.payoffs = function(g) {
+  restore.point("compute.after.cap.action.payoffs")
+
+  delta = g$param$delta
+  rho = g$param$rho
+  beta1 = g$param$beta1
+  beta2 = 1-beta1
+  ind.mat = compute.after.cap.action.inds(g)
+  sdf = g$sdf
+  nx = NROW(sdf)
+
+  if (any(is.na(ind.mat))) {
+    stop("After cap actions are not specified for all states. Cannot compute after-cap payoffs.")
+  }
+  k.var="ae"
+
+  pi = rep(NA_real_,nx)
+  tau = matrix(0,nx,nx)
+  colnames(tau) = sdf$x
+
+  row = 1
+  for (row in 1:nx) {
+    ind = ind.mat[row,k.var]
+    # Joint payoffs
+    pi[row] = sdf$pi1[[row]][ind] + sdf$pi2[[row]][ind]
+    # Fill dense transition matrix
+    trans.mat = sdf$trans.mat[[row]]
+    cols =colnames(trans.mat)
+    if (NROW(trans.mat)==0) {
+      tau[row,cols] = 1
+    } else {
+      tau[row, cols] = trans.mat[ind,]
+    }
+  }
+  U = solve(diag(nx)-delta*tau, (1-delta)*pi)
+
+  k.var = "a1.hat"; tau[] = 0;
+  for (row in 1:nx) {
+    ind = ind.mat[row,k.var]
+    # Player i's payoff
+    pi[row] = sdf$pi1[[row]][ind]
+    trans.mat = sdf$trans.mat[[row]]
+    cols =colnames(trans.mat)
+    if (NROW(trans.mat)==0) {
+      tau[row,cols] = 1
+    } else {
+      tau[row, cols] = trans.mat[ind,]
+    }
+  }
+  tau1 = tau; pi1 = pi
+  #v1 = solve(diag(nx)-delta*tau, (1-delta)*pi)
+
+  k.var = "a2.hat"; tau[] = 0;
+  for (row in 1:nx) {
+    ind = ind.mat[row,k.var]
+    # Player i's payoff
+    pi[row] = sdf$pi2[[row]][ind]
+    trans.mat = sdf$trans.mat[[row]]
+    cols =colnames(trans.mat)
+    if (NROW(trans.mat)==0) {
+      tau[row,cols] = 1
+    } else {
+      tau[row, cols] = trans.mat[ind,]
+    }
+  }
+  tau2 = tau; pi2 = pi
+
+  # Don't need to bother about new negotiations
+  if (rho == 0) {
+    v1 = solve(diag(nx)-delta*tau1, (1-delta)*pi1)
+    v2 = solve(diag(nx)-delta*tau2, (1-delta)*pi2)
+    r1 = v1 + beta1*(U-v1-v2)
+    r2 = U-r1
+    return(
+      quick_df(x=sdf$x,r1=r1,r2=r2,U=U,v1=v1,v2=v2,
+        ae=ind.mat[,1], a1=ind.mat[,2], a2=ind.mat[,3])
+    )
+  }
+
+  # Now we need to solve simultaneously for
+  # v1, v2, r1, r2
+  # By stacking
+  #
+  # w = c(v1,v2,r1,r2)
+  #
+  # w = b + A %*% w
+  #
+  # b = c( (1-delta)*pi1, (1-delta*) )
+
+  b = c(
+    (1-delta)*pi1, # v1 const
+    (1-delta)*pi2, # v2 const
+    beta1*U,       # r1 const
+    beta2*U        # r2 const
+  )
+
+  zeros = matrix(0,nx,nx)
+  I = diag(nx)
+  # Matrix part for v1
+  A1 = cbind( delta*tau1*(1-rho), zeros, delta*tau1*rho, zeros)
+  # Matrix part for v2
+  A2 = cbind(zeros, delta*tau2*(1-rho), zeros, delta*tau2*rho)
+  # Matrix part for r1
+  A3 = cbind((1-beta1)*I, -beta1*I, zeros, zeros)
+
+  # Matrix part for r2
+  A4 = cbind( -beta2*I,(1-beta2)*I, zeros, zeros)
+
+  A = rbind(A1,A2,A3,A4)
+
+  # Solve for w: (I-A) w = b
+  w = solve( diag(4*nx)-A, b)
+
+
+  res = quick_df(x=sdf$x,
+    r1=w[(2*nx+1):(3*nx)],
+    r2=w[(3*nx+1):(4*nx)],
+    U=U,
+    v1=w[1:nx],
+    v2=w[(nx+1):(2*nx)],
+    ae=ind.mat[,1], a1=ind.mat[,2], a2=ind.mat[,3]
+  )
+  #res %>% mutate(r1.check = v1+beta1*(U-v1-v2))
+  return(res)
+
+}
+
+compute.after.cap.action.inds = function(g) {
+  restore.point("compute.after.cap.action.inds")
+
+  aca = g$after_cap_actions
+  sdf = g$sdf
+
+  k.var = "ae"
+  aca.row = 1
+
+  ind.mat = matrix(NA, NROW(sdf), 3)
+  colnames(ind.mat) = c("ae","a1.hat","a2.hat")
+
+  for (aca.row in seq_len(NROW(aca))) {
+    aca.x = aca$x[aca.row]
+    if (is.na(aca.x)) {
+      rows = 1:NROW(sdf)
+    } else {
+      rows = match(aca.x, sdf$x)
+    }
+    row = 1
+    for (row in rows) {
+      a.grid = g$sdf$a.grid[[row]]
+      k.var = "ae"
+      for (k.var in c("ae","a1.hat","a2.hat")) {
+        a.li = aca[[k.var]][aca.row][[1]]
+        vars = intersect(names(a.li), colnames(a.grid))
+        a.rows = rep(TRUE, NROW(a.li))
+        #var = vars[1]
+        for (var in vars) {
+          val = try(eval.rel.expression(a.li[[var]],param=a.grid))
+          if (is(val, "try-error"))
+            stop(paste0("Error in evaluating after.cap.action formula for phase ", k.var, " variable ", var, " in state ", sdf$x[row]))
+
+          a.rows = a.rows & a.grid[[var]] == val
+        }
+        ind =  which(a.rows)
+        if (length(ind)==0) {
+          stop(paste0("The after.cap.action formula for phase ", k.var, " in state ", sdf$x[row], " selects no action."))
+        } else if (length(ind)>1) {
+          stop(paste0("The after.cap.action formula for phase ", k.var, " in state ", sdf$x[row], " selects more than one action."))
+        }
+        ind.mat[row,k.var] = ind
+      }
+    }
+  }
+  ind.mat
+}
+
+
 
 #' Solve an RNE for a capped version of the game
 #'

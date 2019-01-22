@@ -115,7 +115,7 @@ rel_capped_spe = function(g,T, delta=g$param$delta, ...) {
 }
 
 
-dyngame.sol.to.rel.sol = function(g,sol=g$dyngame.sol, m=g$dyngame) {
+dyngame.sol.to.rel.sol = function(g,sol=g$dyngame.sol, m=g$dyngame, add.labels=TRUE) {
   restore.point("dyngame.sol.to.rel.sol")
 
   res = as_data_frame(sol$sol.mat)
@@ -133,10 +133,12 @@ dyngame.sol.to.rel.sol = function(g,sol=g$dyngame.sol, m=g$dyngame) {
 
   res = res[, c("x","r1","r2","U","v1","v2","ae","a1","a2")]
 
-  for (row in seq_len(NROW(res))) {
-    res$ae.lab = left_join(select(res,x,a=ae), g$a.labs.df, by=c("x","a"))$lab
-    res$a1.lab = left_join(select(res,x,a=a1), g$a.labs.df, by=c("x","a"))$lab
-    res$a2.lab = left_join(select(res,x,a=a2), g$a.labs.df, by=c("x","a"))$lab
+  if (add.labels) {
+    for (row in seq_len(NROW(res))) {
+      res$ae.lab = left_join(select(res,x,a=ae), g$a.labs.df, by=c("x","a"))$lab
+      res$a1.lab = left_join(select(res,x,a=a1), g$a.labs.df, by=c("x","a"))$lab
+      res$a2.lab = left_join(select(res,x,a=a2), g$a.labs.df, by=c("x","a"))$lab
+    }
   }
   res
 
@@ -157,8 +159,6 @@ make.rel.dyngame = function(g, symmetric=FALSE) {
       pi1=sdf$pi1[[row]], pi2=sdf$pi2[[row]]
     )
   }))
-
-  avm.to.a = function() {}
 
   # xv will be the row number of the state
   act.fun = function(xv,...) {
@@ -207,7 +207,7 @@ make.rel.dyngame = function(g, symmetric=FALSE) {
   }
 
   # States can be grouped into sets of states with same
-  # action sets.
+  # action sets to speed up computation.
   # In our game each state has a different action set
   x.group = function(xvm,...) {
     1:NROW(xvm)
