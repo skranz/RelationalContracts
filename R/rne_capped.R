@@ -1,20 +1,19 @@
 examples.rne_capped = function() {
   g = rel_game("Principal-Agent Variation") %>%
     rel_state("x0",A2=list(e=c(0,1)),pi1=~ e, pi2=~ -0.5*e) %>%
-    rel_state("x1",A1=list(b=c(0,1)),pi1=0.3, pi2=0.3) %>%
+    rel_state("x1",pi1=0.3, pi2=0.3) %>%
     rel_transition("x0","x1", e=1) %>%
     rel_transition("x1","x0") %>%
     rel_after_cap_actions(
-      ae=list(e=~max(e),b=1),
-      a1=list(e=0,b=0),
-      a2=list(e=0,b=0)
+      ae=list(e=1),
+      a1=list(e=1), a2=list(e=1)
     ) %>%
     rel_compile() %>%
-    rel_capped_rne(T=20,adjusted.delta = 0.54, rho=0, save.history = TRUE)
+    rel_capped_rne(T=20,adjusted.delta = 0.51, rho=0.4, save.history = TRUE)
+  animate.capped.rne.history(g,x=NULL)
 
   (rne=g$rne)
   (hist=g$rne.history)
-  animate.capped.rne.history(g,x=NULL)
 
 
   g = rel_spe(g)
@@ -584,14 +583,14 @@ capped.rne.period.T = function(g, delta=g$param$delta, rho=g$param$rho) {
 
 # Computes after.cap.payoffs given some fixed action
 # profiles
-compute.after.cap.action.payoffs = function(g) {
+compute.after.cap.action.payoffs = function(g, ind.mat = compute.after.cap.action.inds(g)) {
   restore.point("compute.after.cap.action.payoffs")
 
   delta = g$param$delta
   rho = g$param$rho
   beta1 = g$param$beta1
   beta2 = 1-beta1
-  ind.mat = compute.after.cap.action.inds(g)
+
   sdf = g$sdf
   nx = NROW(sdf)
 
@@ -662,6 +661,48 @@ compute.after.cap.action.payoffs = function(g) {
         ae=ind.mat[,1], a1=ind.mat[,2], a2=ind.mat[,3])
     )
   }
+
+  # Shorter computation with 2x2 blocks
+  # w = c(v1,v2)
+  # w = b + A %*% w
+  b = c(
+    (1-delta)*pi1 + delta*rho*beta1*tau1 %*% U, # v1
+    (1-delta)*pi2 + delta*rho*beta2*tau2 %*% U  # v2
+  )
+  # Matrix part for v1
+  A = rbind(
+    # matrix part for v1
+    cbind(
+      delta*tau1*(1-rho + rho*(1-beta1)),
+      -delta*tau1*rho*beta1
+    ),
+    # matrix part for v2
+    cbind(
+      -delta*tau2*rho*beta2,
+      delta*tau2*(1-rho + rho*(1-beta2))
+    )
+  )
+  # Solve for w: (I-A) w = b
+  w = solve( diag(2*nx)-A, b)
+  v1=w[1:nx]
+  v2=w[(nx+1):(2*nx)]
+  r1 = v1+beta1*(U-v1-v2)
+  r2 = U-r1
+
+
+  res = quick_df(x=sdf$x,
+    r1=r1,
+    r2=r2,
+    U=U,
+    v1=v1,
+    v2=v2,
+    ae=ind.mat[,1], a1=ind.mat[,2], a2=ind.mat[,3]
+  )
+  #res %>% mutate(r1.check = v1+beta1*(U-v1-v2))
+  return(res)
+
+
+
 
   # Now we need to solve simultaneously for
   # v1, v2, r1, r2

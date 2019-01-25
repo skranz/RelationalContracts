@@ -1,4 +1,4 @@
-examples.rel.mermaid.code = function() {
+examples.rel.diagram = function() {
 
 
   e.seq = c(0,1); xL=0; xH=5;
