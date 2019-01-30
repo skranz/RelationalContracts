@@ -15,7 +15,7 @@ example.rne = function() {
     rel_rne()
 
   (rne = get.rne(g))
-  (g$rne)
+  (g$eq)
 
 
   reveal = seq(0,1,by=0.05)
@@ -31,7 +31,7 @@ example.rne = function() {
     rel_compile() %>%
     rel_rne()
 
-  (g$rne)
+  (g$eq)
 
   reveal = seq(0,1,by=0.05)
   #reveal = c(0,0.51)
@@ -47,7 +47,7 @@ example.rne = function() {
     rel_compile() %>%
     rel_capped_rne(T=100, save.details = FALSE, use.cpp=TRUE)
 
-  (rne=g$rne)
+  (rne=g$eq)
   g$sdf$trans.mat
 
   de = get.rne.details(g)
@@ -102,7 +102,7 @@ example.rne = function() {
 
   g = rel_rne(g)
 
-  rne = g$rne
+  rne = g$eq
   rne
 
 
@@ -136,7 +136,7 @@ example.rne = function() {
 
   g=g %>% rel_capped_rne(T=20)
 
-  (rne = g$rne)
+  (rne = g$eq)
 
   library(ggplot2)
   ggplot(filter(rne,x=="x0"), aes(y=r1,x=t)) + geom_line()
@@ -146,11 +146,11 @@ example.rne = function() {
 }
 
 
-get.spe = function(g, action.details=FALSE, eq=g$spe) {
+get.spe = function(g, action.details=FALSE, eq=g$eq) {
   get.rne(g, action.details, eq)
 }
 
-get.rne = function(g, action.details=FALSE, eq=g$rne) {
+get.rne = function(g, action.details=FALSE, eq=g$eq) {
   restore.point("get.rne")
   rne = eq
   if (action.details) {
@@ -188,12 +188,12 @@ add.action.details = function(g,eq, action.cols=c("ae","a1","a2"), ax.grid=g$ax.
 get.rne.details = function(g, x=NULL) {
   restore.point("get.rne.details")
 
-  if (is.null(g$rne.details)) {
+  if (is.null(g$eq.details)) {
     message("No details have been saved. Use the argument save.details=TRUE in your call to rel_rne or rel_capped_rne.")
     return(NULL)
   }
-  if (is.null(x)) return(g$rne.details)
-  g$rne.details[g$rne.details$x %in% x,]
+  if (is.null(x)) return(g$eq.details)
+  g$eq.details[g$eq.details$x %in% x,]
 
 }
 
@@ -364,7 +364,7 @@ rel_rne = function(g, delta=g$param$delta, rho=g$param$rho, adjusted.delta=NULL,
   rne = select(rne,-solved)
 
   g$sdf = sdf
-  g$rne = rne
+  g$eq = rne
   if (verbose) cat("\n")
 
   g

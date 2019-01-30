@@ -1,9 +1,56 @@
 
+
 add.rne.action.labels = function(g, rne) {
   restore.point("add.rne.action.labels")
 
   # Add some additional info
-  #
+  if (NROW(rne)==NROW(g$sdf)) {
+    xrow = 1:NROW(rne)
+  } else {
+    xrow = match(rne$x, g$sdf$x)
+  }
+  lag.cumsum.na = g$sdf$lag.cumsum.na
+
+  if (!isTRUE(g$is.multi.stage)) {
+    # No Multistage
+    rows = lag.cumsum.na[xrow]+rne[["ae"]]
+    rne$ae.lab = g$a.labs.df$lab[rows]
+    rows = lag.cumsum.na[xrow]+rne[["a1"]]
+    rne$a1.lab = g$a.labs.df$lab[rows]
+    rows = lag.cumsum.na[xrow]+rne[["a2"]]
+    rne$a2.lab = g$a.labs.df$lab[rows]
+  } else {
+    s.lag.cumsum.na = g$gs$sdf$lag.cumsum.na
+    # Multistage
+    rows = lag.cumsum.na[xrow]+rne[["d.ae"]]
+    d.lab = g$a.labs.df$lab[rows]
+
+    rows = s.lag.cumsum.na[xrow]+rne[["s.ae"]]
+    s.lab = g$gs$a.labs.df$lab[rows]
+    rne$ae.lab = paste0(s.lab," | ", d.lab)
+
+    rows = lag.cumsum.na[xrow]+rne[["d.a1"]]
+    d.lab = g$a.labs.df$lab[rows]
+    rows = s.lag.cumsum.na[xrow]+rne[["s.a1"]]
+    s.lab = g$gs$a.labs.df$lab[rows]
+    rne$a1.lab = paste0(s.lab," | ", d.lab)
+
+    rows = lag.cumsum.na[xrow]+rne[["d.a2"]]
+    d.lab = g$a.labs.df$lab[rows]
+    rows = s.lag.cumsum.na[xrow]+rne[["s.a2"]]
+    s.lab = g$gs$a.labs.df$lab[rows]
+    rne$a2.lab = paste0(s.lab," | ", d.lab)
+  }
+  rne
+}
+
+old.add.rne.action.labels = function(g, rne) {
+  restore.point("add.rne.action.labels")
+
+  # Add some additional info
+  xrow = match(rne$x, g$sdf$x)
+
+
   if (!isTRUE(g$is.multi.stage)) {
     # No Multistage
     rows = match.by.cols(rne,g$a.labs.df, cols1=c("x","ae"), cols2=c("x","a"))
@@ -69,6 +116,6 @@ make.state.lab.a = function(state, sep=" ", empty.sep=TRUE) {
     }
   }
 
-  paste.df.cols(a.grid, sep=sep, empty.sep=TRUE)
+  paste.df.cols(a.grid, sep=sep, empty.sep=empty.sep)
 
 }

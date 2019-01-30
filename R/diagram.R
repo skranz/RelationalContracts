@@ -45,11 +45,11 @@ examples.rel.diagram = function() {
 
 }
 
-spe.diagram = function(g,t=1, show.own.loop=FALSE, show.terminal.loop=FALSE, eq = g$spe, use.x=NULL, just.eq.chain=FALSE, x0=g$sdf$x[1]) {
+spe.diagram = function(g,t=1, show.own.loop=FALSE, show.terminal.loop=FALSE, eq = g$eq, use.x=NULL, just.eq.chain=FALSE, x0=g$sdf$x[1]) {
   rne.diagram(g,t,show.own.loop, show.terminal.loop,eq=eq, use.x, just.eq.chain, x0)
 }
 
-rne.diagram = function(g,show.own.loop=FALSE, show.terminal.loop=FALSE, eq = g$rne, use.x=NULL, just.eq.chain=FALSE, x0=g$sdf$x[1], label.fun=NULL, tooltip.fun=NULL) {
+rne.diagram = function(g,show.own.loop=FALSE, show.terminal.loop=FALSE, eq = g$eq, use.x=NULL, just.eq.chain=FALSE, x0=g$sdf$x[1], label.fun=NULL, tooltip.fun=NULL) {
   restore.point("rne.diagram")
 
   library(DiagrammeR)
@@ -129,15 +129,13 @@ rne.diagram = function(g,show.own.loop=FALSE, show.terminal.loop=FALSE, eq = g$r
 }
 
 
-find.eq.chain.x = function(g, x0 = g$sdf$x[[1]], eq=first.non.null(g$spe, g$rne), t=1) {
+find.eq.chain.x = function(g, x0 = g$sdf$x[[1]], eq=g$eq, t=1) {
   restore.point("find.eq.chain.x")
 
 
   if (has.col(eq,"t") & !is.null(t))
     eq = eq[eq$t==t,]
 
-
-  tdf = g$tdf
   used.x = NULL
   x = x0
   n = length(x)

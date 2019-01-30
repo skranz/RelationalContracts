@@ -13,26 +13,26 @@ compute.rep.game.action.lists = function(sdf, rows=seq_len(NROW(sdf))) {
     # Liquidity requirement
     L = c1+c2-G
 
-    a.df = quick_df(.a=seq_along(pi1),G=G,c1=c1,c2=c2,L=L)
+    a.df = cbind(.a=seq_along(pi1),G=G,c1=c1,c2=c2,L=L)
 
 
     # Faster than arrange
-    ae.df = a.df[order(-a.df$G),]
+    ae.df = a.df[order(-a.df[,"G"]),,drop=FALSE]
 
-    minL = c(Inf,cummin(ae.df$L[-NROW(a.df)]))
-    ae.df = ae.df[ae.df$L < minL,,drop=FALSE]
+    minL = c(Inf,cummin(ae.df[-NROW(a.df),"L"]))
+    ae.df = ae.df[ae.df[,"L"] < minL,,drop=FALSE]
 
 
     #a1.df = a.df %>% arrange(c1)
-    a1.df = a.df[order(a.df$c1),]
+    a1.df = a.df[order(a.df[,"c1"]),,drop=FALSE]
 
-    minL = c(Inf,cummin(a1.df$L[-NROW(a.df)]))
-    a1.df = a1.df[a1.df$L < minL,,drop=FALSE]
+    minL = c(Inf,cummin(a1.df[-NROW(a.df),"L"]))
+    a1.df = a1.df[a1.df[,"L"] < minL,,drop=FALSE]
 
     #a2.df = a.df %>% arrange(c2)
-    a2.df = a.df[order(a.df$c2),]
-    minL = c(Inf,cummin(a2.df$L[-NROW(a.df)]))
-    a2.df = a2.df[a2.df$L < minL,,drop=FALSE]
+    a2.df = a.df[order(a.df[,"c2"]),,drop=FALSE]
+    minL = c(Inf,cummin(a2.df[-NROW(a.df),"L"]))
+    a2.df = a2.df[a2.df[,"L"] < minL,,drop=FALSE]
     list(ae.df=ae.df, a1.df=a1.df, a2.df=a2.df)
   })
   li
@@ -81,15 +81,15 @@ solve.x.rep.multistage = function(g,x=NULL,row=NULL, tol=1e-10, beta1=g$param$be
     d.a1 = d.li$a1.df[a.pos[2,2],]
     d.a2 = d.li$a2.df[a.pos[2,3],]
 
-    Md = d.ae$G - d.a1$c1 - d.a2$c2
-    Ms = s.ae$G - s.a1$c1 - s.a2$c2
+    Md = d.ae["G"] - d.a1["c1"] - d.a2["c2"]
+    Ms = s.ae["G"] - s.a1["c1"] - s.a2["c2"]
 
     # We have a stage game NE in both stages
     if (Ms==0 && Md==0) {
       cur.comb = cur.comb+1
-      v1 =  s.a1$c1+d.a1$c1
-      v2 =  s.a2$c2+d.a2$c2
-      U =  s.ae$G+d.ae$G
+      v1 =  s.a1["c1"]+d.a1["c1"]
+      v2 =  s.a2["c2"]+d.a2["c2"]
+      U =  s.ae["G"]+d.ae["G"]
       res.r[cur.comb,] = c(
         0, # delta_min
         lowest.delta, # delta_max
@@ -100,25 +100,25 @@ solve.x.rep.multistage = function(g,x=NULL,row=NULL, tol=1e-10, beta1=g$param$be
         v2
       )
       res.i[cur.comb,] = c(
-        s.ae=s.ae$.a,
-        s.a1=s.a1$.a,
-        s.a2=s.a2$.a,
-        d.ae=d.ae$.a,
-        d.a1=d.a1$.a,
-        d.a2=d.a2$.a
+        s.ae=s.ae[".a"],
+        s.a1=s.a1[".a"],
+        s.a2=s.a2[".a"],
+        d.ae=d.ae[".a"],
+        d.a1=d.a1[".a"],
+        d.a2=d.a2[".a"]
       )
       lowest.delta = 0
       break
     }
 
     # Critical interest rates
-    sr.ae = (Md+Ms) / (s.ae$L - Md)
-    sr.a1 = (Md+Ms) / (s.a1$L - Md)
-    sr.a2 = (Md+Ms) / (s.a2$L - Md)
+    sr.ae = (Md+Ms) / (s.ae["L"] - Md)
+    sr.a1 = (Md+Ms) / (s.a1["L"] - Md)
+    sr.a2 = (Md+Ms) / (s.a2["L"] - Md)
 
-    dr.ae = (Md+Ms) / (d.ae$L)
-    dr.a1 = (Md+Ms) / (d.a1$L)
-    dr.a2 = (Md+Ms) / (d.a2$L)
+    dr.ae = (Md+Ms) / (d.ae["L"])
+    dr.a1 = (Md+Ms) / (d.a1["L"])
+    dr.a2 = (Md+Ms) / (d.a2["L"])
 
     r.crit = matrix(c(sr.ae,dr.ae,sr.a1,dr.a1,sr.a2,dr.a2),2,3)
     delta.crit = 1 / (1+r.crit)
@@ -128,9 +128,9 @@ solve.x.rep.multistage = function(g,x=NULL,row=NULL, tol=1e-10, beta1=g$param$be
     if (max.delta.crit < lowest.delta) {
       cur.comb = cur.comb+1
 
-      v1 =  s.a1$c1+d.a1$c1
-      v2 =  s.a2$c2+d.a2$c2
-      U =  s.ae$G+d.ae$G
+      v1 =  s.a1["c1"]+d.a1["c1"]
+      v2 =  s.a2["c2"]+d.a2["c2"]
+      U =  s.ae["G"]+d.ae["G"]
       res.r[cur.comb,] = c(
         max.delta.crit, # delta_min
         lowest.delta, # delta_max
@@ -140,14 +140,14 @@ solve.x.rep.multistage = function(g,x=NULL,row=NULL, tol=1e-10, beta1=g$param$be
         v1,
         v2
       )
-      res.i[cur.comb,] = c(
-        s.ae=s.ae$.a,
-        s.a1=s.a1$.a,
-        s.a2=s.a2$.a,
-        d.ae=d.ae$.a,
-        d.a1=d.a1$.a,
-        d.a2=d.a2$.a
-      )
+      res.i[cur.comb,] = as.integer(c(
+        s.ae=s.ae[".a"],
+        s.a1=s.a1[".a"],
+        s.a2=s.a2[".a"],
+        d.ae=d.ae[".a"],
+        d.a1=d.a1[".a"],
+        d.a2=d.a2[".a"]
+      ))
       lowest.delta = max.delta.crit
     }
 

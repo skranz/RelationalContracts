@@ -78,7 +78,7 @@ examples.multistage = function() {
   )
 
   rne.diagram(g,just.eq.chain = TRUE)
-  (rne = g$rne)
+  (rne = g$eq)
 }
 
 
@@ -88,7 +88,7 @@ examples.multistage = function() {
 add.rel.multistage.compile = function(g,...) {
   restore.point("add.rel.multistage.compile")
 
-  gs = g$static_defs
+  gs = g$defs$gs
   gs$x.df = g$x.df
   gs$param = g$param
   gs = rel_compile(gs, compute.just.static = TRUE)
@@ -102,7 +102,7 @@ add.rel.multistage.compile = function(g,...) {
 }
 
 
-capped.rne.multistage.iterations = function(g,T=1,rne=g$rne, tie.breaking, debug_row=-1, tol=1e-12, use.cpp=TRUE, save.details=FALSE, save.history=FALSE) {
+capped.rne.multistage.iterations = function(g,T=1,rne=g$eq, tie.breaking, debug_row=-1, tol=1e-12, use.cpp=TRUE, save.details=FALSE, save.history=FALSE) {
   restore.point("capped.rne.multistage.iterations")
 
   if (T<=0) {
@@ -233,21 +233,21 @@ r.capped.rne.multistage.iterations = function(T, g, rne, tie.breaking, delta=g$p
       # Use previously computed list
       # of candidates for optimal profiles
 
-      rows = which(L.av - s.li$ae.df$L >= -tol)
+      rows = which(L.av - s.li$ae.df[,"L"] >= -tol)
       if (length(rows)==0) stop(paste0("No incentive compatible pure static action profile exists in period ",t))
       s.e = s.li$ae.df[rows[1],]
 
-      rows = which(L.av - s.li$a1.df$L >= -tol)
+      rows = which(L.av - s.li$a1.df[,"L"] >= -tol)
       if (length(rows)==0) stop(paste0("No incentive compatible pure static action profile exists in period ",t))
       s.1 = s.li$a1.df[rows[1],]
 
-      rows = which(L.av - s.li$a2.df$L >= -tol)
+      rows = which(L.av - s.li$a2.df[,"L"] >= -tol)
       if (length(rows)==0) stop(paste0("No incentive compatible pure static action profile exists in period ",t))
       s.2 = s.li$a2.df[rows[1],]
 
-      U = (1-delta)*s.e$G+dU
-      v1 = (1-delta)*s.1$c1 + dv1
-      v2 = (1-delta)*s.2$c2 + dv2
+      U = (1-delta)*s.e["G"]+dU
+      v1 = (1-delta)*s.1["c1"] + dv1
+      v2 = (1-delta)*s.2["c2"] + dv2
 
       r1 = v1 + beta1*(U-v1-v2)
       r2 = v2 + (1-beta1)*(U-v1-v2)
@@ -259,8 +259,8 @@ r.capped.rne.multistage.iterations = function(T, g, rne, tie.breaking, delta=g$p
 
       # Find actions
       if (iter == T | save.history) {
-        d.a = r_rne_find_actions(U,v1,v2,U.hat,v1.hat,v2.hat, IC.holds, next_r1, next_r2, trans.mat, dest.rows, tie.breaking, tol=1e-12)
-        rne_actions[row,] = c(s.e$.a,s.1$.a,s.2$.a, d.a)
+        d.a = r_rne_find_actions(dU,dv1,dv2,U.hat,v1.hat,v2.hat, IC.holds, next_r1, next_r2, trans.mat, dest.rows, tie.breaking, tol=1e-12)
+        rne_actions[row,] = as.integer(c(s.e[".a"],s.1[".a"],s.2[".a"], d.a))
       }
 
       if (save.details & iter==T) {
@@ -311,7 +311,7 @@ r.capped.rne.multistage.iterations = function(T, g, rne, tie.breaking, delta=g$p
     }
     if (save.history) {
       res_rne = cbind(quick_df(t=T-iter+1,x=sdf$x,r1=rne_r1,r2=rne_r2, U=rne_U, v1=rne_v1,v2=rne_v2),rne_actions)
-      res_rne = add.rne.action.labels(g,res_rne)
+      #res_rne = add.rne.action.labels(g,res_rne)
       history.li[[iter]] = res_rne
     }
 
@@ -321,7 +321,7 @@ r.capped.rne.multistage.iterations = function(T, g, rne, tie.breaking, delta=g$p
       next_r1 = rne_r1; next_r2 = rne_r2
     }
   }
-  res_rne = cbind(quick_df(x=sdf$x,r1=rne_r1,r2=rne_r2, U=rne_U, v1=rne_v1,v2=rne$v2),rne_actions)
+  res_rne = cbind(quick_df(x=sdf$x,r1=rne_r1,r2=rne_r2, U=rne_U, v1=rne_v1,v2=rne_v2),rne_actions)
   res_rne = add.rne.action.labels(g,res_rne)
 
   details = if (save.details) bind_rows(details.li)
@@ -335,7 +335,7 @@ r.capped.rne.multistage.iterations = function(T, g, rne, tie.breaking, delta=g$p
 
 
 #' Solve an RNE for a capped version of a multistage game
-rel.capped.rne.multistage.old = function(g,T, save.details=FALSE, tol=1e-10,  delta=g$param$delta, rho=g$param$rho, res.field="rne", tie.breaking=c("slack","random","first","last")[1], add=TRUE, keep.all.t=FALSE) {
+rel.capped.rne.multistage.old = function(g,T, save.details=FALSE, tol=1e-10,  delta=g$param$delta, rho=g$param$rho, res.field="eq", tie.breaking=c("slack","random","first","last")[1], add=TRUE, keep.all.t=FALSE) {
   restore.point("rel.capped.rne.multistage")
   if (!g$is_compiled) g = rel_compile(g)
 

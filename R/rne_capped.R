@@ -12,12 +12,12 @@ examples.rne_capped = function() {
     rel_capped_rne(T=20,adjusted.delta = 0.51, rho=0.4, save.history = TRUE)
   animate.capped.rne.history(g,x=NULL)
 
-  (rne=g$rne)
-  (hist=g$rne.history)
+  (rne=g$eq)
+  (hist=g$eq.history)
 
 
   g = rel_spe(g)
-  (spe=g$spe)
+  (spe=g$eq)
 
 
   e = seq(0,1, by=0.1)
@@ -30,14 +30,14 @@ examples.rne_capped = function() {
   g = rel_capped_rne(g, T=100, delta=.5, rho=0.5, save.history = TRUE)
 
   capped.rne.history.animation(g)
-  (rne=g$rne)
+  (rne=g$eq)
 
 
   g = rel_rne(g, adjusted.delta = 0.1, rho=0.89)
-  (rne=g$rne)
+  (rne=g$eq)
 
   g = rel_rne(g, adjusted.delta = 0.1, rho=0.1)
-  (rne=g$rne)
+  (rne=g$eq)
 
 
 
@@ -53,12 +53,12 @@ examples.rne_capped = function() {
     rel_compile()
 
   g = rel_rne(g, delta=0.9, rho=0.9)
-  (rne=g$rne)
+  (rne=g$eq)
 
 
   g = rel_capped_rne(g,T=50, delta=0.9, rho=0.9,use.cpp=FALSE, save.history = TRUE)
-  (rne=g$rne)
-  (hist = g$rne.history)
+  (rne=g$eq)
+  (hist = g$eq.history)
 
   capped.rne.history.animation(g)
 
@@ -82,7 +82,7 @@ examples.rne_capped = function() {
 
   capped.rne.history.animation(g,x=NULL)
 
-  hist = g$rne.history
+  hist = g$eq.history
   de = get.rne.details(g, x="xL")
 
 
@@ -177,7 +177,7 @@ arms.race.example = function() {
 
 
 
-  #rne = g$rne %>% filter(t<max(g$rne$t), t==1)
+  #rne = g$eq %>% filter(t<max(g$eq$t), t==1)
   #rne
 
   de = get.rne.details(g)
@@ -195,14 +195,11 @@ arms.race.example = function() {
     filter(h1==0, h2==0)
   de
 
-
-  tdf = g$tdf
-
   View(rne)
 }
 
 #' Solve an RNE for a capped version of a multistage game
-rel_capped_rne = function(g,T, tol=1e-10,  delta=g$param$delta, rho=g$param$rho, adjusted.delta=NULL, res.field="rne", tie.breaking=c("equal_r", "slack","random","first","last","max_r1","max_r2")[1], use.cpp=TRUE, save.details=FALSE, add.iterations=FALSE, save.history=FALSE) {
+rel_capped_rne = function(g,T, tol=1e-10,  delta=g$param$delta, rho=g$param$rho, adjusted.delta=NULL, res.field="eq", tie.breaking=c("equal_r", "slack","random","first","last","max_r1","max_r2")[1], use.cpp=TRUE, save.details=FALSE, add.iterations=FALSE, save.history=FALSE, add.stationary=FALSE) {
   restore.point("rel_capped_rne")
   if (!g$is_compiled) g = rel_compile(g)
 
@@ -252,13 +249,17 @@ rel_capped_rne = function(g,T, tol=1e-10,  delta=g$param$delta, rho=g$param$rho,
   if (!is.null(g$x.df))
     rne = left_join(rne, g$x.df, by="x")
 
+  if (add.stationary) {
+    rne$stationary = stationary.eq.distribution(g,rne)
+  }
+
   g[[res.field]] = rne
   g[[paste0(res.field,".details")]] = details
   g[[paste0(res.field,".history")]] = history
   g
 }
 
-capped.rne.iterations = function(g,T=1,rne=g$rne, tie.breaking, debug_row=-1, tol=1e-12, use.cpp=!save.history, save.details=FALSE, save.history = FALSE) {
+capped.rne.iterations = function(g,T=1,rne=g$eq, tie.breaking, debug_row=-1, tol=1e-12, use.cpp=!save.history, save.details=FALSE, save.history = FALSE) {
   restore.point("capped.rne.iterations")
 
   if (T<=0) {
@@ -435,7 +436,7 @@ r.capped.rne.iterations = function(T, g, rne, tie.breaking,delta=g$param$delta, 
     }
     if (save.history) {
       res_rne = cbind(quick_df(t=T-iter+1,x=sdf$x,r1=rne_r1,r2=rne_r2, U=rne_U, v1=rne_v1,v2=rne_v2),rne_actions)
-      res_rne = add.rne.action.labels(g,res_rne)
+      #res_rne = add.rne.action.labels(g,res_rne)
       history.li[[iter]] = res_rne
     }
 
