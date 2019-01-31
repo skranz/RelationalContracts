@@ -146,31 +146,47 @@ example.rne = function() {
 }
 
 
-get.spe = function(g, action.details=FALSE, eq=g$eq) {
-  get.rne(g, action.details, eq)
+get.rne = get.spe = function(g, extra.cols="ae", eq=g$eq) {
+  get.eq(g, extra.cols, eq)
 }
 
-get.rne = function(g, action.details=FALSE, eq=g$eq) {
-  restore.point("get.rne")
-  rne = eq
-  if (action.details) {
-    grid = select(rne, x=x, .a=ae)
-    add.ae = left_join(grid, g$ax.grid, by=c("x",".a"))[,-c(1:2), drop=FALSE]
-    colnames(add.ae) = paste0("ae.", colnames(add.ae))
+get.eq = function(g, extra.cols="ae", eq=g$eq) {
+  restore.point("get.eq")
 
-    grid = select(rne, x=x, .a=a1)
-    add.a1 = left_join(grid, g$ax.grid, by=c("x",".a"))[,-c(1:2), drop=FALSE]
-    colnames(add.a1) = paste0("a1.", colnames(add.a1))
+  if (length(extra.cols)>0 & !isTRUE(g$is.multi.stage)) {
+    ax.add = g$sdf$lag.cumsum.na
+    for (col in extra.cols) {
+      ax = eq[[col]]+ax.add
+      extra = g$ax.grid[ax,-c(1:2)]
+      ax.extra = g$ax.extra
+      if (!is.null(ax.extra))
+        extra = cbind(extra, ax.extra[ax,])
+      colnames(extra) = paste0(col,".", colnames(extra))
+      eq = cbind(eq, extra)
+    }
+  } else if (length(extra.cols)>0 & isTRUE(g$is.multi.stage)) {
+    ax.add = g$sdf$lag.cumsum.na
+    s.ax.add = g$gs$sdf$lag.cumsum.na
+    col = "ae"
+    for (col in extra.cols) {
 
-    grid = select(rne, x=x, .a=a2)
-    add.a2 = left_join(grid, g$ax.grid, by=c("x",".a"))[,-c(1:2), drop=FALSE]
-    colnames(add.a2) = paste0("a2.", colnames(add.a2))
+      ax = eq[[paste0("d.",col)]]+ax.add
+      extra = g$ax.grid[ax,-c(1:2)]
+      ax.extra = g$ax.extra
+      if (!is.null(ax.extra))
+        extra = cbind(extra, ax.extra[ax,])
 
-    rne = cbind(rne, add.ae, add.a1,add.a2)
-    return(rne)
-  } else {
-    return(rne)
+      ax = eq[[paste0("s.",col)]]+s.ax.add
+      extra = cbind(extra, g$gs$ax.grid[ax,-c(1:2)])
+      ax.extra = g$gs$ax.extra
+      if (!is.null(ax.extra))
+        extra = cbind(extra, ax.extra[ax,])
+
+      colnames(extra) = paste0(col,".", colnames(extra))
+      eq = cbind(eq,extra)
+    }
   }
+  eq
 }
 
 add.action.details = function(g,eq, action.cols=c("ae","a1","a2"), ax.grid=g$ax.grid) {

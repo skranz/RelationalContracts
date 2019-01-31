@@ -215,7 +215,8 @@ r.capped.rne.multistage.iterations = function(T, g, rne, tie.breaking, delta=g$p
       if (sum(IC.holds)==0) {
         # Maybe just return empty RNE
         # instead
-        stop(paste0("In state ", x, " period ", t," no pure action profile can satisfy the incentive constraint. Thus no pure RNE exists in the capped game."))
+        restore.point("no_pure")
+        stop(paste0("In state ", x, " iteration ", iter," no pure dynamic action profile can satisfy the incentive constraint. Thus no pure RNE exists in the capped game."))
       }
 
       dU = max(U.hat[IC.holds])

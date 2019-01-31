@@ -72,11 +72,11 @@ examples.multistage.spe.trunc = function() {
   x.df$x = paste0(x.df$x1,"_", x.df$x2)
 
   g = rel_game("Cournot with Investment") %>%
-    rel_param(c1=0,c2=0,x.step=x.step, x.max=x.max,dep.prob=0.1,a=100, i.cost=10, i.seq=c(0,1,2)) %>%
+    rel_param(c1=0,c2=0,x.step=x.step, x.max=x.max,dep.prob=0.05,a=100, i.cost=50, i.seq=c(0,1,2,5)) %>%
     rel_states(x.df,A.fun=A.fun, vec.pi.fun=vec.pi.fun, vec.trans.fun=vec.trans.fun, vec.static.pi.fun = vec.static.pi.fun, static.A.fun = static.A.fun) %>%
     rel_compile()
 
-  g = g %>%  rel_capped_rne(T=20, delta=0.9, rho=0.99, save.history = FALSE, use.cpp = TRUE, add.stationary = TRUE, save.details = TRUE)
+  g = g %>%  rel_capped_rne(T=20, delta=0.9, rho=0.4, save.history = FALSE, use.cpp = TRUE, add.stationary = TRUE, save.details = TRUE)
   eq = g$eq
   eq$r_lab = paste0(round(eq$r1)," ", round(eq$r2),"\n", eq$ae.lab)
   ggplot(eq, aes(x=x1,y=x2, fill=stationary)) + geom_raster(interpolate=FALSE) + geom_label(aes(label=r_lab), fill="white", alpha=0.5, size=3, label.padding=unit(0.1,"lines"))

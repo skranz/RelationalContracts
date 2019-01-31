@@ -208,11 +208,18 @@ rel_compile = function(g,..., compute.just.static=FALSE) {
   def = g_defs$payoff_fun_defs[[1]]
   for (def in g_defs$payoff_fun_defs) {
     if (!is.null(def$vec.pi.fun)) {
-      restore.point("vec.pi.fun not yet implemented!")
       args = c(list(ax.df=ax.df),param, def$args)
       res = do.call(def$vec.pi.fun, args)
       check.rel(has.cols(res,c("x","pi1","pi2")),"Your vectorized payoff function vec.pi.fun must return a data frame with the columns 'x','pi1' and 'pi2'")
       check.rel(NROW(res)==NROW(ax.df),"Your vectorized payoff function vec.pi.fun must return a data frame with as many rows as its argument ax.df")
+
+      extra.col = attr(res,"extra.col")
+      if (!is.null(extra.col)) {
+        if (identical(extra.col,TRUE))
+          extra.col = setdiff(colnames(res), c(colnames(ax.df),"pi1","pi2"))
+        g$ax.extra = res[,extra.col]
+      }
+
 
       res = group_by(res,x) %>%
         summarize(pi1=list(pi1),pi2=list(pi2))
