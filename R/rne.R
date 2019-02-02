@@ -543,10 +543,10 @@ r_rne_find_actions = function(U,v1,v2,U.hat,v1.hat,v2.hat, IC.holds, next.r1=NUL
     tb = seq_len(NROW(U.hat))
   } else if (tie.breaking=="first") {
     tb = rev(seq_len(NROW(U.hat)))
-  } else if (tie_breaking=="max_r1") {
+  } else if (tie.breaking=="max_r1") {
     tb = trans.mat.mult(trans.mat,next.r1[dest.rows])
     const = 1-min(tb) + max(tb)-min(tb)
-  } else if (tie_breaking=="max_r2") {
+  } else if (tie.breaking=="max_r2") {
     tb = trans.mat.mult(trans.mat,next.r2[dest.rows])
     const = 1-min(tb) + max(tb)-min(tb)
   } else {

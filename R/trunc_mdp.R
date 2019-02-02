@@ -7,7 +7,7 @@ examples.spe.trunc = function() {
     rel_transition("x0","x1", e=1) %>%
     rel_transition("x1","x0") %>%
     rel_compile() %>%
-    rel.prepare.for.spe()
+    prepare.for.spe()
 
   trunc_policy_iteration(g$ax.trans, g$ax.pi$Pi,g$sdf$na.vec, delta=0.8, rho=0.1, r=c(5,-2))
 

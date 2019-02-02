@@ -133,7 +133,7 @@ examples.spe.trunc = function() {
     rel_state("x1",A1=list(a_1=c("C1","D1")),A2=list(a_2=c("C2","D2")),pi1=g1, pi2=t(g1)) %>%
     rel_transition("x0","x1", prob=0.1) %>%
     rel_compile() %>%
-    rel.prepare.for.spe()
+    prepare.for.spe()
 
   g$param$delta = 0.6
   spe = solve.trunc.spe(g, verbose=!TRUE)
@@ -459,7 +459,7 @@ r.pl2.ax.best.reply.payoffs = function(u_ax, nai, naj, nx) {
 }
 
 
-rel.prepare.for.spe = function(g) {
+prepare.for.spe = function(g) {
   restore.point("rel.prepare.for.spe")
   sdf = g$sdf
   nx = NROW(g$sdf)
@@ -489,11 +489,6 @@ rel.prepare.for.spe = function(g) {
       ax.trans[ax.rows,colnames(trans.mat)] = 1
     }
   }
-
-  #
-  sdf$na.vec = na.vec
-  sdf$lag.cumsum.na = lag.cumsum.na
-  g$sdf = sdf
 
   g$ax.pi = quick_df(xrow=xrow, a=a, ax=ax, pi1=pi1,pi2=pi2,Pi=Pi)
   g$ax.trans = ax.trans
