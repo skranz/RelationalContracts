@@ -81,7 +81,7 @@ rel_compile = function(g,..., compute.just.static=FALSE) {
     # with repgame and dyngame
     a.grid = factor.cols.as.strings(expand.grid2(A2,A1))
     a.grid.cols = c(names(A1),names(A2))
-    a.grid = a.grid[,a.grid.cols]
+    a.grid = a.grid[,a.grid.cols,drop=FALSE]
 
     if (length(def[["x"]])==1) {
       state = quick_df(x=def$x,na1=na1,na2=na2, A1=list(A1),A2=list(A2),a.grid=list(a.grid))
@@ -469,7 +469,7 @@ rel_state = function(g, x,A1=list(a1=""),A2=list(a2=""), pi1=NULL, pi2=NULL, x.T
 #' @param vec.trans.fun Alternative to trans.fun, a vectorized function that specifies state transitions
 #' @param x.T Relevant when solving a capped game. Which terminal state shall be set in period T onwards. By default, we stay in state x.
 #' @return Returns the updated game
-rel_states = function(g, x,A1=NULL, A2=NULL, pi1=NULL, pi2=NULL, A.fun=NULL, pi.fun=NULL, vec.pi.fun=NULL, trans.fun=NULL, vec.trans.fun=NULL, static.A.fun=NULL, static.pi.fun=NULL, vec.static.pi.fun=NULL,x.T=NULL,  ...) {
+rel_states = function(g, x,A1=NULL, A2=NULL, pi1=NULL, pi2=NULL, A.fun=NULL, pi.fun=NULL, vec.pi.fun=NULL, trans.fun=NULL, vec.trans.fun=NULL, static.A.fun=NULL, static.pi.fun=NULL, vec.static.pi.fun=NULL,static.A1=NULL, static.A2=NULL, static.pi1=NULL, static.pi2=NULL,x.T=NULL,  ...) {
   args=list(...)
   restore.point("rel_states")
   if (is.data.frame(x)) {
@@ -494,29 +494,40 @@ rel_states = function(g, x,A1=NULL, A2=NULL, pi1=NULL, pi2=NULL, A.fun=NULL, pi.
     g = add.to.rel.defs(g, "state_fun_defs",obj)
   }
 
-  if (!is.null(pi1) | !is.null(pi2)) {
+  if (!is.null(pi1) & !is.null(pi2)) {
     g = rel_payoff(g,x=x,pi1=pi1,pi2=pi2)
-  }
-
-  if (!is.null(pi.fun) | !is.null(vec.pi.fun)) {
+  } else if (!is.null(pi.fun) | !is.null(vec.pi.fun)) {
     obj = list(x=x,pi.fun=pi.fun, vec.pi.fun=vec.pi.fun, args=args)
     g = add.to.rel.defs(g, "payoff_fun_defs",obj)
+  } else {
+    stop("You must specify either pi1 and pi2 or pi.fun or vec.pi.fun.")
   }
+
   if (!is.null(trans.fun) | !is.null(vec.trans.fun)) {
     obj = list(x=x,trans.fun=trans.fun, vec.trans.fun=vec.trans.fun, args=args)
     g = add.to.rel.defs(g, "trans_fun_defs",obj)
   }
 
-  if (!is.null(static.A.fun)){
+  if (!is.null(static.A.fun) | !is.null(static.A1) | !is.null(static.A2)){
     g$is.multi.stage = TRUE
     gs = list(defs=list())
 
-    obj = list(x=x,A.fun=static.A.fun, args=args)
-    gs = add.to.rel.defs(gs,"state_fun_defs",obj)
+    if (!is.null(static.A.fun)) {
+      obj = list(x=x,A.fun=static.A.fun, args=args)
+      gs = add.to.rel.defs(gs,"state_fun_defs",obj)
+    } else if (!is.null(static.A1) | !is.null(static.A2)) {
+      obj = list(x=x,A1=static.A1, A2=static.A2, args=args)
+      gs = add.to.rel.defs(gs,"state_defs",obj)
+    }
 
     if (!is.null(static.pi.fun) | !is.null(vec.static.pi.fun)) {
       obj = list(x=x,pi.fun=static.pi.fun, vec.pi.fun=vec.static.pi.fun, args=args)
       gs = add.to.rel.defs(gs, "payoff_fun_defs",obj)
+    } else if (!is.null(static.pi1) & !is.null(static.pi2)) {
+      obj = list(x=x,pi1=static.pi1, pi2=static.pi2, args=args)
+      gs = add.to.rel.defs(gs, "payoff_defs",obj)
+    } else {
+      stop("You must specify either static.pi1 and static.pi2 or static.pi.fun or vec.static.pi.fun.")
     }
 
     g$defs$gs = gs

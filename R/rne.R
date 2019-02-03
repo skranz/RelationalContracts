@@ -157,10 +157,10 @@ get.eq = function(g, extra.cols="ae", eq=g$eq) {
     ax.add = g$sdf$lag.cumsum.na
     for (col in extra.cols) {
       ax = eq[[col]]+ax.add
-      extra = g$ax.grid[ax,-c(1:2)]
+      extra = g$ax.grid[ax,-c(1:2), drop=FALSE]
       ax.extra = g$ax.extra
       if (!is.null(ax.extra))
-        extra = cbind(extra, ax.extra[ax,])
+        extra = cbind(extra, ax.extra[ax,,drop=FALSE])
       colnames(extra) = paste0(col,".", colnames(extra))
       eq = cbind(eq, extra)
     }
@@ -174,15 +174,16 @@ get.eq = function(g, extra.cols="ae", eq=g$eq) {
       extra = g$ax.grid[ax,-c(1:2)]
       ax.extra = g$ax.extra
       if (!is.null(ax.extra))
-        extra = cbind(extra, ax.extra[ax,])
+        extra = cbind(extra, ax.extra[ax,,drop=FALSE])
 
       ax = eq[[paste0("s.",col)]]+s.ax.add
-      extra = cbind(extra, g$gs$ax.grid[ax,-c(1:2)])
+      extra = cbind(extra, g$gs$ax.grid[ax,-c(1:2),drop=FALSE])
       ax.extra = g$gs$ax.extra
       if (!is.null(ax.extra))
         extra = cbind(extra, ax.extra[ax,])
 
-      colnames(extra) = paste0(col,".", colnames(extra))
+      if (col != "a")
+        colnames(extra) = paste0(col,".", colnames(extra))
       eq = cbind(eq,extra)
     }
   }

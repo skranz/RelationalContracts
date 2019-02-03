@@ -1,17 +1,34 @@
 # Solve MPE
 
 mpe.example = function() {
-  x.df = quick_df(x=c("x1","x2"), x_add = c(0,10))
-  g = rel_game("Bertrand with Investment") %>%
-    rel_states(x.df,A1, vec.pi.fun=vec.pi.fun, vec.trans.fun=vec.trans.fun, vec.static.pi.fun = vec.static.pi.fun, static.A.fun = static.A.fun) %>%
-    rel_compile()
+  x=c("x1","x2")
+  g = rel_game("Two State") %>%
+    rel_states(x,
+      A1=list(m1=c(1,2)),
+      A2=list(m2=c(1,2)),
+      pi1 = 0,
+      pi2 = 0,
+      static.A1 = list(e=c(0,1)),
+      static.pi1 =~ -1/2*e + (x=="x2")+1,
+      static.pi2 =~ e + (x=="x2")+1
+    ) %>%
+    rel_transition("x1","x2",m1=2, m2=2, prob=1) %>%
+    rel_transition("x1","x2",m1=1, m2=2, prob=0.2) %>%
+    rel_transition("x1","x2",m1=2, m2=1, prob=0.2) %>%
+    rel_compile() %>%
+    rel_mpe(delta=0.9)
 
+  cbind(g$sdf$a.grid[[1]],g$sdf$trans.mat[[1]])
 
-  g.mpe = rel_mpe(g, delta=0.9)
-
+  (mpe = get.mpe(g))
+  mpe = g
 }
 
-rel_mpe = function(g, delta=g$param$delta, static.eq=NULL, max.iter = 1000, tol=1e-8, ax=NULL) {
+get.mpe = function(g, extra.cols="a", eq=g$mpe) {
+  get.eq(g, extra.cols=extra.cols, eq=eq)
+}
+
+rel_mpe = function(g, delta=g$param$delta, static.eq=NULL, max.iter = 10, tol=1e-8, ax=NULL) {
   restore.point("rel_mpe")
 
   if (is.null(g$ax.trans))
@@ -34,30 +51,45 @@ rel_mpe = function(g, delta=g$param$delta, static.eq=NULL, max.iter = 1000, tol=
     ax = sdf$lag.cumsum.na+sdf$na.vec
 
   ax.trans = g$ax.trans
-  u.old = matrix(-Inf, nx, 2)
+  ax.grid = g$ax.grid
+  u.old = u = matrix(-Inf, nx, 2)
   iter = 0
+  ax.xrow = g$ax.pi$xrow
 
 
   pi.mat=cbind(g$ax.pi$pi1,g$ax.pi$pi2)
   i = 1
-  while (iter <= max.iter) {
+  while (TRUE) {
     iter = iter+1
     T = as.matrix(ax.trans[ax, ])
-    u = solve(diag(nx) - delta * T, (1 - delta) *
-        (pi.mat[ax,]+static.u))
+
+    u[,i] = solve(diag(nx) - delta * T, (1 - delta) *
+        (pi.mat[ax,i]+static.u[,i]))
     if (approxeq(u, u.old, tol = tol)) {
         break
     }
+    q_i = (1-delta)*(pi.mat[,i] + static.u[ax.xrow,i])+
+      delta * as.vector(ax.trans %*% u[,i])
+
     if (i==1) {
-      ax = c_pl1_best_reply_ax(u[,1],ax,sdf$na1,sdf$na2)
+      ax = c_pl1_best_reply_ax(q_i,ax,sdf$na1,sdf$na2)
     } else {
-      ax = c_pl2_best_reply_ax(u[,2],ax,sdf$na1,sdf$na2)
+      ax = c_pl2_best_reply_ax(q_i,ax,sdf$na1,sdf$na2)
     }
     i = (i %% 2) + 1
     u.old = u
+    if (iter > max.iter) {
+      warning(paste0("Reached limit of ", max.iter, " iteration and no MPE was found."))
+      break
+    }
   }
-  quick_df(x=sdf$x,u1=u[,1],u2=u[,2],a=ax-g$sdf$lag.cumsum.na)
 
+  if (!multi.stage) {
+    g$mpe = quick_df(x=sdf$x,u1=u[,1],u2=u[,2],a=ax-g$sdf$lag.cumsum.na)
+  } else {
+    g$mpe = quick_df(x=sdf$x,u1=u[,1],u2=u[,2],s.a = static.eq$a, d.a=ax-g$sdf$lag.cumsum.na)
+  }
+  g
 }
 
 static.nash.eq = function(g, gs=g$gs, xrows=seq_len(NROW(g$sdf)), ax.select=NULL, verbose=TRUE) {
