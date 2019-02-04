@@ -18,7 +18,7 @@ examples.capacity.bertrand = function() {
   #
   # c_i = (1/(1+eta)) * (q_1 / x_1)^eta *q
   #
-  # Specifications from Besanka & Doraszelski
+  # Specifications from Besanko & Doraszelski
   #
   # a = 40
   # b = 10
@@ -121,17 +121,28 @@ examples.capacity.bertrand = function() {
   }
 
 
-  x.min=5; x.max = 45; x.step = 10
+  x.min=5; x.max = 45; x.step = 5
   x.seq = seq(x.min,x.max, by=x.step)
   x.df = as_data_frame(expand.grid(x1=x.seq,x2=x.seq))
   x.df$x = paste0(x.df$x1,"_", x.df$x2)
   g = rel_game("Bertrand with Investment") %>%
-    rel_param(x.min=x.min,x.max=x.max,x.step=x.step,dep.prob=0.1,a=50,b=1, i.cost=40, i.seq=c(0,1,2,4,8), alpha=1, eta=10, p.seq=c(seq(15,50,length=21),1000)) %>%
+    rel_param(x.min=x.min,x.max=x.max,x.step=x.step,dep.prob=0.2,a=50,b=1, i.cost=10, i.seq=c(0,1,2,4,8), alpha=1, eta=10, p.seq=c(seq(0,40,length=41),1000)) %>%
     rel_states(x.df,A.fun=A.fun, vec.pi.fun=vec.pi.fun, vec.trans.fun=vec.trans.fun, vec.static.pi.fun = vec.static.pi.fun, static.A.fun = static.A.fun) %>%
     rel_compile()
 
 
-  g.mpe = rel_mpe(g, delta=0.9)
+  g = rel_mpe(g, delta=0.7)
+  mpe = get.mpe(g)
+  mpe$r_lab = paste0(
+    "u ",round(mpe$u1)," ", round(mpe$u2),
+    "\np ",round(mpe$p1)," ", round(mpe$p2),
+    "\nq ",round(mpe$q1)," ", round(mpe$q2),
+    "\ni ",round(mpe$i1)," ", round(mpe$i2)
+  )
+  library(ggplot2)
+  ggplot(mpe, aes(x=x1,y=x2, fill=stat.prob)) + geom_raster(interpolate=FALSE) + geom_label(aes(label=r_lab), fill="white", alpha=0.5, size=3, label.padding=unit(0.1,"lines"))
+
+
 
   g = g %>%  rel_capped_rne(T=50, delta=0.9, rho=1, save.history = !FALSE, use.cpp = TRUE, add.stationary = TRUE, save.details = !TRUE,tie.breaking = "max_r1")
   eq = get.eq(g)

@@ -109,9 +109,9 @@ compute.eq.trans.mat = function(g, ae = if (isTRUE(g$is.multi.stage)) eq$d.ae el
 
 
 
-stationary.eq.distribution = function(g, eq=g$eq, tol = 1e-10, start=rep(1/NROW(g$sdf), NROW(g$sdf)), iterations=200) {
+stationary.eq.distribution = function(g, eq=g$eq, tol = 1e-10, start=rep(1/NROW(g$sdf), NROW(g$sdf)), iterations=200, ae = if (isTRUE(g$is.multi.stage)) eq$d.ae else eq$ae) {
   restore.point("stationary.eq.distribution")
-  mat = compute.eq.trans.mat(g, eq=eq)
+  mat = compute.eq.trans.mat(g, eq=eq, ae=ae)
   res = start
   for (i in 1:iterations) {
     nres = res %*% mat

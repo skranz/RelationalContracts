@@ -182,7 +182,7 @@ get.eq = function(g, extra.cols="ae", eq=g$eq) {
       if (!is.null(ax.extra))
         extra = cbind(extra, ax.extra[ax,])
 
-      if (col != "a")
+      if (col != "a" & col != "ae")
         colnames(extra) = paste0(col,".", colnames(extra))
       eq = cbind(eq,extra)
     }

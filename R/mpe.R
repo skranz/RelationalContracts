@@ -28,9 +28,20 @@ get.mpe = function(g, extra.cols="a", eq=g$mpe) {
   get.eq(g, extra.cols=extra.cols, eq=eq)
 }
 
-rel_mpe = function(g, delta=g$param$delta, static.eq=NULL, max.iter = 10, tol=1e-8, ax=NULL) {
+#' Tries to find a MPE by computing iteratively best replies
+#'
+#' Returns a game object that contains the mpe.
+#' Use the function get.mpe to retrieve a data frame that describes the MPE.
+#'
+#' @param g the game
+#' @param delta the discount factor
+#' @param max.iter maximum number of iterations
+#' @param tol we finish if payoffs in a subsequent iteration don't change by more than tol
+#' @param ax optionaly an initially guess of the action profiles. A vector of size nx describing action profiles as ax indices
+rel_mpe = function(g, delta=g$param$delta, static.eq=NULL, max.iter = 100, tol=1e-8, ax=NULL, add.stationary = TRUE) {
   restore.point("rel_mpe")
 
+  g$param$delta = delta
   if (is.null(g$ax.trans))
     g = prepare.for.spe(g)
 
@@ -85,10 +96,14 @@ rel_mpe = function(g, delta=g$param$delta, static.eq=NULL, max.iter = 10, tol=1e
   }
 
   if (!multi.stage) {
-    g$mpe = quick_df(x=sdf$x,u1=u[,1],u2=u[,2],a=ax-g$sdf$lag.cumsum.na)
+    mpe = bind_cols(g$x.df,quick_df(u1=u[,1],u2=u[,2],a=ax-g$sdf$lag.cumsum.na))
   } else {
-    g$mpe = quick_df(x=sdf$x,u1=u[,1],u2=u[,2],s.a = static.eq$a, d.a=ax-g$sdf$lag.cumsum.na)
+    mpe = bind_cols(g$x.df,quick_df(u1=u[,1],u2=u[,2],s.a = static.eq$a, d.a=ax-g$sdf$lag.cumsum.na))
   }
+  if (add.stationary) {
+    mpe$stat.prob = stationary.eq.distribution(g,mpe, ae = if (isTRUE(g$is.multi.stage)) mpe$d.a else mpe$a)
+  }
+  g$mpe = mpe
   g
 }
 
@@ -138,7 +153,11 @@ static.nash.eq = function(g, gs=g$gs, xrows=seq_len(NROW(g$sdf)), ax.select=NULL
           nash.ind = which.max(ax.select[ax])
         } else {
           # Choose NE with highest joint payoff by default
-          nash.ind = which.max(pi1[nash]+pi2[nash])
+          # Break ties by preferring more similar payoffs
+          #restore.point("hkhfdshfuirhei")
+          ord = order(-(pi1[nash]+pi2[nash]), abs(pi1[nash]-pi2[nash]))
+          nash.ind = ord[1]
+          #nash.ind = which.max(pi1[nash]+pi2[nash])
         }
         if (verbose) {
           eq.msg = paste0("(",round(pi1[nash],2),",", round(pi2[nash],2),")")
