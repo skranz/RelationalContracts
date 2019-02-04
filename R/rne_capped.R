@@ -250,7 +250,7 @@ rel_capped_rne = function(g,T, tol=1e-10,  delta=g$param$delta, rho=g$param$rho,
     rne = left_join(rne, g$x.df, by="x")
 
   if (add.stationary) {
-    rne$stationary = stationary.eq.distribution(g,rne)
+    rne$stationary.prob = stationary.eq.distribution(g,rne)
   }
 
   g[[res.field]] = rne

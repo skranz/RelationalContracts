@@ -56,17 +56,17 @@ examples.cost.ladder.cournot = function() {
   x.df = as_data_frame(expand.grid(x1=x.seq,x2=x.seq))
   x.df$x = paste0(x.df$x1,"_", x.df$x2)
   g = rel_game("Cournot with Cost Ladder") %>%
-    rel_param(x.min=x.min,x.max=x.max,dep.prob=0.1,a=x.max,b=1, i.cost=1.1,alpha=1) %>%
+    rel_param(x.min=x.min,x.max=x.max,dep.prob=0.1,a=x.max,b=1, i.cost=1.5,alpha=1) %>%
     rel_states(x.df,A1=list(i1=i.seq),A2=list(i2=i.seq),static.A1 = list(q1=q.seq), static.A2 = list(q2=q.seq),vec.pi.fun=vec.pi.fun, vec.trans.fun=vec.trans.fun, vec.static.pi.fun = vec.static.pi.fun, x.T = "0_0") %>%
     rel_compile()
 
 
-  g = rel_mpe(g, delta=0.85)
+  g = rel_mpe(g, delta=0.9)
   mpe = get.mpe(g)
   mpe$r_lab = paste0(
     "u ",round(mpe$u1,2)," ", round(mpe$u2,2),
     "\nq ",round(mpe$q1,1)," ", round(mpe$q2,1),
-    "\ni ",round(mpe$i1)," ", round(mpe$i2)
+    "\ni ",round(mpe$i1,1)," ", round(mpe$i2,1)
   )
   library(ggplot2)
   ggplot(mpe, aes(x=x1,y=x2, fill=stat.prob)) + geom_raster(interpolate=FALSE) + geom_label(aes(label=r_lab), fill="white", alpha=0.5, size=3, label.padding=unit(0.1,"lines"))
@@ -76,10 +76,10 @@ examples.cost.ladder.cournot = function() {
   g = g %>%  rel_capped_rne(T=50, delta=0.7, rho=0.8, save.history = !FALSE, use.cpp = TRUE, add.stationary = TRUE, save.details = !TRUE)
   eq = get.eq(g)
 
-  rho.seq = seq(0,1,by=0.1)
+  rho.seq = c(1,0.9,0.5,0)
   sim = bind_rows(lapply(rho.seq, function(rho) {
     cat("\nrho = ",rho)
-    g = g %>%  rel_capped_rne(T=50, delta=0.7, rho=rho, save.history = FALSE, use.cpp = TRUE, add.stationary = TRUE)
+    g = g %>%  rel_capped_rne(T=50, delta=0.9, rho=rho, save.history = FALSE, use.cpp = TRUE, add.stationary = TRUE)
     eq = get.eq(g)
     eq$rho = rho
 
@@ -90,6 +90,8 @@ examples.cost.ladder.cournot = function() {
     "\nq ",round(q1,2)," ", round(q2,2),
     "\ni ",round(i1,1)," ", round(i2,1)
   ))
+  ggplot(sim, aes(x=x1,y=x2, fill=stationary)) + geom_raster(interpolate=FALSE) + geom_text(aes(label=r_lab), color="white", alpha=0.5, size=2.5, label.padding=unit(0.1,"lines")) + facet_wrap(~rho)
+
 
   library(plotly)
   library(ggplot2)

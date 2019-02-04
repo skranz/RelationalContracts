@@ -101,7 +101,7 @@ rel_mpe = function(g, delta=g$param$delta, static.eq=NULL, max.iter = 100, tol=1
     mpe = bind_cols(g$x.df,quick_df(u1=u[,1],u2=u[,2],s.a = static.eq$a, d.a=ax-g$sdf$lag.cumsum.na))
   }
   if (add.stationary) {
-    mpe$stat.prob = stationary.eq.distribution(g,mpe, ae = if (isTRUE(g$is.multi.stage)) mpe$d.a else mpe$a)
+    mpe$stationary.prob = stationary.eq.distribution(g,mpe, ae = if (isTRUE(g$is.multi.stage)) mpe$d.a else mpe$a)
   }
   g$mpe = mpe
   g

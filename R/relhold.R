@@ -725,7 +725,7 @@ compute.x.trans.mat = function(x,g, add.own=TRUE, tdf=g$tdf, row= which(g$sdf$x 
   sumProbs = rowSums(mat)
   if (any(mat<0))
     stop(paste0("Have computed negative transition probabilities for state ", x))
-  if (any(sumProbs>1))
+  if (any(sumProbs-1>1e-10))
     stop(paste0("Have computed sum of transition probabilities larger than 1 for state ",x))
 
   if (add.own) {

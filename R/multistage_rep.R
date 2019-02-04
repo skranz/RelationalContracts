@@ -17,20 +17,21 @@ compute.rep.game.action.lists = function(sdf, rows=seq_len(NROW(sdf))) {
 
 
     # Faster than arrange
-    ae.df = a.df[order(-a.df[,"G"]),,drop=FALSE]
+    # Tie breaking by prefering strategy profiles with more similar payoffs
+    ae.df = a.df[order(-a.df[,"G"], L, abs(pi1-pi2)),,drop=FALSE]
 
     minL = c(Inf,cummin(ae.df[-NROW(a.df),"L"]))
     ae.df = ae.df[ae.df[,"L"] < minL,,drop=FALSE]
 
 
     #a1.df = a.df %>% arrange(c1)
-    a1.df = a.df[order(a.df[,"c1"]),,drop=FALSE]
+    a1.df = a.df[order(a.df[,"c1"], L),,drop=FALSE]
 
     minL = c(Inf,cummin(a1.df[-NROW(a.df),"L"]))
     a1.df = a1.df[a1.df[,"L"] < minL,,drop=FALSE]
 
     #a2.df = a.df %>% arrange(c2)
-    a2.df = a.df[order(a.df[,"c2"]),,drop=FALSE]
+    a2.df = a.df[order(a.df[,"c2"],L),,drop=FALSE]
     minL = c(Inf,cummin(a2.df[-NROW(a.df),"L"]))
     a2.df = a2.df[a2.df[,"L"] < minL,,drop=FALSE]
     list(ae.df=ae.df, a1.df=a1.df, a2.df=a2.df)
