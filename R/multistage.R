@@ -48,7 +48,7 @@ examples.multistage = function() {
   }
 
 
-  x.seq = seq(0,1, by=0.1)
+  x.seq = seq(0,1, by=0.5)
   #x.seq = c(0,0.01,0.05,0.1,0.2,0.5,1)
   x.df = as_data_frame(expand.grid(x1=x.seq,x2=x.seq, stringsAsFactors = FALSE)) %>%
     mutate(x= paste0(x1," ", x2))
@@ -650,4 +650,54 @@ rel.capped.rne.multistage.old = function(g,T, save.details=FALSE, tol=1e-10,  de
   g
 }
 
+find.static.a.for.all.x = function(g, L.static) {
+  restore.point("find.static.G.for.all.x")
+  li = g$static.rep.li
+  nx = length(L.static)
+  res = matrix(0L,nx,3)
+  colnames(res) = c("s.ae","s.a1","s.a2")
 
+  for (xrow in 1:nx) {
+    el = li[[xrow]]
+
+    df = el[["ae.df"]]
+    row = min(which(df[,"L"]<=L.static[xrow]))
+    res[xrow,1] = df[row,".a"]
+
+    df = el[["a1.df"]]
+    row = min(which(df[,"L"]<=L.static[xrow]))
+    res[xrow,2] = df[row,".a"]
+
+    df = el[["a2.df"]]
+    row = min(which(df[,"L"]<=L.static[xrow]))
+    res[xrow,3] = df[row,".a"]
+
+  }
+  res
+}
+
+# Given a vector of available liquidity for each state
+# find the highest joint payoff in the static stage
+find.static.G.for.all.x = function(g,L.static) {
+  restore.point("find.static.G.for.all.x")
+  li = g$static.rep.li
+  xrow = 1
+  res = sapply(seq_along(L.static), function(xrow) {
+    df = li[[xrow]][["ae.df"]]
+    row = min(which(df[,"L"]<=L.static[xrow]))
+    as.numeric(df[row,"G"])
+  })
+}
+
+find.static.ci.for.all.x = function(g,i=1,L.static) {
+  restore.point("find.static.ci.for.all.x")
+  df.col = paste0("a",i,".df")
+  col = paste0("c",i)
+  li = g$static.rep.li
+  xrow = 1
+  res = sapply(seq_along(L.static), function(xrow) {
+    df = li[[xrow]][[df.col]]
+    row = min(which(df[,"L"]<=L.static[xrow]))
+    as.numeric(df[row,col])
+  })
+}

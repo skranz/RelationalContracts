@@ -76,6 +76,8 @@ examples.multistage.spe.trunc = function() {
     rel_states(x.df,A.fun=A.fun, vec.pi.fun=vec.pi.fun, vec.trans.fun=vec.trans.fun, vec.static.pi.fun = vec.static.pi.fun, static.A.fun = static.A.fun) %>%
     rel_compile()
 
+  spe = solve.trunc.spe(g)
+
   g = g %>%  rel_capped_rne(T=20, delta=0.9, rho=0.4, save.history = FALSE, use.cpp = TRUE, add.stationary = TRUE, save.details = TRUE)
   eq = g$eq
   eq$r_lab = paste0(round(eq$r1)," ", round(eq$r2),"\n", eq$ae.lab)
@@ -84,45 +86,6 @@ examples.multistage.spe.trunc = function() {
 
   det = get.rne.details(g, x="100_0")
 }
-
-compute.eq.trans.mat = function(g, ae = if (isTRUE(g$is.multi.stage)) eq$d.ae else eq$ae, eq=g$eq) {
-  restore.point("compute.eq.trans.mat")
-  if (!is.null(g$ax.trans)) {
-    ax = eq.a.to.ax(g,a=ae)
-    g$ax.trans[ax,,drop=FALSE]
-  } else {
-    nx = NROW(g$sdf)
-    mat = matrix(0,nx,nx)
-    colnames(mat) = g$sdf$x
-    for (xrow in 1:NROW(g$sdf)) {
-      tm = g$sdf$trans.mat[[xrow]]
-      if (NROW(tm)==0) {
-        mat[xrow, colnames(tm)] = 1
-      } else {
-        mat[xrow, colnames(tm)] = tm[ae[xrow],]
-      }
-    }
-    mat
-  }
-
-}
-
-
-
-stationary.eq.distribution = function(g, eq=g$eq, tol = 1e-10, start=rep(1/NROW(g$sdf), NROW(g$sdf)), iterations=200, ae = if (isTRUE(g$is.multi.stage)) eq$d.ae else eq$ae) {
-  restore.point("stationary.eq.distribution")
-  mat = compute.eq.trans.mat(g, eq=eq, ae=ae)
-  res = start
-  for (i in 1:iterations) {
-    nres = res %*% mat
-    change = max(abs(res-nres))
-    res = nres
-  }
-  res = as.vector(res)
-  attr(res,"change") <- change
-  res
-}
-
 
 examples.spe.trunc = function() {
   g0 = matrix(c(1,2,-2,0),2,2)
@@ -144,6 +107,9 @@ examples.spe.trunc = function() {
 solve.trunc.spe = function(g,tol.feasible = 1e-10, verbose=FALSE,r1 = g[["r1"]], r2 = g[["r2"]]) {
   restore.point("solve.trunc.spe")
 
+  if (is.null(g$ax.trans))
+    g = prepare.for.spe(g)
+  is.multi.stage = isTRUE(g$is.multi.stage)
   if (is.null(r1)) {
     r1 = r2 = rep(0, NROW(g$sdf))
   }
@@ -167,9 +133,10 @@ solve.trunc.spe = function(g,tol.feasible = 1e-10, verbose=FALSE,r1 = g[["r1"]],
   infeas.2 = TRUE
 
   v1 = v2 = rep(0,nx)
+
+  L.static = rep(Inf,nx)
+
   iter = 0
-
-
   while(TRUE) {
     iter = iter+1
 
@@ -182,7 +149,7 @@ solve.trunc.spe = function(g,tol.feasible = 1e-10, verbose=FALSE,r1 = g[["r1"]],
     # Calculate optimal equilibrium state actions
     # if some of the previous action profiles became infeasible
     if (infeas.e) {
-      res = trunc.spe.highest.U(g, admiss, admiss.sizes,r1=r1,r2=r2)
+      res = trunc.spe.highest.U(g, admiss, admiss.sizes,r1=r1,r2=r2, L.static = L.static, is.multi.stage=is.multi.stage)
       U = res$U
       axe = res$ax
       if (verbose) {
@@ -193,7 +160,7 @@ solve.trunc.spe = function(g,tol.feasible = 1e-10, verbose=FALSE,r1 = g[["r1"]],
 
     # a1
 		if (infeas.1) {
-		  res = trunc.spe.harshest.punishment(g,i=1, admiss=admiss, admiss.sizes=admiss.sizes, verbose=verbose, r=r1)
+		  res = trunc.spe.harshest.punishment(g,i=1, admiss=admiss, admiss.sizes=admiss.sizes, verbose=verbose, r=r1,L.static = L.static, is.multi.stage=is.multi.stage)
 			v1 = res$vi
 			ax1 = res$ax
 			# Cheating payoffs for all ax given the just
@@ -206,7 +173,7 @@ solve.trunc.spe = function(g,tol.feasible = 1e-10, verbose=FALSE,r1 = g[["r1"]],
 		}
     # a2
 		if (infeas.2) {
-		  res = trunc.spe.harshest.punishment(g,i=2, admiss=admiss, admiss.sizes=admiss.sizes,verbose=verbose,r=r2)
+		  res = trunc.spe.harshest.punishment(g,i=2, admiss=admiss, admiss.sizes=admiss.sizes,verbose=verbose,r=r2,L.static = L.static, is.multi.stage=is.multi.stage)
 			v2 = res$vi
 			ax2 = res$ax
 			# Cheating payoffs for all ax given the just
@@ -219,7 +186,7 @@ solve.trunc.spe = function(g,tol.feasible = 1e-10, verbose=FALSE,r1 = g[["r1"]],
 		}
 
     V = v1+v2
-
+    # Joint payoff starting from dynamic stage
     U.hat = (1-delta)*ax.pi$Pi[admiss] +
       delta * (g$ax.trans[admiss,,drop=FALSE] %*% ((1-rho)* U + rho*R))
 
@@ -238,16 +205,30 @@ solve.trunc.spe = function(g,tol.feasible = 1e-10, verbose=FALSE,r1 = g[["r1"]],
     admiss = admiss[-infeas.admiss]
     admiss.sizes = tabulate(g$ax.pi$xrow[admiss],nx)
 
+    if (any(admiss.sizes == 0)) {
+      warning("There does not exist a subgame perfect equilibrium")
+      return(NULL)
+    }
+
+    # Update L.static
+    if (is.multi.stage) {
+      restore.point("shfiufzuhrufhlksdfkch")
+      L.df = quick_df(xrow=g$ax.pi$xrow[admiss],
+        U.hat=U.hat[-infeas.admiss],
+        q1.hat =q1.hat[-infeas.admiss],
+        q2.hat =q2.hat[-infeas.admiss]
+      )
+      L.sum = L.df %>% group_by(xrow) %>%
+        summarize(L.static= 1/(1-delta)*(max(U.hat)-min(q1.hat)-min(q2.hat)))
+      L.static = L.sum$L.static
+    }
+
     # Remove newly infeasible rows
     # from q1.hat and q2.hat if they
     # are not newly computed next round
     if (!infeas.1) q1.hat = q1.hat[-infeas.admiss]
     if (!infeas.2) q2.hat = q2.hat[-infeas.admiss]
     #browser()
-    if (any(admiss.sizes == 0)) {
-      warning("There does not exist a subgame perfect equilibrium")
-      return(NULL)
-    }
   }
   ae = ax.pi$a[axe]
   a1 = ax.pi$a[ax1]
@@ -255,41 +236,74 @@ solve.trunc.spe = function(g,tol.feasible = 1e-10, verbose=FALSE,r1 = g[["r1"]],
 
   r1 = v1 + beta1*(U-v1-v2)
   r2 = U-r1
-  spe = quick_df(
-    x=sdf$x,
-    r1=r1,
-    r2=r2,
-    U=U,
-    v1=v1,
-    v2=v2,
-    ae=ae,
-    a1=a1,
-    a2=a2
-  )
+
+  if (!is.multi.stage) {
+    spe = quick_df(
+      x=sdf$x,
+      r1=r1,
+      r2=r2,
+      U=U,
+      v1=v1,
+      v2=v2,
+      ae=ae,
+      a1=a1,
+      a2=a2
+    )
+  } else {
+    # Compute static ae, a1 and a2 via L.static
+    static.a = find.static.a.for.all.x(g, L.static)
+    spe = cbind(
+      quick_df(
+        x=sdf$x,
+        r1=r1,
+        r2=r2,
+        U=U,
+        v1=v1,
+        v2=v2,
+        d.ae=ae,
+        d.a1=a1,
+        d.a2=a2
+      ),
+      static.a
+    )
+  }
   return(spe)
 }
 
 
 #' Calculates the highest joint payoff
 #' The returned policy are indexed on ax (not on admiss)
-trunc.spe.highest.U = function(g, admiss, admiss.sizes, r1=g[["r1"]],r2=g[["r2"]]) {
+trunc.spe.highest.U = function(g, admiss, admiss.sizes, r1=g[["r1"]],r2=g[["r2"]], L.static=NULL, is.multi.stage = isTRUE(g$is.multi.stage)) {
   restore.point("trunc.spe.highest.U")
 
   T = g$ax.trans[admiss,,drop=FALSE]
   Pi = g$ax.pi$Pi[admiss]
   r = r1+r2
 
+  if (is.multi.stage) {
+    G = find.static.G.for.all.x(g, L.static)
+    Pi = Pi+G[g$ax.pi$xrow]
+  }
+
   res = trunc_policy_iteration(T=T,Pi=Pi,r=r,delta=g$param$delta,rho=g$param$rho, na.vec=admiss.sizes)
   return(list(Ue=res$V, ax = admiss[res$p]))
 }
 
-trunc.spe.harshest.punishment = function(g,i,admiss, admiss.sizes, tol=1e-10, verbose=FALSE, use.cpp=TRUE, r=g$sdf[[paste0("r",i)]], v= rep(0,NROW(g$sdf))) {
+trunc.spe.harshest.punishment = function(g,i,admiss, admiss.sizes, tol=1e-10, verbose=FALSE, use.cpp=TRUE, r=g$sdf[[paste0("r",i)]], v= rep(0,NROW(g$sdf)),  L.static=NULL, is.multi.stage = isTRUE(g$is.multi.stage)) {
   restore.point("trunc.spe.harshest.punishment")
 
   delta = g$param$delta
   rho = g$param$rho
 
-  # Start with action profiles that minimize player i's cheating payoffs
+  if (is.multi.stage) {
+    static.ci = find.static.ci.for.all.x(g,i,L.static)
+    static.ax.ci = static.ci[g$ax.pi$xrow]
+  } else {
+    static.ax.ci = NULL
+  }
+
+  # Start with action profiles that minimize player
+  # i's cheating payoffs at dynamic stage
   # given previous v (initially previous v is 0)
   cheat.pay = trunc.spe.cheating.payoffs(g,i,v = v,r=r)[admiss]
 
@@ -298,13 +312,16 @@ trunc.spe.harshest.punishment = function(g,i,admiss, admiss.sizes, tol=1e-10, ve
   # Get for every state that admissible action profile that minimizes player i's static cheating payoff
   act.axi = admiss[which.chunk.maxs(-cheat.pay,admiss.sizes, use.cpp=use.cpp)]
 
-  # Get corresponding cheating payoffs
+  # Get dynamic punishment payoff
+  # including static cheating payoffs
   # We solve a MDP for player i
-  v = trunc.spe.full.dyn.vi(g,i,act.axi, r=r)$vi
+  v = trunc.spe.full.dyn.vi(g,i,act.axi, r=r, static.ax.ci = static.ax.ci)$vi
   old.cheat.pay = cheat.pay
   counter = 0
   while (TRUE) {
     counter = counter+1
+
+    # Cheating payoff starting at dynamic stage
     cheat.pay = trunc.spe.cheating.payoffs(g,i,v=v,r=r, rho=rho,delta=delta)[admiss]
     # Stop if player i cannot improve his cheating payoff in any state
     if (approxeq(cheat.pay,old.cheat.pay,tol)) {
@@ -314,7 +331,7 @@ trunc.spe.harshest.punishment = function(g,i,admiss, admiss.sizes, tol=1e-10, ve
 
     # Get corresponding cheating payoffs
     # We solve a MDP for player i
-    v = trunc.spe.full.dyn.vi(g,i,act.axi)$vi
+    v = trunc.spe.full.dyn.vi(g,i,act.axi,r=r, static.ax.ci = static.ax.ci)$vi
     old.cheat.pay = cheat.pay
   }
   #print(rbind(label.ax(m,a.to.ax(m,act.a)), v))
@@ -327,7 +344,7 @@ trunc.spe.harshest.punishment = function(g,i,admiss, admiss.sizes, tol=1e-10, ve
 # ax.admiss is a nx x 1 vector of action profiles
 # one profile for every state x
 # static cheating payoffs are already added
-trunc.spe.full.dyn.vi = function(g,i,axi, r=g$sdf[[paste0("r",i)]]) {
+trunc.spe.full.dyn.vi = function(g,i,axi, r=0, static.ax.ci = NULL) {
   restore.point("trunc.spe.full.dyn.vi")
 
   if (i==1) {
@@ -339,6 +356,12 @@ trunc.spe.full.dyn.vi = function(g,i,axi, r=g$sdf[[paste0("r",i)]]) {
     pi = g$ax.pi$pi2[replies]
     sizes = g$sdf$na2
   }
+
+  # Add static cheating payoff in a multistage
+  # game
+  if (!is.null(static.ax.ci))
+    pi = pi + static.ax.ci[replies]
+
   # Transition function between states
   T = g$ax.trans[replies,,drop=FALSE]
 
@@ -365,6 +388,11 @@ trunc.spe.cheating.payoffs = function(g, i=1,v=rep(0,nx), r=rep(0,nx), delta = g
     naj = sdf$na1
     pi = g$ax.pi$pi2
   }
+
+  # Add static cheating payoff in a multistage
+  # game
+  #if (!is.null(static.ax.ci))
+  #  pi = pi + static.ax.ci
 
   u_ax = (1-delta)*pi + delta*
     as.vector(g$ax.trans %*% ((1-rho)*v + rho*r))
@@ -493,6 +521,8 @@ prepare.for.spe = function(g) {
   g$ax.pi = quick_df(xrow=xrow, a=a, ax=ax, pi1=pi1,pi2=pi2,Pi=Pi)
   g$ax.trans = ax.trans
   g$nax = nax
+
+
   g
 
 }
