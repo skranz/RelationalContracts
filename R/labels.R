@@ -22,20 +22,20 @@ add.rne.action.labels = function(g, rne) {
   } else {
     s.lag.cumsum.na = g$gs$sdf$lag.cumsum.na
     # Multistage
-    rows = lag.cumsum.na[xrow]+rne[["d.ae"]]
+    rows = lag.cumsum.na[xrow]+rne[["ae"]]
     d.lab = g$a.labs.df$lab[rows]
 
     rows = s.lag.cumsum.na[xrow]+rne[["s.ae"]]
     s.lab = g$gs$a.labs.df$lab[rows]
     rne$ae.lab = paste0(s.lab," | ", d.lab)
 
-    rows = lag.cumsum.na[xrow]+rne[["d.a1"]]
+    rows = lag.cumsum.na[xrow]+rne[["a1"]]
     d.lab = g$a.labs.df$lab[rows]
     rows = s.lag.cumsum.na[xrow]+rne[["s.a1"]]
     s.lab = g$gs$a.labs.df$lab[rows]
     rne$a1.lab = paste0(s.lab," | ", d.lab)
 
-    rows = lag.cumsum.na[xrow]+rne[["d.a2"]]
+    rows = lag.cumsum.na[xrow]+rne[["a2"]]
     d.lab = g$a.labs.df$lab[rows]
     rows = s.lag.cumsum.na[xrow]+rne[["s.a2"]]
     s.lab = g$gs$a.labs.df$lab[rows]
@@ -61,19 +61,19 @@ old.add.rne.action.labels = function(g, rne) {
     rne$a2.lab = g$a.labs.df$lab[rows]
   } else {
     # Multistage
-    rows = match.by.cols(rne,g$a.labs.df, cols1=c("x","d.ae"), cols2=c("x","a"))
+    rows = match.by.cols(rne,g$a.labs.df, cols1=c("x","ae"), cols2=c("x","a"))
     d.lab = g$a.labs.df$lab[rows]
     rows = match.by.cols(rne,g$gs$a.labs.df, cols1=c("x","s.ae"), cols2=c("x","a"))
     s.lab = g$gs$a.labs.df$lab[rows]
     rne$ae.lab = paste0(s.lab," | ", d.lab)
 
-    rows = match.by.cols(rne,g$a.labs.df, cols1=c("x","d.a1"), cols2=c("x","a"))
+    rows = match.by.cols(rne,g$a.labs.df, cols1=c("x","a1"), cols2=c("x","a"))
     d.lab = g$a.labs.df$lab[rows]
     rows = match.by.cols(rne,g$gs$a.labs.df, cols1=c("x","s.a1"), cols2=c("x","a"))
     s.lab = g$gs$a.labs.df$lab[rows]
     rne$a1.lab = paste0(s.lab," | ", d.lab)
 
-    rows = match.by.cols(rne,g$a.labs.df, cols1=c("x","d.a2"), cols2=c("x","a"))
+    rows = match.by.cols(rne,g$a.labs.df, cols1=c("x","a2"), cols2=c("x","a"))
     d.lab = g$a.labs.df$lab[rows]
     rows = match.by.cols(rne,g$gs$a.labs.df, cols1=c("x","s.a2"), cols2=c("x","a"))
     s.lab = g$gs$a.labs.df$lab[rows]

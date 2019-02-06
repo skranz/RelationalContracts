@@ -3,7 +3,6 @@
 
 examples.multistage.spe.trunc = function() {
   # A Cournot Game with Capacity Building
-
   A.fun = function(i.seq=c(0,1),...) {
     restore.point("A.fun")
     list(
@@ -76,6 +75,9 @@ examples.multistage.spe.trunc = function() {
     rel_states(x.df,A.fun=A.fun, vec.pi.fun=vec.pi.fun, vec.trans.fun=vec.trans.fun, vec.static.pi.fun = vec.static.pi.fun, static.A.fun = static.A.fun) %>%
     rel_compile()
 
+  g = rel_spe(g, delta=0.9)
+
+  eq = get.eq(g)
   spe = solve.trunc.spe(g)
 
   g = g %>%  rel_capped_rne(T=20, delta=0.9, rho=0.4, save.history = FALSE, use.cpp = TRUE, add.stationary = TRUE, save.details = TRUE)
@@ -104,18 +106,20 @@ examples.spe.trunc = function() {
 }
 
 
-solve.trunc.spe = function(g,tol.feasible = 1e-10, verbose=FALSE,r1 = g[["r1"]], r2 = g[["r2"]]) {
-  restore.point("solve.trunc.spe")
-
+rel_spe = function(g,delta=g$param$delta, rho=g$param$rho,tol.feasible = 1e-10, verbose=FALSE,r1 = NULL, r2 = NULL, add.action.labels=TRUE) {
+  restore.point("rel_spe")
+  g$param$delta = delta
+  g$param$rho = rho
+  if (!g$is_compiled) g = rel_compile(g)
   if (is.null(g$ax.trans))
     g = prepare.for.spe(g)
+
   is.multi.stage = isTRUE(g$is.multi.stage)
   if (is.null(r1)) {
     r1 = r2 = rep(0, NROW(g$sdf))
+    rho = 0
   }
   R = r1+r2
-  delta = g$param$delta
-  rho = g$param$rho
   beta1 = g$param$beta1
 
   sdf = g$sdf
@@ -178,7 +182,7 @@ solve.trunc.spe = function(g,tol.feasible = 1e-10, verbose=FALSE,r1 = g[["r1"]],
 			ax2 = res$ax
 			# Cheating payoffs for all ax given the just
 			# calculated punishment payoff  for all states x
-			q2.hat = trunc.spe.cheating.payoffs(g,i=1,delta=delta, rho=rho,v = v2,r=r2)[admiss]
+			q2.hat = trunc.spe.cheating.payoffs(g,i=2,delta=delta, rho=rho,v = v2,r=r2)[admiss]
 			if (verbose) {
         cat(paste0("v2: ", paste0(v2, collapse=", ")))
       }
@@ -207,7 +211,8 @@ solve.trunc.spe = function(g,tol.feasible = 1e-10, verbose=FALSE,r1 = g[["r1"]],
 
     if (any(admiss.sizes == 0)) {
       warning("There does not exist a subgame perfect equilibrium")
-      return(NULL)
+      g$spe = NULL
+      return(g)
     }
 
     # Update L.static
@@ -260,14 +265,18 @@ solve.trunc.spe = function(g,tol.feasible = 1e-10, verbose=FALSE,r1 = g[["r1"]],
         U=U,
         v1=v1,
         v2=v2,
-        d.ae=ae,
-        d.a1=a1,
-        d.a2=a2
+        ae=ae,
+        a1=a1,
+        a2=a2
       ),
       static.a
     )
   }
-  return(spe)
+  if (add.action.labels)
+    spe = add.rne.action.labels(g, spe)
+
+  g$eq = g$spe = spe
+  return(g)
 }
 
 

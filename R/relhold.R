@@ -363,6 +363,8 @@ rel_compile = function(g,..., compute.just.static=FALSE) {
   # Clear definitions to save memory
   g$defs = NULL
 
+  g = prepare.for.spe(g)
+
   g
 }
 

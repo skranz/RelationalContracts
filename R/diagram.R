@@ -96,11 +96,7 @@ rne.diagram = function(g,show.own.loop=FALSE, show.terminal.loop=FALSE, eq = g$e
     x = sdf$x[[row]]
 
     rne.row = which(rne$x==x)[1]
-    if (!is.multi.stage) {
-      ae = rne$ae[[rne.row]]
-    } else {
-      ae = rne$d.ae[[rne.row]]
-    }
+    ae = rne$ae[[rne.row]]
     if (NROW(trans.mat)==0) {
       if (!show.terminal.loop)
         return(NULL)
@@ -146,11 +142,7 @@ find.eq.chain.x = function(g, x0 = g$sdf$x[[1]], eq=g$eq, t=1) {
     row = match(cur.x, g$sdf$x)
     trans.mat = g$sdf$trans.mat[[row]]
 
-    if (!is.multi.stage) {
-      ae = eq$ae[[row]]
-    } else {
-      ae = eq$d.ae[[row]]
-    }
+    ae = eq$ae[[row]]
     xd = colnames(trans.mat)[trans.mat[ae,] > 0]
     used.x = c(used.x, cur.x)
     x = union(x,xd)

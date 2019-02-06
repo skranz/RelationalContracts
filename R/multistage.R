@@ -160,7 +160,10 @@ r.capped.rne.multistage.iterations = function(T, g, rne, tie.breaking, delta=g$p
   next_r1 = rne_r1 = rne$r1; next_r2 = rne_r2 = rne$r2
 
   rne_actions = matrix(0L, NROW(sdf),6)
-  colnames(rne_actions) = c("s.ae","s.a1","s.a2","d.ae","d.a1","d.a2")
+  colnames(rne_actions) = c("s.ae","s.a1","s.a2","ae","a1","a2")
+
+  static.payoffs = matrix(0,NOW(sdf),3)
+  colnames(static.payoffs) = c("static.Pi","static.c1","static.c2")
 
   if (save.details) {
     details.li = vector("list",NROW(sdf))
@@ -264,6 +267,13 @@ r.capped.rne.multistage.iterations = function(T, g, rne, tie.breaking, delta=g$p
         rne_actions[row,] = as.integer(c(s.e[".a"],s.1[".a"],s.2[".a"], d.a))
       }
 
+      if (iter==T) {
+        static.payoffs[row,1] = s.e["G"]
+        static.payoffs[row,2] = s.1["c1"]
+        static.payoffs[row,3] = s.2["c2"]
+      }
+
+
       if (save.details & iter==T) {
         pi1 = sdf$pi1[[row]]
         Er1 = trans.mat.mult(trans.mat, next_r1[dest.rows])
@@ -322,7 +332,7 @@ r.capped.rne.multistage.iterations = function(T, g, rne, tie.breaking, delta=g$p
       next_r1 = rne_r1; next_r2 = rne_r2
     }
   }
-  res_rne = cbind(quick_df(x=sdf$x,r1=rne_r1,r2=rne_r2, U=rne_U, v1=rne_v1,v2=rne_v2),rne_actions)
+  res_rne = cbind(quick_df(x=sdf$x,r1=rne_r1,r2=rne_r2, U=rne_U, v1=rne_v1,v2=rne_v2),rne_actions, static.payoffs)
   res_rne = add.rne.action.labels(g,res_rne)
 
   details = if (save.details) bind_rows(details.li)
@@ -372,9 +382,9 @@ rel.capped.rne.multistage.old = function(g,T, save.details=FALSE, tol=1e-10,  de
   rne.s.a1 = rep(NA_integer_,n)
   rne.s.a2 = rep(NA_integer_,n)
 
-  rne.d.ae = rep(NA_integer_,n)
-  rne.d.a1 = rep(NA_integer_,n)
-  rne.d.a2 = rep(NA_integer_,n)
+  rne.ae = rep(NA_integer_,n)
+  rne.a1 = rep(NA_integer_,n)
+  rne.a2 = rep(NA_integer_,n)
 
 
   rne.details = NULL
@@ -399,9 +409,9 @@ rel.capped.rne.multistage.old = function(g,T, save.details=FALSE, tol=1e-10,  de
     rne.s.ae[row] = rep[1,"s.ae"]
     rne.s.a1[row] = rep[1,"s.a1"]
     rne.s.a2[row] = rep[1,"s.a2"]
-    rne.d.ae[row] = rep[1,"d.ae"]
-    rne.d.a1[row] = rep[1,"d.a1"]
-    rne.d.a2[row] = rep[1,"d.a2"]
+    rne.ae[row] = rep[1,"ae"]
+    rne.a1[row] = rep[1,"a1"]
+    rne.a2[row] = rep[1,"a2"]
 
     w = ((1-delta) / (1-adj_delta))
     v1 = w*rep$v1_rep + (1-w)*rep$r1
@@ -498,9 +508,9 @@ rel.capped.rne.multistage.old = function(g,T, save.details=FALSE, tol=1e-10,  de
         const = 1
       }
 
-      rne.d.ae[row] = which.max((const+tb) * (abs(U.hat-U)<tol & IC.holds))
-      rne.d.a1[row] = which.max((const+tb) * (abs(v1.hat-v1)<tol & IC.holds))
-      rne.d.a2[row] = which.max((const+tb) * (abs(v2.hat-v2)<tol & IC.holds))
+      rne.ae[row] = which.max((const+tb) * (abs(U.hat-U)<tol & IC.holds))
+      rne.a1[row] = which.max((const+tb) * (abs(v1.hat-v1)<tol & IC.holds))
+      rne.a2[row] = which.max((const+tb) * (abs(v2.hat-v2)<tol & IC.holds))
 
       # 2. Solve static stage
 
@@ -571,9 +581,9 @@ rel.capped.rne.multistage.old = function(g,T, save.details=FALSE, tol=1e-10,  de
           x.df[x.df$x==x,],
           sdf$a.grid[[srow]],
           quick_df(
-            d.can.ae = (abs(U.hat-dU)<tol & IC.holds)*1 + (arows==rne.d.ae[row]),
-            d.can.a1 = (abs(v1.hat-dv1)<tol & IC.holds)*1 + (arows==rne.d.a1[row]),
-            d.can.a2 = (abs(v2.hat-dv2)<tol & IC.holds)*1 + (arows==rne.d.a2[row]),
+            d.can.ae = (abs(U.hat-dU)<tol & IC.holds)*1 + (arows==rne.ae[row]),
+            d.can.a1 = (abs(v1.hat-dv1)<tol & IC.holds)*1 + (arows==rne.a1[row]),
+            d.can.a2 = (abs(v2.hat-dv2)<tol & IC.holds)*1 + (arows==rne.a2[row]),
             IC.holds=IC.holds,
             slack=slack,
 
@@ -614,26 +624,26 @@ rel.capped.rne.multistage.old = function(g,T, save.details=FALSE, tol=1e-10,  de
     s.a1=rne.s.a1,
     s.a2=rne.s.a2,
 
-    d.ae=rne.d.ae,
-    d.a1=rne.d.a1,
-    d.a2=rne.d.a2
+    ae=rne.ae,
+    a1=rne.a1,
+    a2=rne.a2
   )
 
   # Add some additional info
 
-  rows = match.by.cols(rne,g$a.labs.df, cols1=c("x","d.ae"), cols2=c("x","a"))
+  rows = match.by.cols(rne,g$a.labs.df, cols1=c("x","ae"), cols2=c("x","a"))
   d.lab = g$a.labs.df$lab[rows]
   rows = match.by.cols(rne,g$gs$a.labs.df, cols1=c("x","s.ae"), cols2=c("x","a"))
   s.lab = g$gs$a.labs.df$lab[rows]
   rne$ae.lab = paste0(s.lab," | ", d.lab)
 
-  rows = match.by.cols(rne,g$a.labs.df, cols1=c("x","d.a1"), cols2=c("x","a"))
+  rows = match.by.cols(rne,g$a.labs.df, cols1=c("x","a1"), cols2=c("x","a"))
   d.lab = g$a.labs.df$lab[rows]
   rows = match.by.cols(rne,g$gs$a.labs.df, cols1=c("x","s.a1"), cols2=c("x","a"))
   s.lab = g$gs$a.labs.df$lab[rows]
   rne$a1.lab = paste0(s.lab," | ", d.lab)
 
-  rows = match.by.cols(rne,g$a.labs.df, cols1=c("x","d.a2"), cols2=c("x","a"))
+  rows = match.by.cols(rne,g$a.labs.df, cols1=c("x","a2"), cols2=c("x","a"))
   d.lab = g$a.labs.df$lab[rows]
   rows = match.by.cols(rne,g$gs$a.labs.df, cols1=c("x","s.a2"), cols2=c("x","a"))
   s.lab = g$gs$a.labs.df$lab[rows]
@@ -650,12 +660,15 @@ rel.capped.rne.multistage.old = function(g,T, save.details=FALSE, tol=1e-10,  de
   g
 }
 
+# Returns static action profiles s.ae, s.a1 and s.a2
+# as well as relevent payoffs given a vector
+# of available liquidities for all states
 find.static.a.for.all.x = function(g, L.static) {
   restore.point("find.static.G.for.all.x")
   li = g$static.rep.li
   nx = length(L.static)
-  res = matrix(0L,nx,3)
-  colnames(res) = c("s.ae","s.a1","s.a2")
+  res = matrix(0L,nx,6)
+  colnames(res) = c("s.ae","s.a1","s.a2","static.Pi","static.c1","static.c2")
 
   for (xrow in 1:nx) {
     el = li[[xrow]]
@@ -663,14 +676,17 @@ find.static.a.for.all.x = function(g, L.static) {
     df = el[["ae.df"]]
     row = min(which(df[,"L"]<=L.static[xrow]))
     res[xrow,1] = df[row,".a"]
+    res[xrow,4] = df[row,"G"]
 
     df = el[["a1.df"]]
     row = min(which(df[,"L"]<=L.static[xrow]))
     res[xrow,2] = df[row,".a"]
+    res[xrow,4] = df[row,"c1"]
 
     df = el[["a2.df"]]
     row = min(which(df[,"L"]<=L.static[xrow]))
     res[xrow,3] = df[row,".a"]
+    res[xrow,6] = df[row,"c2"]
 
   }
   res

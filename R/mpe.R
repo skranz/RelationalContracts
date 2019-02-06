@@ -24,7 +24,7 @@ mpe.example = function() {
   mpe = g
 }
 
-get.mpe = function(g, extra.cols="a", eq=g$mpe) {
+get.mpe = function(g, extra.cols="ae", eq=g$mpe) {
   get.eq(g, extra.cols=extra.cols, eq=eq)
 }
 
@@ -96,12 +96,12 @@ rel_mpe = function(g, delta=g$param$delta, static.eq=NULL, max.iter = 100, tol=1
   }
 
   if (!multi.stage) {
-    mpe = bind_cols(g$x.df,quick_df(u1=u[,1],u2=u[,2],a=ax-g$sdf$lag.cumsum.na))
+    mpe = bind_cols(g$x.df,quick_df(u1=u[,1],u2=u[,2],ae=ax-g$sdf$lag.cumsum.na))
   } else {
-    mpe = bind_cols(g$x.df,quick_df(u1=u[,1],u2=u[,2],s.a = static.eq$a, d.a=ax-g$sdf$lag.cumsum.na))
+    mpe = bind_cols(g$x.df,quick_df(u1=u[,1],u2=u[,2],s.ae = static.eq$s.ae, ae=ax-g$sdf$lag.cumsum.na))
   }
   if (add.stationary) {
-    mpe$stationary.prob = stationary.eq.distribution(g,mpe, ae = if (isTRUE(g$is.multi.stage)) mpe$d.a else mpe$a)
+    mpe$stationary.prob = stationary.eq.distribution(g,mpe, ae = mpe$ae)
   }
   g$mpe = mpe
   g
@@ -172,5 +172,5 @@ static.nash.eq = function(g, gs=g$gs, xrows=seq_len(NROW(g$sdf)), ax.select=NULL
       res.u2[counter] = br2[nash]
     }
   }
-  quick_df(x=sdf$x[xrows], a=res.a, u1=res.u1, u2=res.u2)
+  quick_df(x=sdf$x[xrows], s.ae=res.a, u1=res.u1, u2=res.u2)
 }

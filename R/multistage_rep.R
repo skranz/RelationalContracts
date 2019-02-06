@@ -68,7 +68,7 @@ solve.x.rep.multistage = function(g,x=NULL,row=NULL, tol=1e-10, beta1=g$param$be
   res.i = matrix(NA_integer_,ncomb,6)
 
   colnames(res.r) = c("delta_min","delta_max","r1","r2","U","v1_rep","v2_rep")
-  colnames(res.i) = c("s.ae","s.a1","s.a2","d.ae","d.a1","d.a2")
+  colnames(res.i) = c("s.ae","s.a1","s.a2","ae","a1","a2")
 
   cur.comb = 0
   lowest.delta = Inf
@@ -78,19 +78,19 @@ solve.x.rep.multistage = function(g,x=NULL,row=NULL, tol=1e-10, beta1=g$param$be
     s.a1 = s.li$a1.df[a.pos[1,2],]
     s.a2 = s.li$a2.df[a.pos[1,3],]
 
-    d.ae = d.li$ae.df[a.pos[2,1],]
-    d.a1 = d.li$a1.df[a.pos[2,2],]
-    d.a2 = d.li$a2.df[a.pos[2,3],]
+    ae = d.li$ae.df[a.pos[2,1],]
+    a1 = d.li$a1.df[a.pos[2,2],]
+    a2 = d.li$a2.df[a.pos[2,3],]
 
-    Md = d.ae["G"] - d.a1["c1"] - d.a2["c2"]
+    Md = ae["G"] - a1["c1"] - a2["c2"]
     Ms = s.ae["G"] - s.a1["c1"] - s.a2["c2"]
 
     # We have a stage game NE in both stages
     if (Ms==0 && Md==0) {
       cur.comb = cur.comb+1
-      v1 =  s.a1["c1"]+d.a1["c1"]
-      v2 =  s.a2["c2"]+d.a2["c2"]
-      U =  s.ae["G"]+d.ae["G"]
+      v1 =  s.a1["c1"]+a1["c1"]
+      v2 =  s.a2["c2"]+a2["c2"]
+      U =  s.ae["G"]+ae["G"]
       res.r[cur.comb,] = c(
         0, # delta_min
         lowest.delta, # delta_max
@@ -104,9 +104,9 @@ solve.x.rep.multistage = function(g,x=NULL,row=NULL, tol=1e-10, beta1=g$param$be
         s.ae=s.ae[".a"],
         s.a1=s.a1[".a"],
         s.a2=s.a2[".a"],
-        d.ae=d.ae[".a"],
-        d.a1=d.a1[".a"],
-        d.a2=d.a2[".a"]
+        ae=ae[".a"],
+        a1=a1[".a"],
+        a2=a2[".a"]
       )
       lowest.delta = 0
       break
@@ -117,11 +117,11 @@ solve.x.rep.multistage = function(g,x=NULL,row=NULL, tol=1e-10, beta1=g$param$be
     sr.a1 = (Md+Ms) / (s.a1["L"] - Md)
     sr.a2 = (Md+Ms) / (s.a2["L"] - Md)
 
-    dr.ae = (Md+Ms) / (d.ae["L"])
-    dr.a1 = (Md+Ms) / (d.a1["L"])
-    dr.a2 = (Md+Ms) / (d.a2["L"])
+    r.ae = (Md+Ms) / (ae["L"])
+    r.a1 = (Md+Ms) / (a1["L"])
+    r.a2 = (Md+Ms) / (a2["L"])
 
-    r.crit = matrix(c(sr.ae,dr.ae,sr.a1,dr.a1,sr.a2,dr.a2),2,3)
+    r.crit = matrix(c(sr.ae,r.ae,sr.a1,r.a1,sr.a2,r.a2),2,3)
     delta.crit = 1 / (1+r.crit)
     max.delta.crit = max(delta.crit)
 
@@ -129,9 +129,9 @@ solve.x.rep.multistage = function(g,x=NULL,row=NULL, tol=1e-10, beta1=g$param$be
     if (max.delta.crit < lowest.delta) {
       cur.comb = cur.comb+1
 
-      v1 =  s.a1["c1"]+d.a1["c1"]
-      v2 =  s.a2["c2"]+d.a2["c2"]
-      U =  s.ae["G"]+d.ae["G"]
+      v1 =  s.a1["c1"]+a1["c1"]
+      v2 =  s.a2["c2"]+a2["c2"]
+      U =  s.ae["G"]+ae["G"]
       res.r[cur.comb,] = c(
         max.delta.crit, # delta_min
         lowest.delta, # delta_max
@@ -145,9 +145,9 @@ solve.x.rep.multistage = function(g,x=NULL,row=NULL, tol=1e-10, beta1=g$param$be
         s.ae=s.ae[".a"],
         s.a1=s.a1[".a"],
         s.a2=s.a2[".a"],
-        d.ae=d.ae[".a"],
-        d.a1=d.a1[".a"],
-        d.a2=d.a2[".a"]
+        ae=ae[".a"],
+        a1=a1[".a"],
+        a2=a2[".a"]
       ))
       lowest.delta = max.delta.crit
     }
@@ -167,9 +167,9 @@ solve.x.rep.multistage = function(g,x=NULL,row=NULL, tol=1e-10, beta1=g$param$be
     d.labs = g$a.labs.df$lab[g$a.labs.df$x==x]
     s.labs = g$gs$a.labs.df$lab[g$gs$a.labs.df$x==x]
 
-    ae.lab = paste0(s.labs[res$s.ae]," | ",d.labs[res$d.ae])
-    a1.lab = paste0(s.labs[res$s.a1]," | ",d.labs[res$d.a1])
-    a2.lab = paste0(s.labs[res$s.a2]," | ",d.labs[res$d.a2])
+    ae.lab = paste0(s.labs[res$s.ae]," | ",d.labs[res$ae])
+    a1.lab = paste0(s.labs[res$s.a1]," | ",d.labs[res$a1])
+    a2.lab = paste0(s.labs[res$s.a2]," | ",d.labs[res$a2])
     res$strat.lab = paste0("(",ae.lab,") (",a1.lab,") (",a2.lab,")")
   }
 

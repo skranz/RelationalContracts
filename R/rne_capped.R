@@ -10,6 +10,7 @@ examples.rne_capped = function() {
     ) %>%
     rel_compile() %>%
     rel_capped_rne(T=20,adjusted.delta = 0.51, rho=0.4, save.history = TRUE)
+
   animate.capped.rne.history(g,x=NULL)
 
   (rne=g$eq)
@@ -23,11 +24,16 @@ examples.rne_capped = function() {
   e = seq(0,1, by=0.1)
   g = rel_game("Simple Principal Agent Game") %>%
     # Initial State
-    rel_state("x0",A2=list(e=e),pi1=~e, pi2=~ -0.5*e*e*(e>=0), x.T="xT") %>%
-    rel_after_cap_payoffs("xT",U=max(e-0.5*e*e), v1.rep=0,v2.rep=0) %>%
+    rel_state("x0",A2=list(e=e),pi1=~e, pi2=~ -0.5*e*e*(e>=0)) %>%
+    rel_after_cap_payoffs("x0",U=max(e-0.5*e*e), v1.rep=0,v2.rep=0) %>%
     rel_compile()
 
   g = rel_capped_rne(g, T=100, delta=.5, rho=0.5, save.history = TRUE)
+
+  ceq = g$eq
+  g = rel_rne_from_capped(g)
+  spe = get.eq(g)
+
 
   capped.rne.history.animation(g)
   (rne=g$eq)
@@ -198,6 +204,35 @@ arms.race.example = function() {
   View(rne)
 }
 
+rel_rne_from_capped = function(g, capped_rne = g$capped_rne, r.tol=1e-10) {
+  restore.point("rel_rne_from_capped")
+
+  # Compute r1 and r2 corresponding to the
+  # action profiles of the capped equilibrium
+  r_eq = compute.optimal.payoffs.from.eq.actions(g, capped_rne)
+
+  r1 = r_eq$r1
+  r2 = r_eq$r2
+  # Solve for the SPE of the capped equilibrium
+  g = rel_spe(g, r1=r_eq$r1, r2 = r_eq$r2)
+
+  spe = g$eq
+  if (is.null(spe)) {
+    cat("\nNo RNE found.")
+    return(g)
+  }
+  spe$trunc.r1 = r1
+  spe$trunc.r2 = r2
+
+  if (max(abs(r1-spe$r1)) < r.tol & max(abs(r2-spe$r2)) < r.tol) {
+    cat("\nCongratulations, we found an RNE in pure strategies from the capped game. Call get.eq() for details.")
+  } else {
+    cat("\nSorry, but the SPE of the truncated game yields different negotiation payoffs than we entered. We did not find an RNE.  Call get.eq() for details about the truncated game spe.")
+  }
+  return(g)
+
+}
+
 #' Solve an RNE for a capped version of a multistage game
 rel_capped_rne = function(g,T, tol=1e-10,  delta=g$param$delta, rho=g$param$rho, adjusted.delta=NULL, res.field="eq", tie.breaking=c("equal_r", "slack","random","first","last","max_r1","max_r2")[1], use.cpp=TRUE, save.details=FALSE, add.iterations=FALSE, save.history=FALSE, add.stationary=FALSE) {
   restore.point("rel_capped_rne")
@@ -253,7 +288,7 @@ rel_capped_rne = function(g,T, tol=1e-10,  delta=g$param$delta, rho=g$param$rho,
     rne$stationary.prob = stationary.eq.distribution(g,rne)
   }
 
-  g[[res.field]] = rne
+  g[[res.field]] = g$capped_rne = rne
   g[[paste0(res.field,".details")]] = details
   g[[paste0(res.field,".history")]] = history
   g
@@ -502,7 +537,7 @@ capped.rne.period.T = function(g, delta=g$param$delta, rho=g$param$rho) {
   restore.point("capped.rne.period.T")
 
   if (!is.null(g$after_cap_actions)) {
-    res = compute.after.cap.action.payoffs(g)
+    res = compute.optimal.payoffs.from.actions(g)
     return(res)
   }
 
@@ -550,7 +585,7 @@ capped.rne.period.T = function(g, delta=g$param$delta, rho=g$param$rho) {
       res.acp = transmute(acp,
         x=x.T, r1=r1,r2=r2,U=U, v1=v1, v2=v2,
         s.ae=NA_integer_, s.a1=NA_integer_, s.a2 =NA_integer_,
-        d.ae=NA_integer_, d.a1=NA_integer_, d.a2 =NA_integer_
+        ae=NA_integer_, a1=NA_integer_, a2 =NA_integer_
       )
     } else {
       res.acp = transmute(acp,
@@ -565,7 +600,7 @@ capped.rne.period.T = function(g, delta=g$param$delta, rho=g$param$rho) {
   }
 
   if (isTRUE(g$is.multi.stage)) {
-    cols = c("x","r1","r2","U","v1","v2","s.ae","s.a1","s.a2","d.ae","d.a1","d.a2")
+    cols = c("x","r1","r2","U","v1","v2","s.ae","s.a1","s.a2","ae","a1","a2")
   } else {
     cols = c("x","r1","r2","U","v1","v2","ae","a1","a2")
   }
@@ -582,10 +617,45 @@ capped.rne.period.T = function(g, delta=g$param$delta, rho=g$param$rho) {
   #return(list(res=res,g=g, g.changed=g.changed))
 }
 
+
+# Assume we have a guess of equilibrium action profiles
+# e.g. from solving a capped game
+compute.optimal.payoffs.from.eq.actions = function(g, eq) {
+  restore.point("compute.optimal.payoffs.from.eq.actions")
+
+  delta = g$param$delta
+  rho = g$param$rho
+  sdf = g$sdf
+
+  # 1. Find a1.hat from a1
+  ax1 = eq.a.to.ax(g,eq$a1)
+  q1 = (1-delta)*g$ax.pi$pi1 +
+    as.vector(g$ax.trans %*% ((1-rho)*eq$v1+rho*eq$r1))
+  ax1.hat = c_pl1_best_reply_ax(q1,ax1,sdf$na1,sdf$na2)
+  a1.hat = eq.ax.to.a(g,ax1.hat)
+
+  # 2. Find a2.hat from a2
+  ax2 = eq.a.to.ax(g,eq$a2)
+  q2 = (1-delta)*g$ax.pi$pi2 +
+    as.vector(g$ax.trans %*% ((1-rho)*eq$v2+rho*eq$r2))
+  ax2.hat = c_pl2_best_reply_ax(q2,ax2,sdf$na1,sdf$na2)
+  a2.hat = eq.ax.to.a(g,ax2.hat)
+
+  ind.mat = cbind(ae=eq$ae, a1.hat=a1.hat, a2.hat=a2.hat)
+
+  if (isTRUE(g$is.multi.stage)) {
+    res = compute.optimal.payoffs.from.actions(g, ind.mat, eq$Pi.static, eq$c1, eq$c2)
+  } else {
+    res = compute.optimal.payoffs.from.actions(g, ind.mat)
+  }
+  res
+}
+
+
 # Computes after.cap.payoffs given some fixed action
 # profiles
-compute.after.cap.action.payoffs = function(g, ind.mat = compute.after.cap.action.inds(g)) {
-  restore.point("compute.after.cap.action.payoffs")
+compute.optimal.payoffs.from.actions = function(g, ind.mat = compute.after.cap.action.inds(g), Pi.static=rep(0,nx), c1.static=rep(0,nx), c2.static=rep(0,nx),nx=NROW(g$sdf)) {
+  restore.point("compute.optimal.payoffs.from.actions")
 
   delta = g$param$delta
   rho = g$param$rho
@@ -608,7 +678,7 @@ compute.after.cap.action.payoffs = function(g, ind.mat = compute.after.cap.actio
   for (row in 1:nx) {
     ind = ind.mat[row,k.var]
     # Joint payoffs
-    pi[row] = sdf$pi1[[row]][ind] + sdf$pi2[[row]][ind]
+    pi[row] = sdf$pi1[[row]][ind] + sdf$pi2[[row]][ind]+Pi.static[row]
     # Fill dense transition matrix
     trans.mat = sdf$trans.mat[[row]]
     cols =colnames(trans.mat)
@@ -624,7 +694,7 @@ compute.after.cap.action.payoffs = function(g, ind.mat = compute.after.cap.actio
   for (row in 1:nx) {
     ind = ind.mat[row,k.var]
     # Player i's payoff
-    pi[row] = sdf$pi1[[row]][ind]
+    pi[row] = sdf$pi1[[row]][ind]+c1.static[row]
     trans.mat = sdf$trans.mat[[row]]
     cols =colnames(trans.mat)
     if (NROW(trans.mat)==0) {
@@ -640,7 +710,7 @@ compute.after.cap.action.payoffs = function(g, ind.mat = compute.after.cap.actio
   for (row in 1:nx) {
     ind = ind.mat[row,k.var]
     # Player i's payoff
-    pi[row] = sdf$pi2[[row]][ind]
+    pi[row] = sdf$pi2[[row]][ind]+c2.static[row]
     trans.mat = sdf$trans.mat[[row]]
     cols =colnames(trans.mat)
     if (NROW(trans.mat)==0) {
