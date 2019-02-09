@@ -59,12 +59,19 @@ plot.spe.payoff.set = function (g,x=eq$x[1],t=1,  eq=g[["eq"]], xlim=NULL, ylim=
   }
 }
 
+animate.eq.li = function(g, eq.li, x=g$sdf$x[1],...) {
+  animate.capped.rne.history(g, eq.li=eq.li, x=x,...)
+}
 
-animate.capped.rne.history = function(g,x=g$sdf$x[1], hist = g$eq.history, colors=c("#377EB8","#E41A1C", "#4DAF4A", "#984EA3", "#FF7F00", "#FFFF33", "#A65628", "#F781BF"), alpha=0.4, add.state.label=TRUE, add.grid=FALSE, add.diag=FALSE, add.plot=NULL) {
+animate.capped.rne.history = function(g,x=g$sdf$x[1], hist = g$eq.history, colors=c("#377EB8","#E41A1C", "#4DAF4A", "#984EA3", "#FF7F00", "#FFFF33", "#A65628", "#F781BF"), alpha=0.4, add.state.label=TRUE, add.grid=FALSE, add.diag=FALSE, add.plot=NULL, eq.li=NULL) {
   add.plot = substitute(add.plot)
 
   restore.point("capped.rne.history.animation")
 
+  if (!is.null(eq.li)) {
+    hist = bind_rows(eq.li)
+    hist$t = rep(rev(seq_along(eq.li)),each=NROW(g$sdf))
+  }
 
   if (NROW(hist)==0) {
     stop("No results for periods t>1 have been saved. Call rel_capped_rne with the option save.history=TRUE.")

@@ -106,7 +106,7 @@ examples.spe.trunc = function() {
 }
 
 
-rel_spe = function(g,delta=g$param$delta, rho=g$param$rho,tol.feasible = 1e-10, verbose=FALSE,r1 = NULL, r2 = NULL, add.action.labels=TRUE) {
+rel_spe = function(g,delta=g$param$delta, rho=g$param$rho,tol.feasible = 1e-10, verbose=FALSE,r1 = NULL, r2 = NULL, add.action.labels=TRUE, max.iter = 10000) {
   restore.point("rel_spe")
   g$param$delta = delta
   g$param$rho = rho
@@ -143,6 +143,11 @@ rel_spe = function(g,delta=g$param$delta, rho=g$param$rho,tol.feasible = 1e-10, 
   iter = 0
   while(TRUE) {
     iter = iter+1
+    if (iter > max.iter) {
+      warning(paste0("No SPE found after ", max.iter, " iterations."))
+      g$spe = NULL
+      return(g)
+    }
 
     if (verbose) {
       cat("\n")
@@ -217,7 +222,6 @@ rel_spe = function(g,delta=g$param$delta, rho=g$param$rho,tol.feasible = 1e-10, 
 
     # Update L.static
     if (is.multi.stage) {
-      restore.point("shfiufzuhrufhlksdfkch")
       L.df = quick_df(xrow=g$ax.pi$xrow[admiss],
         U.hat=U.hat[-infeas.admiss],
         q1.hat =q1.hat[-infeas.admiss],
@@ -225,7 +229,7 @@ rel_spe = function(g,delta=g$param$delta, rho=g$param$rho,tol.feasible = 1e-10, 
       )
       L.sum = L.df %>% group_by(xrow) %>%
         summarize(L.static= 1/(1-delta)*(max(U.hat)-min(q1.hat)-min(q2.hat)))
-      L.static = L.sum$L.static
+      L.static = pmax(0,L.sum$L.static)
     }
 
     # Remove newly infeasible rows
@@ -300,7 +304,6 @@ trunc.spe.highest.U = function(g, admiss, admiss.sizes, r1=g[["r1"]],r2=g[["r2"]
 
 trunc.spe.harshest.punishment = function(g,i,admiss, admiss.sizes, tol=1e-10, verbose=FALSE, use.cpp=TRUE, r=g$sdf[[paste0("r",i)]], v= rep(0,NROW(g$sdf)),  L.static=NULL, is.multi.stage = isTRUE(g$is.multi.stage)) {
   restore.point("trunc.spe.harshest.punishment")
-
   delta = g$param$delta
   rho = g$param$rho
 
@@ -383,8 +386,8 @@ trunc.spe.full.dyn.vi = function(g,i,axi, r=0, static.ax.ci = NULL) {
 # Returns player i's cheating payoff for every admissible ax profile
 # This means we have duplication as several ax profiles correspond to one ax_i profile
 trunc.spe.cheating.payoffs = function(g, i=1,v=rep(0,nx), r=rep(0,nx), delta = g$param$delta, rho=g$param$rho, nx=NROW(g$sdf), use.cpp=TRUE) {
-  restore.point("r.trunc.spe.cheating.payoffs")
-
+  restore.point("trunc.spe.cheating.payoffs")
+  #stop()
   sdf = g$sdf
   nax = g$nax
   sizes = sdf$na.vec
@@ -444,18 +447,19 @@ r.pl1.ax.best.reply.payoffs = function(u_ax, nai, naj, nx) {
       # Loop through own actions
       # To find best reply payoff
       for (ai in 1:nai[xrow]) {
-        ind = ind + (ai-1)*naj[xrow]
+        #cat("\n ind ", ind," ai ", ai, " aj ", aj)
         u_cur = u_ax[ind]
         if (u_cur > u_br | ai==1) {
           u_br = u_cur
         }
+        ind = ind + naj[xrow]
       }
       # Loop through own actions to
       # set best reply payoff
       ind = start_ind + aj
       for (ai in 1:nai[xrow]) {
-        ind = ind + (ai-1)*naj[xrow]
         br_ax[ind] = u_br
+        ind = ind + naj[xrow]
       }
     }
     start_ind = start_ind + naj[xrow]*nai[xrow]

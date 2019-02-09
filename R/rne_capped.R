@@ -86,7 +86,11 @@ examples.rne_capped = function() {
     rel_compile() %>%
     rel_capped_rne(T=100, save.history = TRUE, use.cpp=TRUE)
 
-  capped.rne.history.animation(g,x=NULL)
+
+  animate.capped.rne.history(g,x=NULL)
+
+  g = rel_rne_from_capped(g)
+  spe = get.eq(g)
 
   hist = g$eq.history
   de = get.rne.details(g, x="xL")
@@ -204,6 +208,33 @@ arms.race.example = function() {
   View(rne)
 }
 
+#' Checks if an equilibrium eq with negotiation payoffs is an RNE
+#'
+#' We simply solve the truncated game with r1 and r2
+#' and check whether the resultig r1 and r2 are the same
+rel_is_eq_rne = function(g, eq=g$eq,  r1 = eq$r1,  r2 = eq$r2, r.tol=1e-10) {
+  restore.point("rel_is_eq_rne")
+
+  # Solve for the SPE of the capped equilibrium
+  g = rel_spe(g, r1=r1, r2 = r2)
+
+  spe = g$eq
+  if (is.null(spe)) {
+    cat("\nThe truncated game has no SPE in pure strategies. No RNE found.")
+    return(g)
+  }
+  spe$trunc.r1 = r1
+  spe$trunc.r2 = r2
+
+  g$spe = g$eq = spe
+  if (max(abs(r1-spe$r1)) < r.tol & max(abs(r2-spe$r2)) < r.tol) {
+    cat("\nCongratulations, we found an RNE in pure strategies. Call get.eq to retrieve the RNE.")
+  } else {
+    cat("\nSorry, but the SPE of the truncated game yields different negotiation payoffs than we entered. We did not find an RNE. Call get.eq to retrieve the SPE of the truncated game.")
+  }
+  return(g)
+}
+
 rel_rne_from_capped = function(g, capped_rne = g$capped_rne, r.tol=1e-10) {
   restore.point("rel_rne_from_capped")
 
@@ -211,26 +242,7 @@ rel_rne_from_capped = function(g, capped_rne = g$capped_rne, r.tol=1e-10) {
   # action profiles of the capped equilibrium
   r_eq = compute.optimal.payoffs.from.eq.actions(g, capped_rne)
 
-  r1 = r_eq$r1
-  r2 = r_eq$r2
-  # Solve for the SPE of the capped equilibrium
-  g = rel_spe(g, r1=r_eq$r1, r2 = r_eq$r2)
-
-  spe = g$eq
-  if (is.null(spe)) {
-    cat("\nNo RNE found.")
-    return(g)
-  }
-  spe$trunc.r1 = r1
-  spe$trunc.r2 = r2
-
-  if (max(abs(r1-spe$r1)) < r.tol & max(abs(r2-spe$r2)) < r.tol) {
-    cat("\nCongratulations, we found an RNE in pure strategies from the capped game. Call get.eq() for details.")
-  } else {
-    cat("\nSorry, but the SPE of the truncated game yields different negotiation payoffs than we entered. We did not find an RNE.  Call get.eq() for details about the truncated game spe.")
-  }
-  return(g)
-
+  rel_is_eq_rne(g,r_eq)
 }
 
 #' Solve an RNE for a capped version of a multistage game
@@ -644,7 +656,7 @@ compute.optimal.payoffs.from.eq.actions = function(g, eq) {
   ind.mat = cbind(ae=eq$ae, a1.hat=a1.hat, a2.hat=a2.hat)
 
   if (isTRUE(g$is.multi.stage)) {
-    res = compute.optimal.payoffs.from.actions(g, ind.mat, eq$Pi.static, eq$c1, eq$c2)
+    res = compute.optimal.payoffs.from.actions(g, ind.mat, eq$static.Pi, eq$static.c1, eq$static.c2)
   } else {
     res = compute.optimal.payoffs.from.actions(g, ind.mat)
   }
@@ -654,7 +666,7 @@ compute.optimal.payoffs.from.eq.actions = function(g, eq) {
 
 # Computes after.cap.payoffs given some fixed action
 # profiles
-compute.optimal.payoffs.from.actions = function(g, ind.mat = compute.after.cap.action.inds(g), Pi.static=rep(0,nx), c1.static=rep(0,nx), c2.static=rep(0,nx),nx=NROW(g$sdf)) {
+compute.optimal.payoffs.from.actions = function(g, ind.mat = compute.after.cap.action.inds(g), static.Pi=rep(0,nx), static.c1=rep(0,nx), static.c2=rep(0,nx),nx=NROW(g$sdf)) {
   restore.point("compute.optimal.payoffs.from.actions")
 
   delta = g$param$delta
@@ -678,7 +690,7 @@ compute.optimal.payoffs.from.actions = function(g, ind.mat = compute.after.cap.a
   for (row in 1:nx) {
     ind = ind.mat[row,k.var]
     # Joint payoffs
-    pi[row] = sdf$pi1[[row]][ind] + sdf$pi2[[row]][ind]+Pi.static[row]
+    pi[row] = sdf$pi1[[row]][ind] + sdf$pi2[[row]][ind]+static.Pi[row]
     # Fill dense transition matrix
     trans.mat = sdf$trans.mat[[row]]
     cols =colnames(trans.mat)
@@ -694,7 +706,7 @@ compute.optimal.payoffs.from.actions = function(g, ind.mat = compute.after.cap.a
   for (row in 1:nx) {
     ind = ind.mat[row,k.var]
     # Player i's payoff
-    pi[row] = sdf$pi1[[row]][ind]+c1.static[row]
+    pi[row] = sdf$pi1[[row]][ind]+static.c1[row]
     trans.mat = sdf$trans.mat[[row]]
     cols =colnames(trans.mat)
     if (NROW(trans.mat)==0) {
@@ -710,7 +722,7 @@ compute.optimal.payoffs.from.actions = function(g, ind.mat = compute.after.cap.a
   for (row in 1:nx) {
     ind = ind.mat[row,k.var]
     # Player i's payoff
-    pi[row] = sdf$pi2[[row]][ind]+c2.static[row]
+    pi[row] = sdf$pi2[[row]][ind]+static.c2[row]
     trans.mat = sdf$trans.mat[[row]]
     cols =colnames(trans.mat)
     if (NROW(trans.mat)==0) {

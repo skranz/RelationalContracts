@@ -170,7 +170,7 @@ get.eq = function(g, extra.cols="ae", eq=g$eq) {
     col = "ae"
     for (col in extra.cols) {
 
-      ax = eq[[paste0("d.",col)]]+ax.add
+      ax = eq[[col]]+ax.add
       extra = g$ax.grid[ax,-c(1:2)]
       ax.extra = g$ax.extra
       if (!is.null(ax.extra))
@@ -182,7 +182,7 @@ get.eq = function(g, extra.cols="ae", eq=g$eq) {
       if (!is.null(ax.extra))
         extra = cbind(extra, ax.extra[ax,])
 
-      if (col != "a" & col != "ae")
+      if (col != "ae")
         colnames(extra) = paste0(col,".", colnames(extra))
       eq = cbind(eq,extra)
     }

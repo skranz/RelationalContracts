@@ -85,7 +85,7 @@ examples.cost.ladder.cournot.multimarket = function() {
 
 
 
-  x.min=0; x.max = 3; a = x.max
+  x.min=0; x.max = 1; a = x.max
   i.seq=c(0,0.5,1,2)
   q.seq=seq(0,a, length=11)
   x.seq = seq(x.max,x.min, by=-1)
@@ -113,8 +113,23 @@ examples.cost.ladder.cournot.multimarket = function() {
 
 
 
-  g = g %>%  rel_capped_rne(T=50, delta=0.9, rho=1, save.history = !FALSE, use.cpp = TRUE, add.stationary = TRUE, save.details = !TRUE)
+  g = g %>%  rel_capped_rne(T=50, delta=0.9, rho=1, save.history = FALSE, use.cpp = TRUE, add.stationary = TRUE, save.details = !TRUE)
   eq = get.eq(g)
+
+  g = rel_rne_from_capped(g)
+  eq = get.eq(g)
+
+  reps = 50
+  eq.li = vector("list",reps)
+  eq.li[[1]] = eq
+
+  for (rep in 1:reps) {
+    eq =get.eq(g)
+    eq$rep = rep
+    eq.li[[rep]] = eq
+    g = rel_is_eq_rne(g)
+  }
+  animate.eq.li(g, eq.li,x="B_0_0_0_0")
 
   tp = make.top.prob(eq,4)
   ggplot(tp, aes(x=x1,y=x2, fill=stat.prob)) + geom_raster(interpolate=FALSE) + geom_label(aes(label=round(stat.prob,2)), fill="white", alpha=0.5, size=3, label.padding=unit(0.1,"lines")) + facet_grid(top~market)

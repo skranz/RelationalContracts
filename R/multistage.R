@@ -162,7 +162,7 @@ r.capped.rne.multistage.iterations = function(T, g, rne, tie.breaking, delta=g$p
   rne_actions = matrix(0L, NROW(sdf),6)
   colnames(rne_actions) = c("s.ae","s.a1","s.a2","ae","a1","a2")
 
-  static.payoffs = matrix(0,NOW(sdf),3)
+  static.payoffs = matrix(0,NROW(sdf),3)
   colnames(static.payoffs) = c("static.Pi","static.c1","static.c2")
 
   if (save.details) {
@@ -694,18 +694,18 @@ find.static.a.for.all.x = function(g, L.static) {
 
 # Given a vector of available liquidity for each state
 # find the highest joint payoff in the static stage
-find.static.G.for.all.x = function(g,L.static) {
+find.static.G.for.all.x = function(g,L.static, tol=1e-12) {
   restore.point("find.static.G.for.all.x")
   li = g$static.rep.li
   xrow = 1
   res = sapply(seq_along(L.static), function(xrow) {
     df = li[[xrow]][["ae.df"]]
-    row = min(which(df[,"L"]<=L.static[xrow]))
+    row = min(which(df[,"L"]<=L.static[xrow]+tol))
     as.numeric(df[row,"G"])
   })
 }
 
-find.static.ci.for.all.x = function(g,i=1,L.static) {
+find.static.ci.for.all.x = function(g,i=1,L.static, tol=1e-12) {
   restore.point("find.static.ci.for.all.x")
   df.col = paste0("a",i,".df")
   col = paste0("c",i)
@@ -713,7 +713,7 @@ find.static.ci.for.all.x = function(g,i=1,L.static) {
   xrow = 1
   res = sapply(seq_along(L.static), function(xrow) {
     df = li[[xrow]][[df.col]]
-    row = min(which(df[,"L"]<=L.static[xrow]))
+    row = min(which(df[,"L"]<=L.static[xrow]+tol))
     as.numeric(df[row,col])
   })
 }
