@@ -216,7 +216,7 @@ rel_is_eq_rne = function(g, eq=g$eq,  r1 = eq$r1,  r2 = eq$r2, r.tol=1e-10) {
   restore.point("rel_is_eq_rne")
 
   # Solve for the SPE of the capped equilibrium
-  g = rel_spe(g, r1=r1, r2 = r2)
+  g = rel_spe(g, r1=r1, r2 = r2, no.exist.action="nothing")
 
   spe = g$eq
   if (is.null(spe)) {
@@ -227,6 +227,7 @@ rel_is_eq_rne = function(g, eq=g$eq,  r1 = eq$r1,  r2 = eq$r2, r.tol=1e-10) {
   spe$trunc.r2 = r2
 
   g$spe = g$eq = spe
+  diff = compare.eq(eq,g$eq)
   if (max(abs(r1-spe$r1)) < r.tol & max(abs(r2-spe$r2)) < r.tol) {
     cat("\nCongratulations, we found an RNE in pure strategies. Call get.eq to retrieve the RNE.")
   } else {

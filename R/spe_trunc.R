@@ -106,7 +106,7 @@ examples.spe.trunc = function() {
 }
 
 
-rel_spe = function(g,delta=g$param$delta, rho=g$param$rho,tol.feasible = 1e-10, verbose=FALSE,r1 = NULL, r2 = NULL, add.action.labels=TRUE, max.iter = 10000) {
+rel_spe = function(g,delta=g$param$delta, rho=g$param$rho,tol.feasible = 1e-10, verbose=FALSE,r1 = NULL, r2 = NULL, add.action.labels=TRUE, max.iter = 10000, no.exist.action = c("warn","stop","nothing")) {
   restore.point("rel_spe")
   g$param$delta = delta
   g$param$rho = rho
@@ -215,8 +215,14 @@ rel_spe = function(g,delta=g$param$delta, rho=g$param$rho,tol.feasible = 1e-10, 
     admiss.sizes = tabulate(g$ax.pi$xrow[admiss],nx)
 
     if (any(admiss.sizes == 0)) {
-      warning("There does not exist a subgame perfect equilibrium")
-      g$spe = NULL
+      if (no.exist.action=="warn") {
+        warning("There does not exist a subgame perfect equilibrium in pure strategies.")
+      } else if (no.exist.action=="stop") {
+        stop("There does not exist a subgame perfect equilibrium in pure strategies.")
+      } else if (no.exist.action == "cat") {
+        cat("\nThere does not exist a subgame perfect equilibrium in pure strategies.")
+      }
+      g$spe = g$eq = NULL
       return(g)
     }
 
@@ -295,7 +301,7 @@ trunc.spe.highest.U = function(g, admiss, admiss.sizes, r1=g[["r1"]],r2=g[["r2"]
 
   if (is.multi.stage) {
     G = find.static.G.for.all.x(g, L.static)
-    Pi = Pi+G[g$ax.pi$xrow]
+    Pi = Pi+G[g$ax.pi$xrow[admiss]]
   }
 
   res = trunc_policy_iteration(T=T,Pi=Pi,r=r,delta=g$param$delta,rho=g$param$rho, na.vec=admiss.sizes)
@@ -383,8 +389,7 @@ trunc.spe.full.dyn.vi = function(g,i,axi, r=0, static.ax.ci = NULL) {
 }
 
 
-# Returns player i's cheating payoff for every admissible ax profile
-# This means we have duplication as several ax profiles correspond to one ax_i profile
+# Returns player i's cheating payoff for every ax profile
 trunc.spe.cheating.payoffs = function(g, i=1,v=rep(0,nx), r=rep(0,nx), delta = g$param$delta, rho=g$param$rho, nx=NROW(g$sdf), use.cpp=TRUE) {
   restore.point("trunc.spe.cheating.payoffs")
   #stop()
@@ -409,11 +414,6 @@ trunc.spe.cheating.payoffs = function(g, i=1,v=rep(0,nx), r=rep(0,nx), delta = g
   u_ax = (1-delta)*pi + delta*
     as.vector(g$ax.trans %*% ((1-rho)*v + rho*r))
 
-#  if (FALSE) {
-#    u_br = c_pl2_ax_best_reply_payoffs(u_ax,nai,naj,nx)
-#    u_br_r = r.pl2.ax.best.reply.payoffs(u_ax,nai,naj,nx)
-#    cbind(g$ax.grid,u_ax,u_br,u_br_r, g$ax.pi)
-#  }
   if (use.cpp) {
     if (i==1) {
       c_pl1_ax_best_reply_payoffs(u_ax,nai,naj,nx)

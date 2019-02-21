@@ -85,7 +85,7 @@ examples.cost.ladder.cournot.multimarket = function() {
 
 
 
-  x.min=0; x.max = 1; a = x.max
+  x.min=0; x.max = 3; a = x.max
   i.seq=c(0,0.5,1,2)
   q.seq=seq(0,a, length=11)
   x.seq = seq(x.max,x.min, by=-1)
@@ -103,36 +103,31 @@ examples.cost.ladder.cournot.multimarket = function() {
 
   g = rel_mpe(g, delta=0.9)
   mpe = get.mpe(g)
-  mpe$r_lab = paste0(
-    "u ",round(mpe$u1,2)," ", round(mpe$u2,2),
-    "\nq ",round(mpe$q1,1)," ", round(mpe$q2,1),
-    "\ni ",round(mpe$i1,1)," ", round(mpe$i2,1)
-  )
-  library(ggplot2)
-  ggplot(mpe, aes(x=x1,y=x2, fill=stationary.prob)) + geom_raster(interpolate=FALSE) + geom_label(aes(label=r_lab), fill="white", alpha=0.5, size=3, label.padding=unit(0.1,"lines")) + facet_wrap(~market)
+  plot.top.states(mpe)
 
+  g = g %>%  rel_capped_rne(T=50, delta=0.9, rho=0.5, save.history = FALSE, use.cpp = TRUE, add.stationary = TRUE, save.details = FALSE)
 
+  reps = 20
+  eq.li = vector("list",reps)
 
-  g = g %>%  rel_capped_rne(T=50, delta=0.9, rho=1, save.history = FALSE, use.cpp = TRUE, add.stationary = TRUE, save.details = !TRUE)
   eq = get.eq(g)
+  eq.li[[1]] = eq
+  #plot.top.states(eq)
 
   g = rel_rne_from_capped(g)
   eq = get.eq(g)
+  eq.li[[2]] = eq
 
-  reps = 50
-  eq.li = vector("list",reps)
-  eq.li[[1]] = eq
+  diff = compare.eq(eq.li[[1]], eq.li[[2]],g)
 
-  for (rep in 1:reps) {
+  for (rep in 3:reps) {
     eq =get.eq(g)
     eq$rep = rep
     eq.li[[rep]] = eq
     g = rel_is_eq_rne(g)
   }
-  animate.eq.li(g, eq.li,x="B_0_0_0_0")
+  animate.eq.li(g, eq.li,x="B_1_0_0_1")
 
-  tp = make.top.prob(eq,4)
-  ggplot(tp, aes(x=x1,y=x2, fill=stat.prob)) + geom_raster(interpolate=FALSE) + geom_label(aes(label=round(stat.prob,2)), fill="white", alpha=0.5, size=3, label.padding=unit(0.1,"lines")) + facet_grid(top~market)
 
 
   sim = simulate.eq(g,1000,x0 = "A_2_2_2_2")
@@ -206,6 +201,13 @@ examples.cost.ladder.cournot.multimarket = function() {
   det = get.rne.details(g, x="5_5")
 }
 
+plot.top.states = function(eq,ntop=4) {
+  library(ggplot2)
+  tp = make.top.prob(eq,ntop)
+  ggplot(tp, aes(x=x1,y=x2, fill=stat.prob)) + geom_raster(interpolate=FALSE) + geom_label(aes(label=round(stat.prob,2)), fill="white", alpha=0.5, size=3, label.padding=unit(0.1,"lines")) + facet_grid(top~market)
+
+}
+
 make.top.prob = function(eq, ntop=4) {
   dat = eq %>% group_by(x1A,x2A,x1B,x2B) %>%
     mutate(stat.prob = sum(stationary.prob)) %>%
@@ -213,6 +215,7 @@ make.top.prob = function(eq, ntop=4) {
     filter(market=="A")
 
   top.x = arrange(top_n(dat, ntop, stat.prob), desc(stat.prob))$x
+  top.x = top.x[1:ntop]
 
   res = bind_rows(lapply(seq_along(top.x), function(top) {
     x = top.x[top]
