@@ -146,11 +146,11 @@ example.rne = function() {
 }
 
 
-get.rne = get.spe = function(g, extra.cols="ae", eq=g$eq) {
+get.rne = get.spe = function(g, extra.cols="ae", eq=g[["eq"]]) {
   get.eq(g, extra.cols, eq)
 }
 
-get.eq = function(g, extra.cols="ae", eq=g$eq) {
+get.eq = function(g, extra.cols="ae", eq=g[["eq"]]) {
   restore.point("get.eq")
 
   if (length(extra.cols)>0 & !isTRUE(g$is.multi.stage)) {

@@ -113,6 +113,8 @@ paste.df.cols = function (mat, cols = 1:NCOL(mat),sep="", empty.sep=FALSE, ...) 
       return(paste0(mat[[cols[1]]],mat[[cols[2]]],mat[[cols[3]]],sep=sep, ...))
     }
   } else {
+      if (is.character(cols))
+        cols = match(cols, colnames(mat))
       code = paste("mat[[", cols, "]]", collapse = ",sep,")
       code = paste("paste0(", code, ",sep=sep,...)", sep = "")
       return(eval(parse(text = code)))

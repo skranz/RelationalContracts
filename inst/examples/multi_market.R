@@ -85,9 +85,10 @@ examples.cost.ladder.cournot.multimarket = function() {
 
 
 
-  x.min=0; x.max = 3; a = x.max
-  i.seq=c(0,0.5,1,2)
-  q.seq=seq(0,a, length=11)
+  x.min=0; x.max = 2; a = x.max
+  i.seq=c(0,0.5,1,2,4)
+  #i.seq=c(0,0.5,1)
+  q.seq=seq(0,a, length=41)
   x.seq = seq(x.max,x.min, by=-1)
   x.df = as_data_frame(expand.grid(
     x1A=x.seq,x2A=x.seq,
@@ -96,25 +97,21 @@ examples.cost.ladder.cournot.multimarket = function() {
   )
   x.df$x = paste0(x.df$market,"_",x.df$x1A,"_", x.df$x2A,"_",x.df$x1B,"_", x.df$x2B)
   g = rel_game("Multimarket Cournot with Cost Ladder") %>%
-    rel_param(x.min=x.min,x.max=x.max,dep.prob=0.05,a=x.max,b=1, i.cost=0.5,alpha=1) %>%
+    rel_param(x.min=x.min,x.max=x.max,dep.prob=0.1,a=x.max,b=1, i.cost=1,alpha=1) %>%
     rel_states(x.df,A1=list(i1=i.seq),A2=list(i2=i.seq),static.A1 = list(q1=q.seq), static.A2 = list(q2=q.seq),vec.pi.fun=vec.pi.fun, vec.trans.fun=vec.trans.fun, vec.static.pi.fun = vec.static.pi.fun, x.T = "A_0_0_0_0") %>%
     rel_compile()
+
+  g = g %>%  rel_capped_rne(T=100, delta=0.9, rho=0.5, save.history = FALSE, use.cpp = TRUE, add.stationary = TRUE, save.details = FALSE)
+
+  g = rel_rne_from_eq_actions(g, iterations=20, save.eq.li=TRUE)
+  find.eq.li.action.repetitions(g$eq.li)
 
 
   g = rel_mpe(g, delta=0.9)
   mpe = get.mpe(g)
   plot.top.states(mpe)
 
-  g = g %>%  rel_capped_rne(T=50, delta=0.9, rho=0.5, save.history = FALSE, use.cpp = TRUE, add.stationary = TRUE, save.details = FALSE)
 
-  reps = 20
-  eq.li = vector("list",reps)
-
-  eq = get.eq(g)
-  eq.li[[1]] = eq
-  #plot.top.states(eq)
-
-  g = rel_rne_from_capped(g)
   eq = get.eq(g)
   eq.li[[2]] = eq
 

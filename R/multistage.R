@@ -78,7 +78,7 @@ examples.multistage = function() {
   )
 
   rne.diagram(g,just.eq.chain = TRUE)
-  (rne = g$eq)
+  (rne = g[["eq"]])
 }
 
 
@@ -102,7 +102,7 @@ add.rel.multistage.compile = function(g,...) {
 }
 
 
-capped.rne.multistage.iterations = function(g,T=1,rne=g$eq, tie.breaking, debug_row=-1, tol=1e-12, use.cpp=TRUE, save.details=FALSE, save.history=FALSE) {
+capped.rne.multistage.iterations = function(g,T=1,rne=g[["eq"]], tie.breaking, debug_row=-1, tol=1e-12, use.cpp=TRUE, save.details=FALSE, save.history=FALSE) {
   restore.point("capped.rne.multistage.iterations")
 
   if (T<=0) {
@@ -691,6 +691,36 @@ find.static.a.for.all.x = function(g, L.static) {
   }
   res
 }
+
+# Returns static action profiles s.ae, s.a1 and s.a2
+# as well as relevent payoffs given a vector
+# of available liquidities for all states
+find.static.payoffs.for.all.x = function(g, L.static) {
+  restore.point("find.static.G.for.all.x")
+  li = g$static.rep.li
+  nx = length(L.static)
+  res = matrix(0L,nx,3)
+  colnames(res) = c("static.Pi","static.c1","static.c2")
+
+  for (xrow in 1:nx) {
+    el = li[[xrow]]
+
+    df = el[["ae.df"]]
+    row = min(which(df[,"L"]<=L.static[xrow]))
+    res[xrow,1] = df[row,"G"]
+
+    df = el[["a1.df"]]
+    row = min(which(df[,"L"]<=L.static[xrow]))
+    res[xrow,2] = df[row,"c1"]
+
+    df = el[["a2.df"]]
+    row = min(which(df[,"L"]<=L.static[xrow]))
+    res[xrow,3] = df[row,"c2"]
+
+  }
+  res
+}
+
 
 # Given a vector of available liquidity for each state
 # find the highest joint payoff in the static stage

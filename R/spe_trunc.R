@@ -101,8 +101,8 @@ examples.spe.trunc = function() {
     prepare.for.spe()
 
   g$param$delta = 0.6
-  spe = solve.trunc.spe(g, verbose=!TRUE)
-  (spe)
+  g = rel_spe(g, verbose=!TRUE)
+  (spe = get.eq(g))
 }
 
 
@@ -140,6 +140,15 @@ rel_spe = function(g,delta=g$param$delta, rho=g$param$rho,tol.feasible = 1e-10, 
 
   L.static = rep(Inf,nx)
 
+  if (is.multi.stage) {
+    static.mat = find.static.payoffs.for.all.x(g, L.static)
+    static.changed = TRUE
+  } else {
+    static.mat =cbind(static.Pi = 0,static.c1=0,static.c2=0)
+    static.changed = FALSE
+  }
+
+
   iter = 0
   while(TRUE) {
     iter = iter+1
@@ -157,8 +166,8 @@ rel_spe = function(g,delta=g$param$delta, rho=g$param$rho,tol.feasible = 1e-10, 
 
     # Calculate optimal equilibrium state actions
     # if some of the previous action profiles became infeasible
-    if (infeas.e) {
-      res = trunc.spe.highest.U(g, admiss, admiss.sizes,r1=r1,r2=r2, L.static = L.static, is.multi.stage=is.multi.stage)
+    if (infeas.e | static.changed) {
+      res = trunc.spe.highest.U(g, admiss, admiss.sizes,r1=r1,r2=r2, static.Pi = static.mat[,1], is.multi.stage=is.multi.stage)
       U = res$U
       axe = res$ax
       if (verbose) {
@@ -168,8 +177,8 @@ rel_spe = function(g,delta=g$param$delta, rho=g$param$rho,tol.feasible = 1e-10, 
     }
 
     # a1
-		if (infeas.1) {
-		  res = trunc.spe.harshest.punishment(g,i=1, admiss=admiss, admiss.sizes=admiss.sizes, verbose=verbose, r=r1,L.static = L.static, is.multi.stage=is.multi.stage)
+		if (infeas.1 | static.changed) {
+		  res = trunc.spe.harshest.punishment(g,i=1, admiss=admiss, admiss.sizes=admiss.sizes, verbose=verbose, r=r1,static.ci = static.mat[,2], is.multi.stage=is.multi.stage)
 			v1 = res$vi
 			ax1 = res$ax
 			# Cheating payoffs for all ax given the just
@@ -181,8 +190,8 @@ rel_spe = function(g,delta=g$param$delta, rho=g$param$rho,tol.feasible = 1e-10, 
 
 		}
     # a2
-		if (infeas.2) {
-		  res = trunc.spe.harshest.punishment(g,i=2, admiss=admiss, admiss.sizes=admiss.sizes,verbose=verbose,r=r2,L.static = L.static, is.multi.stage=is.multi.stage)
+		if (infeas.2 | static.changed) {
+		  res = trunc.spe.harshest.punishment(g,i=2, admiss=admiss, admiss.sizes=admiss.sizes,verbose=verbose,r=r2,static.ci = static.mat[,3], is.multi.stage=is.multi.stage)
 			v2 = res$vi
 			ax2 = res$ax
 			# Cheating payoffs for all ax given the just
@@ -197,21 +206,27 @@ rel_spe = function(g,delta=g$param$delta, rho=g$param$rho,tol.feasible = 1e-10, 
     V = v1+v2
     # Joint payoff starting from dynamic stage
     U.hat = (1-delta)*ax.pi$Pi[admiss] +
-      delta * (g$ax.trans[admiss,,drop=FALSE] %*% ((1-rho)* U + rho*R))
+      delta * as.vector(g$ax.trans[admiss,,drop=FALSE] %*% ((1-rho)* U + rho*R))
 
-    infeas.admiss = which(U.hat-q1.hat-q2.hat < -tol.feasible)
-    infeas.ax = admiss[infeas.admiss]
+    feas.admiss = which(U.hat-q1.hat-q2.hat >= -tol.feasible)
+    feas.ax = admiss[feas.admiss]
 
     # Check whether all optimal action profiles are feasible
     # Note that policies are indixed on ax (not on admiss)
-    infeas.e = any(axe %in% infeas.ax)
-    infeas.1 = any(ax1 %in% infeas.ax)
-    infeas.2 = any(ax2 %in% infeas.ax)
-		# If none of the optimal action profiles is infeasible, we can stop
-    if (!(infeas.e | infeas.1 | infeas.2)) break;
+    infeas.e = any(! (axe %in% feas.ax))
+    infeas.1 = any(! (ax1 %in% feas.ax))
+    infeas.2 = any(! (ax2 %in% feas.ax))
+
+		# If none of the optimal action profiles
+    # is infeasible, we can stop.
+    # For multistage games we also have
+    # to check below that the static profiles have
+    # not changed
+    if (!is.multi.stage & !(infeas.e | infeas.1 | infeas.2)) break;
+
 
     # Remove infeasible action profiles from the set of admissible action profiles
-    admiss = admiss[-infeas.admiss]
+    admiss = admiss[feas.admiss]
     admiss.sizes = tabulate(g$ax.pi$xrow[admiss],nx)
 
     if (any(admiss.sizes == 0)) {
@@ -229,20 +244,28 @@ rel_spe = function(g,delta=g$param$delta, rho=g$param$rho,tol.feasible = 1e-10, 
     # Update L.static
     if (is.multi.stage) {
       L.df = quick_df(xrow=g$ax.pi$xrow[admiss],
-        U.hat=U.hat[-infeas.admiss],
-        q1.hat =q1.hat[-infeas.admiss],
-        q2.hat =q2.hat[-infeas.admiss]
+        U.hat=U.hat[feas.admiss],
+        q1.hat =q1.hat[feas.admiss],
+        q2.hat =q2.hat[feas.admiss]
       )
       L.sum = L.df %>% group_by(xrow) %>%
         summarize(L.static= 1/(1-delta)*(max(U.hat)-min(q1.hat)-min(q2.hat)))
       L.static = pmax(0,L.sum$L.static)
+
+      old.static.mat = static.mat
+      static.mat = find.static.payoffs.for.all.x(g, L.static)
+      static.changed = !(identical(old.static.mat, static.mat))
+
+      if (!static.changed & !(infeas.e | infeas.1 | infeas.2)) break;
+
     }
 
     # Remove newly infeasible rows
     # from q1.hat and q2.hat if they
     # are not newly computed next round
-    if (!infeas.1) q1.hat = q1.hat[-infeas.admiss]
-    if (!infeas.2) q2.hat = q2.hat[-infeas.admiss]
+    if (!infeas.1 & !static.changed) q1.hat = q1.hat[feas.admiss]
+    if (!infeas.2 & !static.changed) q2.hat = q2.hat[feas.admiss]
+
     #browser()
   }
   ae = ax.pi$a[axe]
@@ -292,7 +315,7 @@ rel_spe = function(g,delta=g$param$delta, rho=g$param$rho,tol.feasible = 1e-10, 
 
 #' Calculates the highest joint payoff
 #' The returned policy are indexed on ax (not on admiss)
-trunc.spe.highest.U = function(g, admiss, admiss.sizes, r1=g[["r1"]],r2=g[["r2"]], L.static=NULL, is.multi.stage = isTRUE(g$is.multi.stage)) {
+trunc.spe.highest.U = function(g, admiss, admiss.sizes, r1=g[["r1"]],r2=g[["r2"]], is.multi.stage = isTRUE(g$is.multi.stage), static.Pi=NULL) {
   restore.point("trunc.spe.highest.U")
 
   T = g$ax.trans[admiss,,drop=FALSE]
@@ -300,21 +323,19 @@ trunc.spe.highest.U = function(g, admiss, admiss.sizes, r1=g[["r1"]],r2=g[["r2"]
   r = r1+r2
 
   if (is.multi.stage) {
-    G = find.static.G.for.all.x(g, L.static)
-    Pi = Pi+G[g$ax.pi$xrow[admiss]]
+    Pi = Pi+static.Pi[g$ax.pi$xrow[admiss]]
   }
 
   res = trunc_policy_iteration(T=T,Pi=Pi,r=r,delta=g$param$delta,rho=g$param$rho, na.vec=admiss.sizes)
   return(list(Ue=res$V, ax = admiss[res$p]))
 }
 
-trunc.spe.harshest.punishment = function(g,i,admiss, admiss.sizes, tol=1e-10, verbose=FALSE, use.cpp=TRUE, r=g$sdf[[paste0("r",i)]], v= rep(0,NROW(g$sdf)),  L.static=NULL, is.multi.stage = isTRUE(g$is.multi.stage)) {
+trunc.spe.harshest.punishment = function(g,i,admiss, admiss.sizes, tol=1e-10, verbose=FALSE, use.cpp=TRUE, r=g$sdf[[paste0("r",i)]], v= rep(0,NROW(g$sdf)),  is.multi.stage = isTRUE(g$is.multi.stage), static.ci=NULL) {
   restore.point("trunc.spe.harshest.punishment")
   delta = g$param$delta
   rho = g$param$rho
 
   if (is.multi.stage) {
-    static.ci = find.static.ci.for.all.x(g,i,L.static)
     static.ax.ci = static.ci[g$ax.pi$xrow]
   } else {
     static.ax.ci = NULL

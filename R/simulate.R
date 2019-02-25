@@ -1,4 +1,4 @@
-simulate.eq = function(g,periods=100,x0=g$sdf$x[[1]], eq=g$eq) {
+simulate.eq = function(g,periods=100,x0=g$sdf$x[[1]], eq=g[["eq"]]) {
   restore.point("simulate.eq")
 
   sdf = g$sdf

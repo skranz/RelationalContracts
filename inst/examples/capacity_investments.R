@@ -120,15 +120,35 @@ examples.capacity.bertrand = function() {
     trans
   }
 
+  # Small game to test software
+  x.min=5; x.max = 45; x.step = 5
+  x.seq = seq(x.min,x.max, by=x.step)
+  x.df = as_data_frame(expand.grid(x1=x.seq,x2=x.seq))
+  x.df$x = paste0(x.df$x1,"_", x.df$x2)
+  g = rel_game("Bertrand with Investment") %>%
+    rel_param(x.min=x.min,x.max=x.max,x.step=x.step,dep.prob=0.2,a=50,b=1, i.cost=10, i.seq=c(0,1), alpha=1, eta=10, p.seq=c(seq(10,40,length=31),1000)) %>%
+    rel_states(x.df,A.fun=A.fun, vec.pi.fun=vec.pi.fun, vec.trans.fun=vec.trans.fun, vec.static.pi.fun = vec.static.pi.fun, static.A.fun = static.A.fun) %>%
+    rel_compile()
+  g = g %>%  rel_capped_rne(T=400, delta=0.9, rho=0.8, save.history = !FALSE, use.cpp = TRUE, add.stationary = TRUE, save.details = !TRUE,tie.breaking = "max_r1")
+  (capped = get.eq(g))
+  find.eq.li.action.repetitions(g$eq.history)
+
+  g = rel_rne_from_eq_actions(g,iterations = 20, save.eq.li = TRUE)
+  find.eq.li.action.repetitions(g$eq.li)
+
+
+
+
 
   x.min=5; x.max = 45; x.step = 5
   x.seq = seq(x.min,x.max, by=x.step)
   x.df = as_data_frame(expand.grid(x1=x.seq,x2=x.seq))
   x.df$x = paste0(x.df$x1,"_", x.df$x2)
   g = rel_game("Bertrand with Investment") %>%
-    rel_param(x.min=x.min,x.max=x.max,x.step=x.step,dep.prob=0.2,a=50,b=1, i.cost=10, i.seq=c(0,1,2,4,8), alpha=1, eta=10, p.seq=c(seq(0,40,length=41),1000)) %>%
+    rel_param(x.min=x.min,x.max=x.max,x.step=x.step,dep.prob=0.2,a=50,b=1, i.cost=10, i.seq=c(0,1), alpha=1, eta=10, p.seq=c(seq(0,40,length=41),1000)) %>%
     rel_states(x.df,A.fun=A.fun, vec.pi.fun=vec.pi.fun, vec.trans.fun=vec.trans.fun, vec.static.pi.fun = vec.static.pi.fun, static.A.fun = static.A.fun) %>%
     rel_compile()
+
 
 
   g = rel_mpe(g, delta=0.7)
@@ -140,13 +160,13 @@ examples.capacity.bertrand = function() {
     "\ni ",round(mpe$i1)," ", round(mpe$i2)
   )
   library(ggplot2)
-  ggplot(mpe, aes(x=x1,y=x2, fill=stat.prob)) + geom_raster(interpolate=FALSE) + geom_label(aes(label=r_lab), fill="white", alpha=0.5, size=3, label.padding=unit(0.1,"lines"))
+  ggplot(mpe, aes(x=x1,y=x2, fill=stationary.prob)) + geom_raster(interpolate=FALSE) + geom_label(aes(label=r_lab), fill="white", alpha=0.5, size=3, label.padding=unit(0.1,"lines"))
 
 
 
-  g = g %>%  rel_capped_rne(T=50, delta=0.9, rho=1, save.history = !FALSE, use.cpp = TRUE, add.stationary = TRUE, save.details = !TRUE,tie.breaking = "max_r1")
+  g = g %>%  rel_capped_rne(T=50, delta=0.9, rho=0.5, save.history = !FALSE, use.cpp = TRUE, add.stationary = TRUE, save.details = !TRUE,tie.breaking = "max_r1")
   eq = get.eq(g)
-
+  g = rel_rne_from_capped(g)
 
   eq$r_lab = paste0(round(eq$r1)," ", round(eq$r2),"\n", eq$ae.lab)
   ggplot(eq, aes(x=x1,y=x2, fill=stationary)) + geom_raster(interpolate=FALSE) + geom_label(aes(label=r_lab), fill="white", alpha=0.5, size=3, label.padding=unit(0.1,"lines"))

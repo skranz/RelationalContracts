@@ -154,7 +154,7 @@ old.independent.transitions = function(ax.df, ..., .enclos=parent.frame(), .remo
 }
 
 
-compute.eq.trans.mat = function(g, ae = eq$ae, eq=g$eq) {
+compute.eq.trans.mat = function(g, ae = eq$ae, eq=g[["eq"]]) {
   restore.point("compute.eq.trans.mat")
   if (!is.null(g$ax.trans)) {
     ax = eq.a.to.ax(g,a=ae)
@@ -178,7 +178,7 @@ compute.eq.trans.mat = function(g, ae = eq$ae, eq=g$eq) {
 
 
 
-stationary.eq.distribution = function(g, eq=g$eq, tol = 1e-10, start=rep(1/NROW(g$sdf), NROW(g$sdf)), iterations=200, ae = eq$ae) {
+stationary.eq.distribution = function(g, eq=g[["eq"]], tol = 1e-10, start=rep(1/NROW(g$sdf), NROW(g$sdf)), iterations=200, ae = eq$ae) {
   restore.point("stationary.eq.distribution")
   mat = compute.eq.trans.mat(g, eq=eq, ae=ae)
   res = start
