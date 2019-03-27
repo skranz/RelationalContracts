@@ -106,10 +106,11 @@ examples.spe.trunc = function() {
 }
 
 
+
 rel_spe = function(g,delta=g$param$delta, rho=g$param$rho,tol.feasible = 1e-10, verbose=FALSE,r1 = NULL, r2 = NULL, add.action.labels=TRUE, max.iter = 10000, no.exist.action = c("warn","stop","nothing")) {
   restore.point("rel_spe")
   g$param$delta = delta
-  g$param$rho = rho
+  g$param$rho = old_rho = rho
   if (!g$is_compiled) g = rel_compile(g)
   if (is.null(g$ax.trans))
     g = prepare.for.spe(g)
@@ -117,7 +118,7 @@ rel_spe = function(g,delta=g$param$delta, rho=g$param$rho,tol.feasible = 1e-10, 
   is.multi.stage = isTRUE(g$is.multi.stage)
   if (is.null(r1)) {
     r1 = r2 = rep(0, NROW(g$sdf))
-    rho = 0
+    g$param$rho = rho = 0
   }
   R = r1+r2
   beta1 = g$param$beta1
@@ -308,6 +309,7 @@ rel_spe = function(g,delta=g$param$delta, rho=g$param$rho,tol.feasible = 1e-10, 
   if (add.action.labels)
     spe = add.rne.action.labels(g, spe)
 
+  g$param$rho = old_rho
   g$eq = g$spe = spe
   return(g)
 }

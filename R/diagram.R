@@ -23,8 +23,6 @@ examples.rel.diagram = function() {
 
   rel.diagram(g)
 
-  cat(rel.mermaid.code(g))
-
 
   x.max = 3
   x.df = as_data_frame(expand.grid(x1=0:x.max,x2=0:x.max))

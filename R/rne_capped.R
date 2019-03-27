@@ -55,6 +55,12 @@ examples.rne_capped = function() {
     rel_payoff("xH",pi1=~e, pi2=~ -0.5*e*e*(e>=0)) %>%
     rel_compile()
 
+  g = rel_solve_repgames(g,use.repgame.package = TRUE)
+  get.repgames.results(g, delta=g$param$delta, rho=g$param$rho)
+
+
+
+
   g = rel_rne(g, delta=0.9, rho=0.92)
   rne=get.eq(g)
 
@@ -71,26 +77,6 @@ examples.rne_capped = function() {
 
   capped.rne.history.animation(g)
 
-
-  reveal = seq(0,1,by=0.05)
-  #reveal = c(0,0.51)
-  g = rel_game("Blackmailing with Endogenous Brinkmanship") %>%
-    rel_param(delta=0.9, rho=0.5) %>%
-    # Initial State
-    rel_state("x0", A1=list(reveal=reveal),A2=NULL, x.T="xT") %>%
-    rel_payoff("x0",pi1=0, pi2=1) %>%
-    rel_transition("x0","x1",reveal=reveal, prob=reveal) %>%
-    # Evidence Revealed
-    rel_state("x1", A1=NULL,A2=NULL,x.T="xT") %>%
-    rel_payoff("x1",pi1=0, pi2=0) %>%
-    # Some state
-    rel_state("xT", A1=list(g1=c(0,1)),A2=list(g2=c(0,1)),x.T="x0") %>%
-    rel_payoff("xT",pi1= ~ g2, pi2= ~g1 ) %>%
-    rel_compile() %>%
-    rel_capped_rne(T=100, save.history = TRUE, use.cpp=TRUE)
-
-
-  animate.capped.rne.history(g,x=NULL)
 
   g = rel_rne_from_capped(g)
   spe = get.eq(g)
@@ -215,8 +201,13 @@ arms.race.example = function() {
   View(rne)
 }
 
+
+rel_T_rne = function(g,T, tol=1e-10,  delta=g$param$delta, rho=g$param$rho, adjusted.delta=NULL, res.field="eq", tie.breaking=c("equal_r", "slack","random","first","last","max_r1","max_r2")[1], use.cpp=TRUE, save.details=FALSE, add.iterations=FALSE, save.history=FALSE, add.stationary=FALSE, T.rne=TRUE, spe=g[["spe"]]) {
+  rel_capped_rne(g,T, tol,  delta, rho, adjusted.delta, res.field, tie.breaking, use.cpp, save.details, add.iterations, save.history, add.stationary, T.rne, spe)
+}
+
 #' Solve an RNE for a capped version of a multistage game
-rel_capped_rne = function(g,T, tol=1e-10,  delta=g$param$delta, rho=g$param$rho, adjusted.delta=NULL, res.field="eq", tie.breaking=c("equal_r", "slack","random","first","last","max_r1","max_r2")[1], use.cpp=TRUE, save.details=FALSE, add.iterations=FALSE, save.history=FALSE, add.stationary=FALSE) {
+rel_capped_rne = function(g,T, tol=1e-10,  delta=g$param$delta, rho=g$param$rho, adjusted.delta=NULL, res.field="eq", tie.breaking=c("equal_r", "slack","random","first","last","max_r1","max_r2")[1], use.cpp=TRUE, save.details=FALSE, add.iterations=FALSE, save.history=FALSE, add.stationary=FALSE, T.rne=FALSE, spe=NULL) {
   restore.point("rel_capped_rne")
   if (!g$is_compiled) g = rel_compile(g)
 
@@ -243,8 +234,16 @@ rel_capped_rne = function(g,T, tol=1e-10,  delta=g$param$delta, rho=g$param$rho,
     if (is.null(rne)) add.iterations=FALSE
   }
   if (!add.iterations) {
-    g = prepare.after.cap(g)
-    rne = capped.rne.period.T(g,delta=delta, rho=rho)
+    if (T.rne) {
+      if (is.null(spe)) {
+        g = rel_spe(g)
+        spe = g$spe
+      }
+      rne = spe
+    } else {
+      g = prepare.after.cap(g)
+      rne = capped.rne.period.T(g,delta=delta, rho=rho)
+    }
     T = T-1
   }
 
@@ -515,7 +514,7 @@ prepare.after.cap = function(g) {
 
 # Solve for period T onwards, where the SPE payoff set of the truncated game
 # stays constant
-capped.rne.period.T = function(g, delta=g$param$delta, rho=g$param$rho) {
+capped.rne.period.T = function(g, delta=g$param$delta, rho=g$param$rho, T.rne=FALSE) {
   restore.point("capped.rne.period.T")
 
   if (!is.null(g$after_cap_actions)) {

@@ -121,6 +121,21 @@ paste.df.cols = function (mat, cols = 1:NCOL(mat),sep="", empty.sep=FALSE, ...) 
   }
 }
 
+paste.matrix.cols = function (mat, cols = 1:NCOL(mat), ...) {
+    if (NROW(cols) == 2) {
+        return(paste(mat[, cols[1]], mat[, cols[2]], ...))
+    }
+    else if (NROW(cols) == 3) {
+        return(paste(mat[, cols[1]], mat[, cols[2]], mat[, cols[3]],
+            ...))
+    }
+    else {
+        code = paste("mat[,", cols, "]", collapse = ",")
+        code = paste("paste(", code, ",...)", sep = "")
+        return(eval(parse(text = code)))
+    }
+}
+
 nlist = function (...) {
     li = list(...)
     li.names = names(li)

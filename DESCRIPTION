@@ -9,5 +9,5 @@ Description: Characterize Relational Contracts Accounting For Repeated Negotiati
 License: GPL >= 2.0
 Encoding: UTF-8
 LazyData: true
-Depends: restorepoint, dplyr, repgame, matrixStats,RelationalContractsCpp
-Suggests: ggplot2, plotly
+Depends: restorepoint, dplyr, matrixStats,RelationalContractsCpp
+Suggests: ggplot2, plotly, repgame

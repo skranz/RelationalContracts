@@ -81,7 +81,7 @@ example.rne = function() {
 
   g$sdf$rep
 
-  e.seq = c(0,1); xL=0; xH=5;
+  e.seq = c(0,1); xL=0; xH=1;
   g = rel_game("Simple Vulnerability Paradox") %>%
     rel_param(delta=0.8, rho=0.5, c=0.4, xL=xL,xH=xH) %>%
     # Initial State
@@ -145,8 +145,11 @@ example.rne = function() {
 
 }
 
+get.spe = function(g, extra.cols="ae", eq=g[["spe"]]) {
+  get.eq(g, extra.cols, eq)
+}
 
-get.rne = get.spe = function(g, extra.cols="ae", eq=g[["eq"]]) {
+get.rne = function(g, extra.cols="ae", eq=g[["rne"]]) {
   get.eq(g, extra.cols, eq)
 }
 

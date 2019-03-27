@@ -310,13 +310,15 @@ rel_compile = function(g,..., compute.just.static=FALSE) {
         a.grid = sdf$a.grid[[row]]
         args = c(get.x.df(x,g, TRUE),list(a.df = a.grid),param, def$args)
         res = do.call(def$trans.fun, args)
-        check.rel(has.cols(res,c("xs","xd","prob")), "Your manual state transition function must return a data frame that has the cols 'xs','xd', 'prob' and the names of relevant action profiles.")
+        check.rel(has.cols(res,c("xs","xd","prob")), "Your state transition function must return a data frame that has the columns 'xs','xd', 'prob' as well as one column for each action variable that affects the state transitions (purely static actions can be ommited).")
         res
 
       }))
 
     }
     res$.def.ind = ind + length(g$trans_defs)
+    check.rel(has.cols(res,c("xs","xd","prob")), "Your state transition function must return a data frame that has the columns 'xs','xd', 'prob' as well as one column for each action variable that affects the state transitions (purely static actions can be ommited).")
+
     res
   }
 
