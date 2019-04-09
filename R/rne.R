@@ -193,16 +193,25 @@ get.eq = function(g, extra.cols="ae", eq=g[["eq"]]) {
   eq
 }
 
-add.action.details = function(g,eq, action.cols=c("ae","a1","a2"), ax.grid=g$ax.grid) {
+add.action.details = function(g,eq, action.cols=c("ae","a1","a2"), ax.grid=g$ax.grid, static.ax.grid=g[["gs"]]$ax.grid) {
   restore.point("add.action.details")
   add.li = lapply(action.cols, function(col) {
     grid = eq[,c("x",col)]
     colnames(grid)[2] = ".a"
     add.a = left_join(grid, ax.grid, by=c("x",".a"))[,-c(1:2), drop=FALSE]
     colnames(add.a) = paste0(col,".", colnames(add.a))
+    if (!is.null(static.ax.grid)) {
+      scol = paste0("s.", col)
+      sgrid = eq[,c("x",scol)]
+      colnames(sgrid)[2] = ".a"
+      add.sa = left_join(sgrid, static.ax.grid, by=c("x",".a"))[,-c(1:2), drop=FALSE]
+      colnames(add.sa) = paste0(col,".", colnames(add.sa))
+      add.a = cbind(add.sa,add.a)
+    }
     add.a
   })
-  do.call(cbind, c(list(eq), add.li))
+  res = do.call(cbind, c(list(eq), add.li))
+  res
 }
 
 get.rne.details = function(g, x=NULL) {

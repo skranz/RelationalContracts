@@ -136,6 +136,9 @@ paste.matrix.cols = function (mat, cols = 1:NCOL(mat), ...) {
     }
 }
 
+approxeq = function (a, b, tol = 0.001) {
+    isTRUE(all.equal(a, b, tol = tol, check.attributes = FALSE))
+}
 nlist = function (...) {
     li = list(...)
     li.names = names(li)

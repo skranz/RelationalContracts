@@ -141,6 +141,9 @@ find.eq.chain.x = function(g, x0 = g$sdf$x[[1]], eq=g[["eq"]], t=1) {
     trans.mat = g$sdf$trans.mat[[row]]
 
     ae = eq$ae[[row]]
+    # No more transitions possible from current point
+    if (NROW(trans.mat)==0) break
+
     xd = colnames(trans.mat)[trans.mat[ae,] > 0]
     used.x = c(used.x, cur.x)
     x = union(x,xd)
