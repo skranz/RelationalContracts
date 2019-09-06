@@ -9,6 +9,9 @@ examples.itrans = function() {
     i1.prob = i1 / (1+i1),
     i2.prob = i2 / (1+i2)
   )
+
+  ax.df =
+
   trans = independent.transitions(ax.df,
     trans_var("nx1",default=x1,lower=0, upper=x.max,
       trans_val(x1+k.step, (1-dp)*i1.prob),
@@ -62,7 +65,7 @@ independent.transitions = function(ax.df, ..., enclos=parent.frame(), remove.zer
   restore.point("independent.transitions")
   res = ax.df
   res[[prob.var]] = 1.
-  def = var.defs[[2]]
+  def = var.defs[[1]]
   for (def in var.defs) {
     res$.row.id = seq_len(NROW(res))
     vals.unique = def$vals.unique
@@ -125,33 +128,13 @@ independent.transitions = function(ax.df, ..., enclos=parent.frame(), remove.zer
 
 }
 
+
+
 itrans = function(...) {
   res = dplyr:::dots(...)
   quick_df(var = names(res)[1],val = eval(res[[1]]), prob=res[2])
 }
 
-old.independent.transitions = function(ax.df, ..., .enclos=parent.frame(), .remove.zero.prob=TRUE, .prob.var = "") {
-  tdf = bind_rows(list(...))
-  restore.point("independent.transitions")
-  res = ax.df
-  res$prob = 1.
-  vars = unique(tdf$var)
-  for (var in vars) {
-    rows = which(tdf$var==var)
-    li = lapply(rows, function(row) {
-      nres = res
-      nres[[var]] = tdf$val[[row]]
-      nres[["prob"]] = res$prob*eval(tdf$prob[[row]],ax.df, .enclos)
-      if (.remove.zero.prob) {
-        nres = nres[nres[["prob"]]>0,,drop=FALSE]
-      }
-      nres
-    })
-    res = bind_rows(li)
-  }
-  res
-
-}
 
 
 compute.eq.trans.mat = function(g, ae = eq$ae, eq=g[["eq"]]) {

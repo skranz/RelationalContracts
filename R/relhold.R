@@ -103,6 +103,8 @@ rel_compile = function(g,..., compute.just.static=FALSE) {
     if (!is.null(def$vec.A.fun)) {
       args = c(get.x.df(def$x,g,TRUE),list(param, def$args))
       res = do.call(def$vec.A.fun,args)
+      res$A1 = unique(res$A1)
+      res$A2 = unique(res$A2)
       na1 = sapply(res$A1, compute.na)
       na2 = sapply(res$A2, compute.na)
       state = quick_df(x=x,na1=na1,na2=na2,A1=res$A1,A2=res$A2)
@@ -116,6 +118,8 @@ rel_compile = function(g,..., compute.just.static=FALSE) {
 
 
         res = do.call(def$A.fun, args)
+        res$A1 = lapply(res$A1, unique)
+        res$A2 = lapply(res$A2, unique)
         A1[row] = list(res$A1)
         A2[row] = list(res$A2)
         na1[row] = compute.na(res$A1)
@@ -128,7 +132,8 @@ rel_compile = function(g,..., compute.just.static=FALSE) {
     # with repgame and dyngame
 
     state$a.grid = lapply(seq_len(NROW(state)), function(row) {
-      A1 = state$A1[[row]]; A2 = state$A2[[row]]
+      A1 = state$A1[[row]]
+      A2 = state$A2[[row]]
       a.grid = factor.cols.as.strings(expand.grid2(A2,A1))
       cols = c(names(A1),names(A2))
       a.grid = a.grid[,cols]

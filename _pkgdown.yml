@@ -1,0 +1,25 @@
+toc:
+  depth: 2
+
+template:
+  params:
+    bootswatch: cerulean
+navbar:
+  structure:
+    left:
+    - home
+    - articles
+    - reference
+    right: github
+  components:
+    home:
+      icon: fa-home fa-lg
+      href: index.html
+    reference:
+      text: Reference
+      href: reference/index.html
+    articles:
+      text: Manuals
+    github:
+      icon: fa-github fa-lg
+      href: https://github.com/skranz/RTutor

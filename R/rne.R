@@ -145,14 +145,20 @@ example.rne = function() {
 
 }
 
+#' Get the last computed SPE of game g
+#' @export
 get.spe = function(g, extra.cols="ae", eq=g[["spe"]]) {
   get.eq(g, extra.cols, eq)
 }
 
+#' Get the last computed RNE of game g
+#' @export
 get.rne = function(g, extra.cols="ae", eq=g[["rne"]]) {
   get.eq(g, extra.cols, eq)
 }
 
+#' Get the last computed equilibrium of game g
+#' @export
 get.eq = function(g, extra.cols="ae", eq=g[["eq"]]) {
   restore.point("get.eq")
 
@@ -165,7 +171,7 @@ get.eq = function(g, extra.cols="ae", eq=g[["eq"]]) {
       if (!is.null(ax.extra))
         extra = cbind(extra, ax.extra[ax,,drop=FALSE])
       colnames(extra) = paste0(col,".", colnames(extra))
-      eq = cbind(eq, extra)
+      eq = bind_cols(eq, extra)
     }
   } else if (length(extra.cols)>0 & isTRUE(g$is.multi.stage)) {
     ax.add = g$sdf$lag.cumsum.na
@@ -187,12 +193,13 @@ get.eq = function(g, extra.cols="ae", eq=g[["eq"]]) {
 
       if (col != "ae")
         colnames(extra) = paste0(col,".", colnames(extra))
-      eq = cbind(eq,extra)
+      eq = bind_cols(eq,extra)
     }
   }
   eq
 }
 
+# Add columns to an equilbrium that describe the chosen actions in more details
 add.action.details = function(g,eq, action.cols=c("ae","a1","a2"), ax.grid=g$ax.grid, static.ax.grid=g[["gs"]]$ax.grid) {
   restore.point("add.action.details")
   add.li = lapply(action.cols, function(col) {
@@ -214,6 +221,8 @@ add.action.details = function(g,eq, action.cols=c("ae","a1","a2"), ax.grid=g$ax.
   res
 }
 
+#' Retrieve more details about a computed RNE
+#' @export
 get.rne.details = function(g, x=NULL) {
   restore.point("get.rne.details")
 
@@ -226,21 +235,19 @@ get.rne.details = function(g, x=NULL) {
 
 }
 
-#' Find an RNE for a game with (weakly) monotone state transitions
+#' Find an RNE for a (weakly) directional game
 #'
-#' If the game has strictly monotone state transitions,
+#' If the game is strongly directional,
 #' i.e. non-terminal states will be reached at most once,
 #' there exists a unique RNE payoff.
 #'
-#' For weak monotone state transititions no RNE or multiple
+#' For weakly directional games no RNE or multiple
 #' RNE payoffs may exist.
 #'
-#' You can call rel_capped_rne to solve a capped version of the game
-#' that allows state changes only up to some period T. Such a capped
-#' version always has a unique RNE payoff.
+#' You can call rel_capped_rne to solve a capped version of the game that allows state changes only up to some period T. Such a capped version always has a unique RNE payoff.
 #'
 #' @param g The game object
-#' @param save.details If yes, detailed information about the equilibrium for each state and period will be stored in g and can be retrieved via the function get.rne.details
+#' @export
 rel_rne = function(g, delta=g$param$delta, rho=g$param$rho, adjusted.delta=NULL, beta1=g$param$beta1,verbose=TRUE,...) {
   restore.point("rel_rne")
   if (!g$is_compiled) g = rel_compile(g)

@@ -49,9 +49,9 @@ examples.rel.spe = function() {
 }
 
 
-#' Solve for the set of SPE payoffs in every state and for optimal simple equilibria
-#'
-#' This function is just an interface to the dyngame package
+# Solve for the set of SPE payoffs in every state and for optimal simple equilibria using the dyngame package.
+#
+# This function is just an interface to the dyngame package.
 rel_spe_classic = function(g, delta=g$param$delta,new.dyngame=FALSE, verbose=FALSE, plots=FALSE) {
   restore.point("rel_spe_classic")
   g$param$delta = delta
@@ -149,6 +149,7 @@ dyngame.sol.to.rel.sol = function(g,sol=g$dyngame.sol, m=g$dyngame, add.labels=T
 make.rel.dyngame = function(g, symmetric=FALSE) {
   restore.point("make.rel.dyngame")
   library(dyngame)
+  if (!g$is_compiled) stop("Please first compile g by calling rel_compile.")
 
   sdf = g$sdf
 
@@ -223,6 +224,6 @@ make.rel.dyngame = function(g, symmetric=FALSE) {
     tau.fun=tau.fun,
     x.group=x.group
   )
-  m = init.game(game, no.labels = TRUE,symmetric = symmetric)
+  m = dyngame::init.game(game, no.labels = TRUE,symmetric = symmetric)
   m
 }

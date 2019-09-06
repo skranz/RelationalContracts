@@ -106,7 +106,10 @@ examples.spe.trunc = function() {
 }
 
 
-
+#' Finds an optimal simple subgame perfect equilibrium of g. From this the whole SPE payoff set can be deduced.
+#'
+#' @param g the considered game
+#' @param r1 (or \code{r2}) if not NULL we want to find a SPE in a truncated game. Then r1 and r2 need to specify for each state the exogenously fixed negotiation payoffs.
 rel_spe = function(g,delta=g$param$delta, rho=g$param$rho,tol.feasible = 1e-10, verbose=FALSE,r1 = NULL, r2 = NULL, add.action.labels=TRUE, max.iter = 10000, no.exist.action = c("warn","stop","nothing")) {
   restore.point("rel_spe")
   g$param$delta = delta
@@ -315,8 +318,8 @@ rel_spe = function(g,delta=g$param$delta, rho=g$param$rho,tol.feasible = 1e-10, 
 }
 
 
-#' Calculates the highest joint payoff
-#' The returned policy are indexed on ax (not on admiss)
+# Calculates the highest joint payoff
+# The returned policy are indexed on ax (not on admiss)
 trunc.spe.highest.U = function(g, admiss, admiss.sizes, r1=g[["r1"]],r2=g[["r2"]], is.multi.stage = isTRUE(g$is.multi.stage), static.Pi=NULL) {
   restore.point("trunc.spe.highest.U")
 

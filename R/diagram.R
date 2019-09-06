@@ -47,7 +47,7 @@ spe.diagram = function(g,t=1, show.own.loop=FALSE, show.terminal.loop=FALSE, eq 
   rne.diagram(g,t,show.own.loop, show.terminal.loop,eq=eq, use.x, just.eq.chain, x0)
 }
 
-rne.diagram = function(g,show.own.loop=FALSE, show.terminal.loop=FALSE, eq = g[["eq"]], use.x=NULL, just.eq.chain=FALSE, x0=g$sdf$x[1], label.fun=NULL, tooltip.fun=NULL) {
+rne.diagram = function(g,show.own.loop=FALSE, show.terminal.loop=FALSE, eq = g[["eq"]], use.x=NULL, just.eq.chain=FALSE, hide.passive.edge=TRUE, x0=g$sdf$x[1], label.fun=NULL, tooltip.fun=NULL, active.edge.color="#000077", passive.edge.color="#dddddd", passive.edge.width=1,  return.dfs=FALSE) {
   restore.point("rne.diagram")
 
   library(DiagrammeR)
@@ -86,7 +86,7 @@ rne.diagram = function(g,show.own.loop=FALSE, show.terminal.loop=FALSE, eq = g[[
     tooltip = tooltip.fun(rne,g)
   }
 
-  ndf = data.frame(id=1:n, label=lab, type="node", shape="box", title=tooltip)
+  ndf = tibble(id=1:n, label=lab, type="node", shape="box", title=tooltip, x=rne$x)
 
   # Create edges
   tr = lapply(seq_len(NROW(sdf)), function(row) {
@@ -106,7 +106,7 @@ rne.diagram = function(g,show.own.loop=FALSE, show.terminal.loop=FALSE, eq = g[[
     }
     dest.rows = match(dest, sdf$x)
 
-    edges = quick_df(from=row, to=dest.rows, rel="", color=ifelse(is.ae.dest, "#000077","#dddddd"), width=ifelse(is.ae.dest,2,1))
+    edges = quick_df(from=row, to=dest.rows, rel="", color=ifelse(is.ae.dest, active.edge.color,passive.edge.color), width=ifelse(is.ae.dest,2,passive.edge.width), hidden=!is.ae.dest & hide.passive.edge)
 
     if (just.eq.chain)
       edges = edges[is.ae.dest,,drop=FALSE]
@@ -115,6 +115,8 @@ rne.diagram = function(g,show.own.loop=FALSE, show.terminal.loop=FALSE, eq = g[[
   edf = bind_rows(tr)
   if (!show.own.loop)
     edf = filter(edf, from != to)
+
+  if (return.dfs) return(list(ndf=ndf, edf=edf, sdf=sdf, rne=rne))
 
   graph = create_graph(ndf, edf)
 
@@ -149,34 +151,5 @@ find.eq.chain.x = function(g, x0 = g$sdf$x[[1]], eq=g[["eq"]], t=1) {
     x = union(x,xd)
   }
   x
-}
-
-
-rel.diagram = function(g) {
-  restore.point("rel.diagram")
-
-  library(DiagrammeR)
-
-  n = NROW(g$sdf)
-  sdf=g$sdf
-  ndf = data.frame(id=1:n, label=g$sdf$x, type="node", shape="box")
-
-  # Create edges
-  tr = lapply(seq_len(NROW(sdf)), function(row) {
-    trans.mat = sdf$trans.mat[[row]]
-    x = sdf$x[[row]]
-    if (NROW(trans.mat)==0) {
-      dest = x
-    } else {
-      dest = colnames(trans.mat)
-    }
-    dest.rows = match(dest, sdf$x)
-    quick_df(from=row, to=dest.rows)
-  })
-  edf = bind_rows(tr)
-
-  graph = create_graph(ndf, edf)
-
-  render_graph(graph, output="visNetwork")
 }
 
