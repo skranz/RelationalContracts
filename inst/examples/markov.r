@@ -113,11 +113,11 @@ counot.example = function() {
   g = rel_compile(g)
   options(warn=2)
   g = rel_capped_rne(g,T=50, adjusted.delta=0.5, rho=0.2,save.history = !TRUE)
-  rne.diagram(g)
+  eq_diagram(g)
 
   hist = g$rne.history
   (rne=g$rne)
-  animate.capped.rne.history(g,x = c("60 0", "60 60", "20 20","0 0"), add.diag = FALSE)
+  animate_capped_rne_history(g,x = c("60 0", "60 60", "20 20","0 0"), add.diag = FALSE)
 
 
 

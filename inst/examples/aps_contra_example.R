@@ -10,7 +10,7 @@ aps.contra = function() {
   (rep.df = g$rep.games.df)
   (rne=g$rne)
 
-  animate.capped.rne.history(g)
+  animate_capped_rne_history(g)
 
   # An example without convergence but oscilation...
   g = rel_game("Principal-Agent Variation") %>%
@@ -28,9 +28,9 @@ aps.contra = function() {
   hist = g$rne.history
   d = hist %>% filter(x=="x0")
   plot(d$t,d$U, type="l")
-  animate.capped.rne.history(g,x=NULL)
+  animate_capped_rne_history(g,x=NULL)
 
-  #animate.capped.rne.history(g,x=NULL, add.plot = xlim(0,0.5)+ylim(0,0.5))
+  #animate_capped_rne_history(g,x=NULL, add.plot = xlim(0,0.5)+ylim(0,0.5))
 
 
   # An example without convergence but oscilation
@@ -44,7 +44,7 @@ aps.contra = function() {
     rel_after_cap_payoffs("x1", U=0.58,v1=0.1,v2=0.1) %>%
     rel_compile() %>%
     rel_capped_rne(T=10,adjusted.delta = 0.48, rho=0.4, save.history = TRUE)
-  animate.capped.rne.history(g,x=NULL)
+  animate_capped_rne_history(g,x=NULL)
 
 
 }

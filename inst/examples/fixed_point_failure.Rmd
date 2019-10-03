@@ -48,7 +48,7 @@ You see how the payoff set shrinks towards 0 with each iteration set. We can ill
 ```{r}
 # Show dynamic of payoff sets of truncated games
 # Backward induction starting from t=T
-animate.capped.rne.history(g)
+animate_capped_rne_history(g)
 ```
 
 In many examples, we have nice convergence of that payoff set. Unfortunately, that is not the case in all examples. A counter-example is below.
@@ -72,7 +72,7 @@ g = rel_game("Principal-Agent Variation") %>%
 Now take a look at the dynamics of the SPE payoff sets...
 
 ```{r}
-animate.capped.rne.history(g,x=NULL)
+animate_capped_rne_history(g,x=NULL)
 ```
 
 Unfortunately, we get no convergence but an oscialation where the payoff sets in states "x0", "x1" grow and shrink.
@@ -81,7 +81,7 @@ The following code allows you to study in more detail what happens in the first 
 ```{r}
 hist = filter(g$rne.history, t > max(t)-10)
 hist
-animate.capped.rne.history(g,x=NULL,hist = hist)
+animate_capped_rne_history(g,x=NULL,hist = hist)
 ```
 
 Thus it seems that with positive negotiation probabilities, we no longer have general convergence. That is a bit a pity...

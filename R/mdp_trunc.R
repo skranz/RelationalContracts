@@ -13,7 +13,7 @@ examples.spe.trunc = function() {
 
   g$ax.pi
 
-  animate.capped.rne.history(g,x=NULL)
+  animate_capped_rne_history(g,x=NULL)
 
 }
 

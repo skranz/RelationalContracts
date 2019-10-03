@@ -108,22 +108,22 @@ examples.cost.ladder.cournot.multimarket = function() {
 
 
   g = rel_mpe(g, delta=0.9)
-  mpe = get.mpe(g)
+  mpe = get_mpe(g)
   plot.top.states(mpe)
 
 
-  eq = get.eq(g)
+  eq = get_eq(g)
   eq.li[[2]] = eq
 
-  diff = compare.eq(eq.li[[1]], eq.li[[2]],g)
+  diff = compare_eq(eq.li[[1]], eq.li[[2]],g)
 
   for (rep in 3:reps) {
-    eq =get.eq(g)
+    eq =get_eq(g)
     eq$rep = rep
     eq.li[[rep]] = eq
     g = rel_is_eq_rne(g)
   }
-  animate.eq.li(g, eq.li,x="B_1_0_0_1")
+  animate_eq_li(g, eq.li,x="B_1_0_0_1")
 
 
 
@@ -151,7 +151,7 @@ examples.cost.ladder.cournot.multimarket = function() {
   sim = bind_rows(lapply(rho.seq, function(rho) {
     cat("\nrho = ",rho)
     g = g %>%  rel_capped_rne(T=50, delta=0.9, rho=rho, save.history = FALSE, use.cpp = TRUE, add.stationary = TRUE)
-    eq = get.eq(g)
+    eq = get_eq(g)
     eq$rho = rho
 
     eq
@@ -185,17 +185,17 @@ examples.cost.ladder.cournot.multimarket = function() {
 
   ggplot(eq, aes(x=x1,y=x2, fill=stationary)) + geom_raster(interpolate=FALSE) + geom_label(aes(label=r_lab), fill="white", alpha=0.5, size=3, label.padding=unit(0.1,"lines"))
 
-  animate.capped.rne.history(g,x = c("5_5","0_0","5_1"))
+  animate_capped_rne_history(g,x = c("5_5","0_0","5_1"))
 
 
-  rne.diagram(g, just.eq.chain = !TRUE)
+  eq_diagram(g, just.eq.chain = !TRUE)
 
   sdf = g$gs$sdf
   cbind(g$sdf$a.grid[[1]],pi1= g$sdf$pi1[[1]],pi2=g$sdf$pi2[[1]], g$sdf$trans.mat[[1]])
   res = cbind(sdf$a.grid[[1]],pi1= sdf$pi1[[1]],pi2=sdf$pi2[[1]])
 
 
-  det = get.rne.details(g, x="5_5")
+  det = get_rne_details(g, x="5_5")
 }
 
 plot.top.states = function(eq,ntop=4) {

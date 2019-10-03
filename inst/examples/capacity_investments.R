@@ -130,7 +130,7 @@ examples.capacity.bertrand = function() {
     rel_states(x.df,A.fun=A.fun, vec.pi.fun=vec.pi.fun, vec.trans.fun=vec.trans.fun, vec.static.pi.fun = vec.static.pi.fun, static.A.fun = static.A.fun) %>%
     rel_compile()
   g = g %>%  rel_capped_rne(T=400, delta=0.9, rho=0.8, save.history = !FALSE, use.cpp = TRUE, add.stationary = TRUE, save.details = !TRUE,tie.breaking = "max_r1")
-  (capped = get.eq(g))
+  (capped = get_eq(g))
   find.eq.li.action.repetitions(g$eq.history)
 
   g = rel_rne_from_eq_actions(g,iterations = 20, save.eq.li = TRUE)
@@ -152,7 +152,7 @@ examples.capacity.bertrand = function() {
 
 
   g = rel_mpe(g, delta=0.7)
-  mpe = get.mpe(g)
+  mpe = get_mpe(g)
   mpe$r_lab = paste0(
     "u ",round(mpe$u1)," ", round(mpe$u2),
     "\np ",round(mpe$p1)," ", round(mpe$p2),
@@ -165,23 +165,23 @@ examples.capacity.bertrand = function() {
 
 
   g = g %>%  rel_capped_rne(T=50, delta=0.9, rho=0.5, save.history = !FALSE, use.cpp = TRUE, add.stationary = TRUE, save.details = !TRUE,tie.breaking = "max_r1")
-  eq = get.eq(g)
+  eq = get_eq(g)
   g = rel_rne_from_capped(g)
 
   eq$r_lab = paste0(round(eq$r1)," ", round(eq$r2),"\n", eq$ae.lab)
   ggplot(eq, aes(x=x1,y=x2, fill=stationary)) + geom_raster(interpolate=FALSE) + geom_label(aes(label=r_lab), fill="white", alpha=0.5, size=3, label.padding=unit(0.1,"lines"))
 
-  animate.capped.rne.history(g,x = c("5_5","45_45","25_25","45_5"))
+  animate_capped_rne_history(g,x = c("5_5","45_45","25_25","45_5"))
 
 
-  rne.diagram(g, just.eq.chain = !TRUE)
+  eq_diagram(g, just.eq.chain = !TRUE)
 
   sdf = g$gs$sdf
   cbind(g$sdf$a.grid[[1]],pi1= g$sdf$pi1[[1]],pi2=g$sdf$pi2[[1]], g$sdf$trans.mat[[1]])
   res = cbind(sdf$a.grid[[1]],pi1= sdf$pi1[[1]],pi2=sdf$pi2[[1]])
 
 
-  det = get.rne.details(g, x="5_5")
+  det = get_rne_details(g, x="5_5")
 }
 
 
@@ -298,7 +298,7 @@ examples.capacity.differentiated.bertrand = function() {
     rel_compile()
 
   g = g %>%  rel_capped_rne(T=20, delta=0.9, rho=0.9, save.history = FALSE, use.cpp = FALSE, add.stationary = TRUE, save.details = TRUE)
-  eq = get.eq(g)
+  eq = get_eq(g)
 
   sdf = g$gs$sdf
   cbind(g$sdf$a.grid[[1]],pi1= g$sdf$pi1[[1]],pi2=g$sdf$pi2[[1]], g$sdf$trans.mat[[1]])
@@ -306,9 +306,9 @@ examples.capacity.differentiated.bertrand = function() {
 
   eq$r_lab = paste0(round(eq$r1)," ", round(eq$r2),"\n", eq$ae.lab)
   ggplot(eq, aes(x=x1,y=x2, fill=stationary)) + geom_raster(interpolate=FALSE) + geom_label(aes(label=r_lab), fill="white", alpha=0.5, size=3, label.padding=unit(0.1,"lines"))
-  rne.diagram(g, just.eq.chain = !TRUE)
+  eq_diagram(g, just.eq.chain = !TRUE)
 
-  det = get.rne.details(g, x="5_5")
+  det = get_rne_details(g, x="5_5")
 }
 
 examples.capacity.cournot = function() {
@@ -390,7 +390,7 @@ examples.capacity.cournot = function() {
   eq = g$eq
   eq$r_lab = paste0(round(eq$r1)," ", round(eq$r2),"\n", eq$ae.lab)
   ggplot(eq, aes(x=x1,y=x2, fill=stationary)) + geom_raster(interpolate=FALSE) + geom_label(aes(label=r_lab), fill="white", alpha=0.5, size=3, label.padding=unit(0.1,"lines"))
-  rne.diagram(g, just.eq.chain = TRUE)
+  eq_diagram(g, just.eq.chain = TRUE)
 
-  det = get.rne.details(g, x="100_0")
+  det = get_rne_details(g, x="100_0")
 }

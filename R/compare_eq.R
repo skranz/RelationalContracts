@@ -1,7 +1,6 @@
-# Helper function to find differences between two equilibria
-
-compare.eq = function(eq1,eq2=g[["eq"]],g, verbose=TRUE) {
-  restore.point("compare.eq")
+#' Helper function to find differences between two equilibria
+compare_eq = function(eq1,eq2=g[["eq"]],g, verbose=TRUE) {
+  restore.point("compare_eq")
   is.multi.stage = has.col(eq1,"s.ae")
 
   payoff.cols = c("r1","r2","U","v1","v2")

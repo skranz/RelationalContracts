@@ -18,13 +18,13 @@ rel_is_eq_rne = function(g, eq=g[["eq"]],  r1 = eq$r1,  r2 = eq$r2, r.tol=1e-10,
   spe$trunc.r2 = r2
 
   g$spe = g$eq = spe
-  #diff = compare.eq(eq,g[["eq"]])
+  #diff = compare_eq(eq,g[["eq"]])
   if (max(abs(r1-spe$r1)) < r.tol & max(abs(r2-spe$r2)) < r.tol) {
-    cat("\nCongratulations, we found an RNE in pure strategies. Call get.eq to retrieve the RNE.")
+    cat("\nCongratulations, we found an RNE in pure strategies. Call get_eq to retrieve the RNE.")
     g$found.rne = TRUE
   } else {
     if (verbose)
-      cat("\nSorry, but the SPE of the truncated game yields different negotiation payoffs than we entered. We did not find an RNE. Call get.eq to retrieve the SPE of the truncated game.")
+      cat("\nSorry, but the SPE of the truncated game yields different negotiation payoffs than we entered. We did not find an RNE. Call get_eq to retrieve the SPE of the truncated game.")
     g$found.rne = FALSE
   }
   return(g)

@@ -1,9 +1,10 @@
 plot.spe.payoff.set = function (g,x=eq$x[1],t=1,  eq=g[["eq"]], xlim=NULL, ylim=NULL, add=FALSE, colors=c("#377EB8","#E41A1C", "#4DAF4A", "#984EA3", "#FF7F00", "#FFFF33", "#A65628", "#F781BF"),plot.r=TRUE, alpha=0.8, black.border=TRUE, add.state.label=TRUE, add.xlim=NULL, add.ylim=NULL, extend.lim.perc=0.05, ...) {
   restore.point("plot.spe.payoff.set")
-  old.par = par()
-  on.exit(suppressWarnings(par(old.par)))
-  par(mar = c(4, 4, 1, 1))
-
+  #old.par = par()
+  #on.exit(suppressWarnings(par(old.par)))
+  if (!add) {
+    par(mar = c(4, 4, 1, 1))
+  }
   dat = eq
   if (!is.null(x)) {
     rows = match(x, dat$x)
@@ -27,9 +28,10 @@ plot.spe.payoff.set = function (g,x=eq$x[1],t=1,  eq=g[["eq"]], xlim=NULL, ylim=
   }
 
 
-  plot(xlim, ylim, col = "white", type = "s", xlim = xlim,
+  if (!add) {
+    plot(xlim, ylim, col = "white", type = "s", xlim = xlim,
         ylim = ylim, xlab = "u1", ylab = "u2")
-
+  }
 
 
 
@@ -59,14 +61,18 @@ plot.spe.payoff.set = function (g,x=eq$x[1],t=1,  eq=g[["eq"]], xlim=NULL, ylim=
   }
 }
 
-animate.eq.li = function(g, eq.li, x=g$sdf$x[1],...) {
-  animate.capped.rne.history(g, eq.li=eq.li, x=x,...)
+#' Use ggplotly to show an animation of the payoff sets of a list of equilibria
+#' @export
+animate_eq_li = function(g, eq.li, x=g$sdf$x[1],...) {
+  animate_capped_rne_history(g, eq.li=eq.li, x=x,...)
 }
 
-animate.capped.rne.history = function(g,x=g$sdf$x[1], hist = g$eq.history, colors=c("#377EB8","#E41A1C", "#4DAF4A", "#984EA3", "#FF7F00", "#FFFF33", "#A65628", "#F781BF"), alpha=0.4, add.state.label=TRUE, add.grid=FALSE, add.diag=FALSE, add.plot=NULL, eq.li=NULL) {
+#' Use ggplotly to show an animation of the payoff sets of a capped RNE going from t=T to t=1
+#' @export
+animate_capped_rne_history = function(g,x=g$sdf$x[1], hist = g$eq.history, colors=c("#377EB8","#E41A1C", "#4DAF4A", "#984EA3", "#FF7F00", "#FFFF33", "#A65628", "#F781BF"), alpha=0.4, add.state.label=TRUE, add.grid=FALSE, add.diag=FALSE, add.plot=NULL, eq.li=NULL) {
   add.plot = substitute(add.plot)
 
-  restore.point("capped.rne.history.animation")
+  restore.point("animate_capped_rne_history")
 
   if (!is.null(eq.li)) {
     hist = bind_rows(eq.li)

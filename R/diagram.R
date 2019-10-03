@@ -1,4 +1,4 @@
-examples.rel.diagram = function() {
+examples.eq_diagram = function() {
 
 
   e.seq = c(0,1); xL=0; xH=5;
@@ -19,9 +19,9 @@ examples.rel.diagram = function() {
     rel_rne()
 
 
-  rne.diagram(g)
+  eq_diagram(g)
 
-  rel.diagram(g)
+  rel_diagram(g)
 
 
   x.max = 3
@@ -34,21 +34,32 @@ examples.rel.diagram = function() {
     rel_compile() %>%
     rel_capped_rne(T=50)
 
-  rne.diagram(g,t=1)
+  eq_diagram(g,t=1)
 
-  rel.diagram(g)
+  rel_diagram(g)
 
   cat(rel.mermaid.code(g))
 
 
 }
 
-spe.diagram = function(g,t=1, show.own.loop=FALSE, show.terminal.loop=FALSE, eq = g[["eq"]], use.x=NULL, just.eq.chain=FALSE, x0=g$sdf$x[1]) {
-  rne.diagram(g,t,show.own.loop, show.terminal.loop,eq=eq, use.x, just.eq.chain, x0)
-}
-
-rne.diagram = function(g,show.own.loop=FALSE, show.terminal.loop=FALSE, eq = g[["eq"]], use.x=NULL, just.eq.chain=FALSE, hide.passive.edge=TRUE, x0=g$sdf$x[1], label.fun=NULL, tooltip.fun=NULL, active.edge.color="#000077", passive.edge.color="#dddddd", passive.edge.width=1,  return.dfs=FALSE) {
-  restore.point("rne.diagram")
+#' Draws a diagram of equilibrium state transition
+#'
+#' Draws an arrow from state x to state y if and
+#' only if on the equilibrium path there is a positive
+#' probability to directly transist from x to y.
+#'
+#' @param g The solved game object
+#' @param show.own.loop Shall a loop from a state to itself be drawn if there is a positive probability to stay in the state? (Default=FALSE)
+#' @param show.terminal.loop Only relevant if \code{show.own.loop = TRUE}. If still \code{show.terminal.loop=FALSE} omit loops in terminal state that don't transist to any other state.
+#' @param use.x optionally a vector of state ids that shall only be shown.
+#' @param just.eq.chain If TRUE only show states that can be reached with positive probability on the equilibrium path when starting from state x0.
+#' @param x0 only relevant if \code{just.eq.chain=TRUE}. The ID of the x0 state. By default the first defined state.
+#' @param label.fun An optional function that takes the equilibrium object and game and returns a character vector that contains a label for each state.
+#' @param tooltip.fun Similar to \code{label.fun} but for the tooltip shown on a state.
+#' @param return.dfs if TRUE don't show diagram but only return the relevant edge and node data frames that can be used to call \code{DiagrammeR::create_graph}. Useful if you want to manually customize graphs further.
+eq_diagram = function(g,show.own.loop=FALSE, show.terminal.loop=FALSE, use.x=NULL, just.eq.chain=FALSE,x0=g$sdf$x[1], hide.passive.edge=TRUE,  label.fun=NULL, tooltip.fun=NULL, active.edge.color="#000077", passive.edge.color="#dddddd", passive.edge.width=1,  return.dfs=FALSE,eq = g[["eq"]]) {
+  restore.point("eq_diagram")
 
   library(DiagrammeR)
 

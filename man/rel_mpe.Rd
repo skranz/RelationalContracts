@@ -20,5 +20,5 @@ rel_mpe(g, delta = g$param$delta, static.eq = NULL, max.iter = 100,
 }
 \description{
 Returns a game object that contains the mpe.
-Use the function get.mpe to retrieve a data frame that describes the MPE.
+Use the function get_mpe to retrieve a data frame that describes the MPE.
 }

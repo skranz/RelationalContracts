@@ -1,0 +1,16 @@
+base
+dplyr
+restorepoint
+matrixStats
+RelationalContractsCpp
+RelationalContracts
+stringr
+glpkAPI
+rgmpl
+skUtils
+dyngame
+rowmins
+slam
+repgame
+jsonlite
+RSGSolve

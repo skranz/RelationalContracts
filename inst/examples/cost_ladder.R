@@ -62,7 +62,7 @@ examples.cost.ladder.cournot = function() {
 
 
   g = rel_mpe(g, delta=0.9)
-  mpe = get.mpe(g)
+  mpe = get_mpe(g)
   mpe$r_lab = paste0(
     "u ",round(mpe$u1,2)," ", round(mpe$u2,2),
     "\nq ",round(mpe$q1,1)," ", round(mpe$q2,1),
@@ -74,13 +74,13 @@ examples.cost.ladder.cournot = function() {
 
 
   g = g %>%  rel_capped_rne(T=50, delta=0.7, rho=0.8, save.history = !FALSE, use.cpp = TRUE, add.stationary = TRUE, save.details = !TRUE)
-  eq = get.eq(g)
+  eq = get_eq(g)
 
   rho.seq = c(1,0.9,0.5,0)
   sim = bind_rows(lapply(rho.seq, function(rho) {
     cat("\nrho = ",rho)
     g = g %>%  rel_capped_rne(T=50, delta=0.9, rho=rho, save.history = FALSE, use.cpp = TRUE, add.stationary = TRUE)
-    eq = get.eq(g)
+    eq = get_eq(g)
     eq$rho = rho
 
     eq
@@ -114,17 +114,17 @@ examples.cost.ladder.cournot = function() {
 
   ggplot(eq, aes(x=x1,y=x2, fill=stationary)) + geom_raster(interpolate=FALSE) + geom_label(aes(label=r_lab), fill="white", alpha=0.5, size=3, label.padding=unit(0.1,"lines"))
 
-  animate.capped.rne.history(g,x = c("5_5","0_0","5_1"))
+  animate_capped_rne_history(g,x = c("5_5","0_0","5_1"))
 
 
-  rne.diagram(g, just.eq.chain = !TRUE)
+  eq_diagram(g, just.eq.chain = !TRUE)
 
   sdf = g$gs$sdf
   cbind(g$sdf$a.grid[[1]],pi1= g$sdf$pi1[[1]],pi2=g$sdf$pi2[[1]], g$sdf$trans.mat[[1]])
   res = cbind(sdf$a.grid[[1]],pi1= sdf$pi1[[1]],pi2=sdf$pi2[[1]])
 
 
-  det = get.rne.details(g, x="5_5")
+  det = get_rne_details(g, x="5_5")
 }
 
 examples.cost.ladder.bertrand = function() {
@@ -197,7 +197,7 @@ examples.cost.ladder.bertrand = function() {
 
 
   g = rel_mpe(g, delta=0.7)
-  mpe = get.mpe(g)
+  mpe = get_mpe(g)
   mpe$r_lab = paste0(
     "u ",round(mpe$u1)," ", round(mpe$u2),
     "\np ",round(mpe$p1)," ", round(mpe$p2),
@@ -210,7 +210,7 @@ examples.cost.ladder.bertrand = function() {
 
 
   g = g %>%  rel_capped_rne(T=50, delta=0.7, rho=0, save.history = !FALSE, use.cpp = TRUE, add.stationary = TRUE, save.details = !TRUE)
-  eq = get.eq(g)
+  eq = get_eq(g)
 
 
   eq$r_lab = paste0(
@@ -221,17 +221,17 @@ examples.cost.ladder.bertrand = function() {
   )
   ggplot(eq, aes(x=x1,y=x2, fill=stationary)) + geom_raster(interpolate=FALSE) + geom_label(aes(label=r_lab), fill="white", alpha=0.5, size=3, label.padding=unit(0.1,"lines"))
 
-  animate.capped.rne.history(g,x = c("5_5","0_0","5_1"))
+  animate_capped_rne_history(g,x = c("5_5","0_0","5_1"))
 
 
-  rne.diagram(g, just.eq.chain = !TRUE)
+  eq_diagram(g, just.eq.chain = !TRUE)
 
   sdf = g$gs$sdf
   cbind(g$sdf$a.grid[[1]],pi1= g$sdf$pi1[[1]],pi2=g$sdf$pi2[[1]], g$sdf$trans.mat[[1]])
   res = cbind(sdf$a.grid[[1]],pi1= sdf$pi1[[1]],pi2=sdf$pi2[[1]])
 
 
-  det = get.rne.details(g, x="5_5")
+  det = get_rne_details(g, x="5_5")
 }
 
 

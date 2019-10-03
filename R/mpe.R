@@ -20,18 +20,18 @@ mpe.example = function() {
 
   cbind(g$sdf$a.grid[[1]],g$sdf$trans.mat[[1]])
 
-  (mpe = get.mpe(g))
+  (mpe = get_mpe(g))
   mpe = g
 }
 
-get.mpe = function(g, extra.cols="ae", eq=g$mpe) {
-  get.eq(g, extra.cols=extra.cols, eq=eq)
+get_mpe = function(g, extra.cols="ae", eq=g$mpe) {
+  get_eq(g, extra.cols=extra.cols, eq=eq)
 }
 
 #' Tries to find a MPE by computing iteratively best replies
 #'
 #' Returns a game object that contains the mpe.
-#' Use the function get.mpe to retrieve a data frame that describes the MPE.
+#' Use the function get_mpe to retrieve a data frame that describes the MPE.
 #'
 #' @param g the game
 #' @param delta the discount factor

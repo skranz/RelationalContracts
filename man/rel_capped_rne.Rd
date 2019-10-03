@@ -2,7 +2,7 @@
 % Please edit documentation in R/rne_capped.R
 \name{rel_capped_rne}
 \alias{rel_capped_rne}
-\title{Solve an RNE for a capped version of a multistage game}
+\title{Solve an RNE for a capped version of a game}
 \usage{
 rel_capped_rne(g, T, tol = 1e-10, delta = g$param$delta,
   rho = g$param$rho, adjusted.delta = NULL, res.field = "eq",
@@ -11,6 +11,11 @@ rel_capped_rne(g, T, tol = 1e-10, delta = g$param$delta,
   add.iterations = FALSE, save.history = FALSE, add.stationary = FALSE,
   T.rne = FALSE, spe = NULL)
 }
+\arguments{
+\item{g}{The game}
+
+\item{T}{The number of periods in which new negotiations can take place.}
+}
 \description{
-Solve an RNE for a capped version of a multistage game
+In a capped version of the game we assume that after period T the state cannot change anymore and always stays the same. I.e. after T periods players play a repeated game. For a given T a capped game has a unique RNE payoff. Also see \code{\link{rel_T_rne}}.
 }

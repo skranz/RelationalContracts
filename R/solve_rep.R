@@ -37,7 +37,7 @@ rel_solve_repgames = function(g,x=g$sdf$x, overwrite=FALSE, rows=match(x, g$sdf$
 #'
 #' Returns for all discount factors the optimal simple strategy profiles
 #' maximum joint payoffs and punishment profiles
-get.repgames.results = function(g, action.details=TRUE, delta=g$param$delta, rho=g$param$rho) {
+get_repgames_results = function(g, action.details=TRUE, delta=g$param$delta, rho=g$param$rho) {
   if (is.null(g$rep.games.df)) {
     stop("Please first call rel_solve_repgames")
   }

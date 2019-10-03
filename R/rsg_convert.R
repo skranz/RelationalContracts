@@ -1,5 +1,7 @@
 make.rsg.game = function(g, delta=g$param$delta) {
   restore.point("make.rsg.game")
+  if (!g$is_compiled) g = rel_compile(g)
+
   nx = NROW(g$sdf)
   xrow = 1
   states = lapply(1:nx, function(xrow) {
@@ -33,7 +35,8 @@ plot.rsg.payoff.set = function(rsg.sol, xrow = 1, all.iter=FALSE,  main=paste0("
   state = xrow
 
   #old.par = par()
-  par(mar=c(4,4,1,1))
+  if (!add)
+    par(mar=c(4,4,1,1))
 
   if (all.iter){
     ipoints = rsg.sol$ipoints[[state]]
@@ -43,8 +46,9 @@ plot.rsg.payoff.set = function(rsg.sol, xrow = 1, all.iter=FALSE,  main=paste0("
     xlim = range(rsg.sol$points[[state]][,1])
     ylim = range(rsg.sol$points[[state]][,2])
   }
-  if (!add)
+  if (!add) {
     plot(xlim,ylim, col="white", type="s", xlim=xlim,ylim=ylim,xlab="u1",ylab="u2")
+  }
   if (all.iter) {
     points(ipoints,col="grey",lty=2)
   }

@@ -11,7 +11,7 @@ examples.rne_capped = function() {
     rel_compile() %>%
     rel_capped_rne(T=20,adjusted.delta = 0.51, rho=0.4, save.history = TRUE)
 
-  animate.capped.rne.history(g,x=NULL)
+  animate_capped_rne_history(g,x=NULL)
 
   (rne=g$eq)
   (hist=g$eq.history)
@@ -32,7 +32,6 @@ examples.rne_capped = function() {
 
   g = rel_rne_from_capped(g)
 
-  capped.rne.history.animation(g)
   (rne=g$eq)
 
 
@@ -56,33 +55,31 @@ examples.rne_capped = function() {
     rel_compile()
 
   g = rel_solve_repgames(g,use.repgame.package = TRUE)
-  get.repgames.results(g, delta=g$param$delta, rho=g$param$rho)
+  get_repgames_results(g, delta=g$param$delta, rho=g$param$rho)
 
 
 
 
   g = rel_rne(g, delta=0.9, rho=0.92)
-  rne=get.eq(g)
+  rne=get_eq(g)
 
 
   g = rel_capped_rne(g,T=50, delta=0.9, rho=0.91,use.cpp=FALSE, save.history = TRUE)
-  rne2= get.eq(g)
+  rne2= get_eq(g)
   g = rel_rne_from_capped(g)
-  rne3 = get.eq(g)
+  rne3 = get_eq(g)
   res = bind_rows(rne,rne2, rne3)
 
 
   g = rel_solve_repgames(g)
-  get.repgames.results(g, delta=g$param$delta, rho=g$param$rho)
-
-  capped.rne.history.animation(g)
+  get_repgames_results(g, delta=g$param$delta, rho=g$param$rho)
 
 
   g = rel_rne_from_capped(g)
-  spe = get.eq(g)
+  spe = get_eq(g)
 
   hist = g$eq.history
-  de = get.rne.details(g, x="xL")
+  de = get_rne_details(g, x="xL")
 
 
   g = rel_game("Simple Principal Agent Game") %>%
@@ -170,20 +167,20 @@ arms.race.example = function() {
     rel_compile() %>%
     rel_capped_rne(T=100)
 
-  rne1 = get.eq(g)
+  rne1 = get_eq(g)
   g = rel_rne_from_eq_actions(g, iterations=2)
-  rne2 = get.eq(g)
+  rne2 = get_eq(g)
   g = rel_rne_from_eq_actions(g)
-  rne3 = get.eq(g)
+  rne3 = get_eq(g)
 
-  compare.eq(rne2,rne3)
+  compare_eq(rne2,rne3)
 
   res = bind_rows(rne1, rne2, rne3)
 
   #rne = g$eq %>% filter(t<max(g$eq$t), t==1)
   #rne
 
-  de = get.rne.details(g)
+  de = get_rne_details(g)
   d = filter(de, t==1, x=="0_0")
 
 
@@ -201,12 +198,22 @@ arms.race.example = function() {
   View(rne)
 }
 
-
+#' Compute a T-RNE
+#'
+#' The idea of a T-RNE is that only for a finite number of T periods relational contracts will be newly negoatiated. After T periods no new negotiations take place, i.e. every SPE continuation payoff can be implemented. For fixed T there is a unique RNE payoff.
+#'
+#' @param g The game
+#' @param T The number of periods in which new negotiations can take place.
 rel_T_rne = function(g,T, tol=1e-10,  delta=g$param$delta, rho=g$param$rho, adjusted.delta=NULL, res.field="eq", tie.breaking=c("equal_r", "slack","random","first","last","max_r1","max_r2")[1], use.cpp=TRUE, save.details=FALSE, add.iterations=FALSE, save.history=FALSE, add.stationary=FALSE, T.rne=TRUE, spe=g[["spe"]]) {
   rel_capped_rne(g,T, tol,  delta, rho, adjusted.delta, res.field, tie.breaking, use.cpp, save.details, add.iterations, save.history, add.stationary, T.rne, spe)
 }
 
-#' Solve an RNE for a capped version of a multistage game
+#' Solve an RNE for a capped version of a game
+#'
+#' In a capped version of the game we assume that after period T the state cannot change anymore and always stays the same. I.e. after T periods players play a repeated game. For a given T a capped game has a unique RNE payoff. Also see \code{\link{rel_T_rne}}.
+#'
+#' @param g The game
+#' @param T The number of periods in which new negotiations can take place.
 rel_capped_rne = function(g,T, tol=1e-10,  delta=g$param$delta, rho=g$param$rho, adjusted.delta=NULL, res.field="eq", tie.breaking=c("equal_r", "slack","random","first","last","max_r1","max_r2")[1], use.cpp=TRUE, save.details=FALSE, add.iterations=FALSE, save.history=FALSE, add.stationary=FALSE, T.rne=FALSE, spe=NULL) {
   restore.point("rel_capped_rne")
   if (!g$is_compiled) g = rel_compile(g)
@@ -649,16 +656,16 @@ compute.after.cap.action.inds = function(g) {
 
 
 
-#' Solve an RNE for a capped version of the game
-#'
-#' Once the capped version of the game reaches period T,
-#' the state cannot change anymore.
-#' We can solve such capped games via a fast backward induction
-#' algorithm. There always exists a unique RNE payoff.
-#'
-#' @param g The game object
-#' @param T The number of periods until states can change
-#' @param save.details If yes, detailed information about the equilibrium for each state and period will be stored in g and can be retrieved via the function get.rne.details
+# Solve an RNE for a capped version of the game
+#
+# Once the capped version of the game reaches period T,
+# the state cannot change anymore.
+# We can solve such capped games via a fast backward iduction
+# algorithm. There always exists a unique RNE payoff.
+#
+# @param g The game object
+# @param T The number of periods until states can change
+# @param save.details If yes, detailed information about the equilibrium for each state and period will be stored in g and can be retrieved via the function get_rne_details
 rel_capped_rne_old = function(g,T, save.details=FALSE, tol=1e-10,  delta=g$param$delta, rho=g$param$rho, adjusted.delta=NULL, res.field="rne", tie.breaking=c("slack","random","first","last")[1], use.cpp=TRUE) {
   restore.point("rel_capped_rne_old")
   if (!g$is_compiled) g = rel_compile(g)

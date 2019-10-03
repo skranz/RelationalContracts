@@ -30,7 +30,7 @@ brinkmanship.fixed.point = function() {
     g = rel_spe(g, rho = rho, r1=c(r1,0),r2=c(r2,0))
 
     r1_inp = r1
-    get.spe(g) %>%
+    get_spe(g) %>%
       filter(x=="x0") %>%
       transmute(rho=rho,r1_inp = r1_inp, r1_out=r1, U=U, v2=v2)
   })
@@ -57,12 +57,12 @@ brinkmanship = function() {
 
   g = g %>% rel_T_rne(T=83, save.history = TRUE, use.cpp=TRUE, T.rne=TRUE, tie.breaking = "slack", save.details = TRUE)
 
-  get.spe(g)
-  get.eq(g)
+  get_spe(g)
+  get_eq(g)
   hist = g$eq.history %>% filter(x=="x0")
   hist = add.action.details(g,hist)
 
-  det = get.rne.details(g)
+  det = get_rne_details(g)
 
   det83 = det
   det81 = det
@@ -72,7 +72,7 @@ brinkmanship = function() {
 
   which(hist$a2.reveal>0)
 
-  animate.capped.rne.history(g,x=NULL)
+  animate_capped_rne_history(g,x=NULL)
 
 
 }

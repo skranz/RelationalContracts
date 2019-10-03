@@ -77,16 +77,16 @@ examples.multistage.spe.trunc = function() {
 
   g = rel_spe(g, delta=0.9)
 
-  eq = get.eq(g)
+  eq = get_eq(g)
   spe = solve.trunc.spe(g)
 
   g = g %>%  rel_capped_rne(T=20, delta=0.9, rho=0.4, save.history = FALSE, use.cpp = TRUE, add.stationary = TRUE, save.details = TRUE)
   eq = g$eq
   eq$r_lab = paste0(round(eq$r1)," ", round(eq$r2),"\n", eq$ae.lab)
   ggplot(eq, aes(x=x1,y=x2, fill=stationary)) + geom_raster(interpolate=FALSE) + geom_label(aes(label=r_lab), fill="white", alpha=0.5, size=3, label.padding=unit(0.1,"lines"))
-  rne.diagram(g, just.eq.chain = !TRUE)
+  eq_diagram(g, just.eq.chain = !TRUE)
 
-  det = get.rne.details(g, x="100_0")
+  det = get_rne_details(g, x="100_0")
 }
 
 examples.spe.trunc = function() {
@@ -102,7 +102,7 @@ examples.spe.trunc = function() {
 
   g$param$delta = 0.6
   g = rel_spe(g, verbose=!TRUE)
-  (spe = get.eq(g))
+  (spe = get_eq(g))
 }
 
 

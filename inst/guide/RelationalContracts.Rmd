@@ -78,7 +78,7 @@ The SPE payoff set is computed using the algorithms described in our articles Go
 Not only are there many possible equilibrium payoffs but most payoffs can be implemented with many different equilibria (i.e. different strategy profiles). Yet, as described in our articles, it sufficies to find a particular *optimal simple strategy profile* to find the whole SPE payoff set. The following code gives a summary of this strategy profile:
 
 ```{r}
-get.spe(g,action.details = TRUE) %>%
+get_spe(g,action.details = TRUE) %>%
   select("ae.e", "a1.e","U","v1","v2")
 ```
 Let us first understand Pareto-optimal subgame perfect equilibria. On the equilibrium path, the agent will always choose the effort level `ae.e=0.39`. This is the highest incentive compatible effort level given the earlier specified discount factor `delta=0.2`. The results don't show the payments that take place on the equilibrium path. But it follows from the theoretical results that in this game it is easiest (i.e. possible for the largest range of discount factors) to implement a desired effort level if the principal reimburses the agent his cost of the equilbrium effort. You can think of this payment as a bonus payment for the effort.
@@ -119,7 +119,7 @@ g = rel_game("Principal-Agent Game with Exogenous Vulnerability") %>%
   # Solve set of SPE payoffs
   rel_spe(delta=0.2)
 
-get.spe(g,action.details = TRUE) %>%
+get_spe(g,action.details = TRUE) %>%
   select("x", "ae.e", "U","v1","v2")
 ```
 
@@ -137,7 +137,7 @@ g = rel_solve_all_repgames(g)
 
 # Show results where first best effort
 # ae.e==1 is implemented
-get.repgames.results(g) %>% 
+get_repgames_results(g) %>% 
   filter(ae.e==1) %>%
   select(x, delta_min, ae.e,U,v1=v1_rep, v2=v2_rep)
 ```
@@ -193,7 +193,7 @@ Before showing the results for the discount factr $\delta = 0.2$, I would like t
 
 Ok, let's take a look at the results:
 ```{r}
-get.spe(g,action.details = TRUE) %>%
+get_spe(g,action.details = TRUE) %>%
   select("x", "ae.move", "ae.e", "U","v1","v2")
 ```
 

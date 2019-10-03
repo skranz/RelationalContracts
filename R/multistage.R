@@ -77,7 +77,7 @@ examples.multistage = function() {
     times=1
   )
 
-  rne.diagram(g,just.eq.chain = TRUE)
+  eq_diagram(g,just.eq.chain = TRUE)
   (rne = g[["eq"]])
 }
 
@@ -345,7 +345,8 @@ r.capped.rne.multistage.iterations = function(T, g, rne, tie.breaking, delta=g$p
 
 
 
-#' Solve an RNE for a capped version of a multistage game
+# Solve an RNE for a capped version of a multistage game
+# Old version
 rel.capped.rne.multistage.old = function(g,T, save.details=FALSE, tol=1e-10,  delta=g$param$delta, rho=g$param$rho, res.field="eq", tie.breaking=c("slack","random","first","last")[1], add=TRUE, keep.all.t=FALSE) {
   restore.point("rel.capped.rne.multistage")
   if (!g$is_compiled) g = rel_compile(g)

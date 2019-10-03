@@ -76,26 +76,26 @@ arms.race.example = function() {
     rel_compile() %>%
     rel_capped_rne(T=1000)
 
-  rne = get.eq(g)
+  rne = get_eq(g)
   #g = rel_rne_from_eq_actions(g, iterations=10)
 
-  rne.diagram(g, show.own.loop = !TRUE, just.eq.chain = !TRUE)
-  rne.diagram(g, show.own.loop = TRUE, just.eq.chain = !TRUE, label.fun = function(rne,...)  paste0(rne$x1, " ", rne$x2))
+  eq_diagram(g, show.own.loop = !TRUE, just.eq.chain = !TRUE)
+  eq_diagram(g, show.own.loop = TRUE, just.eq.chain = !TRUE, label.fun = function(rne,...)  paste0(rne$x1, " ", rne$x2))
 
-  res = rne.diagram(g, show.own.loop = FALSE, just.eq.chain = !TRUE, return.dfs = TRUE, label.fun = function(rne,...)  paste0(rne$x1, " ", rne$x2), passive.edge.color = "#FFFFFF")
+  res = eq_diagram(g, show.own.loop = FALSE, just.eq.chain = !TRUE, return.dfs = TRUE, label.fun = function(rne,...)  paste0(rne$x1, " ", rne$x2), passive.edge.color = "#FFFFFF")
   ndf = res$ndf; edf = res$edf
   ndf$value = 5
   render_graph(create_graph(ndf, edf), output="visNetwork")
 
 
-  compare.eq(rne2,rne3)
+  compare_eq(rne2,rne3)
 
   res = bind_rows(rne1, rne2, rne3)
 
   #rne = g$eq %>% filter(t<max(g$eq$t), t==1)
   #rne
 
-  de = get.rne.details(g)
+  de = get_rne_details(g)
   d = filter(de, t==1, x=="0_0")
 
 
@@ -189,9 +189,9 @@ arms.race.destroy.example = function() {
     rel_compile() %>%
     rel_capped_rne(T=1000)
 
-  rne = get.eq(g)
+  rne = get_eq(g)
 
-  df.li = rne.diagram(g, show.own.loop = !TRUE, just.eq.chain = !TRUE, return.dfs = TRUE, passive.edge.width = 0)
+  df.li = eq_diagram(g, show.own.loop = !TRUE, just.eq.chain = !TRUE, return.dfs = TRUE, passive.edge.width = 0)
   edf = df.li$edf
   ndf = left_join(df.li$ndf, rne, by="x")
   ndf = ndf %>% mutate(
@@ -204,4 +204,4 @@ arms.race.destroy.example = function() {
 
 
 
-  rne.diagram(g, show.own.loop = !TRUE, just.eq.chain = TRUE)
+  eq_diagram(g, show.own.loop = !TRUE, just.eq.chain = TRUE)

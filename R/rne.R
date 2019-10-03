@@ -14,7 +14,7 @@ example.rne = function() {
     rel_compile() %>%
     rel_rne()
 
-  (rne = get.rne(g))
+  (rne = get_rne(g))
   (g$eq)
 
 
@@ -50,7 +50,7 @@ example.rne = function() {
   (rne=g$eq)
   g$sdf$trans.mat
 
-  de = get.rne.details(g)
+  de = get_rne_details(g)
 
   e = e.seq = seq(0,1, by=0.1); xL=0; xH=0.1;
 
@@ -70,7 +70,7 @@ example.rne = function() {
   cat(rel_to_mermaid_code(g))
 
   g = rel_rne(g)
-  (rne = get.rne(g))
+  (rne = get_rne(g))
   rne
 
 
@@ -98,7 +98,7 @@ example.rne = function() {
     rel_compile() %>%
     rel_rne()
 
-  rne.diagram(g)
+  eq_diagram(g)
 
   g = rel_rne(g)
 
@@ -120,7 +120,7 @@ example.rne = function() {
     rel_compile() %>%
     rel_capped_rne(T=10)
 
-  (rne = get.rne(g,TRUE))
+  (rne = get_rne(g,TRUE))
 
 
   g = rel_game("Blackmailing Game") %>%
@@ -147,20 +147,20 @@ example.rne = function() {
 
 #' Get the last computed SPE of game g
 #' @export
-get.spe = function(g, extra.cols="ae", eq=g[["spe"]]) {
-  get.eq(g, extra.cols, eq)
+get_spe = function(g, extra.cols="ae", eq=g[["spe"]]) {
+  get_eq(g, extra.cols, eq)
 }
 
 #' Get the last computed RNE of game g
 #' @export
-get.rne = function(g, extra.cols="ae", eq=g[["rne"]]) {
-  get.eq(g, extra.cols, eq)
+get_rne = function(g, extra.cols="ae", eq=g[["rne"]]) {
+  get_eq(g, extra.cols, eq)
 }
 
 #' Get the last computed equilibrium of game g
 #' @export
-get.eq = function(g, extra.cols="ae", eq=g[["eq"]]) {
-  restore.point("get.eq")
+get_eq = function(g, extra.cols="ae", eq=g[["eq"]]) {
+  restore.point("get_eq")
 
   if (length(extra.cols)>0 & !isTRUE(g$is.multi.stage)) {
     ax.add = g$sdf$lag.cumsum.na
@@ -223,8 +223,8 @@ add.action.details = function(g,eq, action.cols=c("ae","a1","a2"), ax.grid=g$ax.
 
 #' Retrieve more details about a computed RNE
 #' @export
-get.rne.details = function(g, x=NULL) {
-  restore.point("get.rne.details")
+get_rne_details = function(g, x=NULL) {
+  restore.point("get_rne_details")
 
   if (is.null(g$eq.details)) {
     message("No details have been saved. Use the argument save.details=TRUE in your call to rel_rne or rel_capped_rne.")
