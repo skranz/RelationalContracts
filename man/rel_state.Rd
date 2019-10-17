@@ -12,9 +12,9 @@ rel_state(g, x, A1 = list(a1 = ""), A2 = list(a2 = ""), pi1 = NULL,
 
 \item{x}{The name of the state}
 
-\item{A1}{The action set of player 1. Can be a numeric or character vector}
+\item{A1}{The action set of player 1. Can be a numeric or character vector (possible a formula creating one).}
 
-\item{A2}{The action set of player 2. Can be a numeric or character vector}
+\item{A2}{The action set of player 2. Can be a numeric or character vector  (possible a formula creating one).}
 
 \item{pi1}{Player 1's payoff. Value(s) or formula}
 

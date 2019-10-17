@@ -542,7 +542,8 @@ capped.rne.period.T = function(g, delta=g$param$delta, rho=g$param$rho, T.rne=FA
   need.rep.x = intersect(sdf$x, xT)
   if (length(need.rep.x)>0) {
     rep.df = g$rep.games.df %>%
-      filter(x %in% need.rep.x, adj_delta >= delta_min, adj_delta < delta_max) %>%
+      filter(x %in% need.rep.x, round(adj_delta,15) >= round(delta_min,15), round(adj_delta,15) <round(delta_max,15)) %>%
+      #filter(x %in% need.rep.x, adj_delta >= delta_min, adj_delta < delta_max) %>%
       mutate(
         v1 = w*v1_rep + (1-w)*r1,
         v2 = w*v2_rep + (1-w)*r2
@@ -707,7 +708,8 @@ rel_capped_rne_old = function(g,T, save.details=FALSE, tol=1e-10,  delta=g$param
 
     # Compute U, v, r
     rep = sdf$rep[[row]] %>%
-      filter(adj_delta >= delta_min, adj_delta < delta_max)
+      filter(round(adj_delta,15) >= round(delta_min,15), round(adj_delta,15) < round(delta_max,15))
+      #filter(adj_delta >= delta_min, adj_delta < delta_max)
 
 
     rne$U[row] = rep$U

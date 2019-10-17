@@ -2,10 +2,10 @@
 % Please edit documentation in R/rne.R
 \name{get_rne_details}
 \alias{get_rne_details}
-\title{Retrieve more details about a computed RNE}
+\title{Retrieve more details about the last computed RNE}
 \usage{
 get_rne_details(g, x = NULL)
 }
 \description{
-Retrieve more details about a computed RNE
+Retrieve more details about the last computed RNE
 }

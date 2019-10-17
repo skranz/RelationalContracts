@@ -4,7 +4,7 @@
 \alias{get_eq}
 \title{Get the last computed equilibrium of game g}
 \usage{
-get_eq(g, extra.cols = "ae", eq = g[["eq"]])
+get_eq(g, extra.cols = "ae", eq = g[["eq"]], add.vr = FALSE)
 }
 \description{
 Get the last computed equilibrium of game g

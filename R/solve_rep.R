@@ -48,7 +48,9 @@ get_repgames_results = function(g, action.details=TRUE, delta=g$param$delta, rho
   }
   if (!is.null(delta)) {
     adj.delta = delta*(1-rho)
-    res = filter(res, adj.delta >= delta_min, adj.delta < delta_max)
+    res = filter(res, round(adj_delta,15) >= round(delta_min,15), round(adj_delta,15) < round(delta_max,15))
+
+    #res = filter(res, adj.delta >= delta_min, adj.delta < delta_max)
   }
   res
 }

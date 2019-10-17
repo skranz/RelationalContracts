@@ -67,7 +67,7 @@ Note that we always specfiy action sets and payoffs for a particular state. Whil
 The following code finds all subgame perfect equilibrium (SPE) payoffs of our repeated game given a discount factor of $\delta=0.2$ and shows this payoff set:
 ```{r fig.width=5, fig.height=5}
 g = rel_spe(g,delta=0.2)
-plot.spe.payoff.set(g)
+plot_eq_payoff_set(g)
 ```
 
 Following the usual convention in the repeated games literature, the SPE payoffs are average discounted payoffs. This means one multiplies the sum of discounted payoffs by $1-\delta$. Average discounted payoffs are on the same scale as stage game payoffs. In particular, if a player gets every period the same payoff $\pi_1$, also her average discounted payoff $u_1$ will be equal to $\pi_1$. That is because we then have
@@ -146,7 +146,7 @@ Looking at the column `delta_min`, we see that in the original game (state `x0`)
 
 The following code shows the complete sets of SPE payoffs for the two different states for the fixed discount factor $delta=0.2$:
 ```{r}
-plot.spe.payoff.set(g,x=c("xVul","x0"))
+plot_eq_payoff_set(g,x=c("xVul","x0"))
 ```
 
 We see that every SPE payoff in the state `x0` (red area) is Pareto-dominated by some SPE payoff in the state `xVul` (blue area) where the principal is vulnerable. However, only because both players *can* have a strictly higher payoff in state `xVul` than in state `x0`, it might well be that the the principal is worse off in state `xVul`. We see that in state `xVul` there are a lot of SPE payoffs that are much worse for the principal than her lowest payoff in state `x0`.

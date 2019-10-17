@@ -14,9 +14,9 @@ examples.rel.spe = function() {
   g = rel_spe(g)
   (spe = g$eq)
 
-  plot.spe.payoff.set(g,x=c("xH","xL"), alpha=0.8)
+  plot_eq_payoff_set(g,x=c("xH","xL"), alpha=0.8)
 
-  plot.spe.payoff.set(g,x=c("xL"), alpha=0.8)
+  plot_eq_payoff_set(g,x=c("xL"), alpha=0.8)
 
   g = rel_game("Two-State PD") %>%
     rel_param(delta=0.99, rho=0) %>%
@@ -36,7 +36,7 @@ examples.rel.spe = function() {
   g = rel_spe(g)
   (spe = g$eq)
 
-  plot.spe.payoff.set(g,x=c("x1","x2"))
+  plot_eq_payoff_set(g,x=c("x1","x2"))
 
   g = rel_rne(g)
   (rne = g$eq)
@@ -85,7 +85,8 @@ rep.games.to.rne.df = function(g, delta=g$param$delta, rho=g$param$rho, rows=whi
 
   li = lapply(rows, function(row) {
     rep = sdf$rep[[row]] %>%
-      filter(adj_delta >= delta_min, adj_delta < delta_max) %>%
+      filter(round(adj_delta,15) >= round(delta_min,15), round(adj_delta,15) < round(delta_max,15)) %>%
+      #filter(adj_delta >= delta_min, adj_delta < delta_max) %>%
       select(r1,r2,U,v1=v1_rep,v2=v2_rep,ae,a1,a2)
   })
   res = bind_rows(li)

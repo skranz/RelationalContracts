@@ -15,15 +15,15 @@ rel_states(g, x, A1 = NULL, A2 = NULL, pi1 = NULL, pi2 = NULL,
 
 \item{x}{The names of the states}
 
-\item{A1}{The action set of player 1. Can be a numeric or character vector}
+\item{A1}{The action set of player 1. Can be a numeric or character vector (possible a formula creating one)}
 
-\item{A2}{The action set of player 2. Can be a numeric or character vector}
+\item{A2}{The action set of player 2. Can be a numeric or character vector (possible a formula creating one)}
 
 \item{pi1}{Player 1's payoff. Value(s) or formula}
 
 \item{pi2}{Player 2's payoff. Values(s) or formula}
 
-\item{A.fun}{Alternative to specify fixed A1 and A2, a function that returns action sets}
+\item{A.fun}{Alternative to specify fixed A1 and A2, a function that returns action sets.}
 
 \item{pi.fun}{Alternative to specify pi1 and pi2 as formula, a function that returns for each state a data frame with with pi1 and pi2 and as many rows as action profiles}
 

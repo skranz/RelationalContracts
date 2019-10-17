@@ -430,8 +430,8 @@ rel_param = function(g,..., delta=non.null(param[["delta"]], 0.9), rho=non.null(
 #'
 #' @param g a relational contracting game created with rel_game
 #' @param x The name of the state
-#' @param A1 The action set of player 1. Can be a numeric or character vector
-#' @param A2 The action set of player 2. Can be a numeric or character vector
+#' @param A1 The action set of player 1. Can be a numeric or character vector (possible a formula creating one).
+#' @param A2 The action set of player 2. Can be a numeric or character vector  (possible a formula creating one).
 #' @param pi1 Player 1's payoff. Value(s) or formula
 #' @param pi2 Player 2's payoff. Values(s) or formula
 #' @param x.T Relevant when solving a capped game. Which terminal state shall be set in period T onwards. By default, we stay in state x.
@@ -443,7 +443,7 @@ rel_state = function(g, x,A1=list(a1=""),A2=list(a2=""), pi1=NULL, pi2=NULL, x.T
     x.df = x
     x = x.df$x
   } else {
-    x.df = NULL
+    x.df = tibble(x=x)
   }
   if (!is.null(x.df))
     g = add.to.rel.defs(g,"x_df_def", x.df)
@@ -467,9 +467,9 @@ rel_state = function(g, x,A1=list(a1=""),A2=list(a2=""), pi1=NULL, pi2=NULL, x.T
 #'
 #' @param g a relational contracting game created with rel_game
 #' @param x The names of the states
-#' @param A1 The action set of player 1. Can be a numeric or character vector
-#' @param A2 The action set of player 2. Can be a numeric or character vector
-#' @param A.fun Alternative to specify fixed A1 and A2, a function that returns action sets
+#' @param A1 The action set of player 1. Can be a numeric or character vector (possible a formula creating one)
+#' @param A2 The action set of player 2. Can be a numeric or character vector (possible a formula creating one)
+#' @param A.fun Alternative to specify fixed A1 and A2, a function that returns action sets.
 #' @param pi1 Player 1's payoff. Value(s) or formula
 #' @param pi2 Player 2's payoff. Values(s) or formula
 #' @param pi.fun Alternative to specify pi1 and pi2 as formula, a function that returns for each state a data frame with with pi1 and pi2 and as many rows as action profiles
@@ -485,7 +485,7 @@ rel_states = function(g, x,A1=NULL, A2=NULL, pi1=NULL, pi2=NULL, A.fun=NULL, pi.
     x.df = x
     x = x.df$x
   } else {
-    x.df = NULL
+    x.df = tibble(x=x)
   }
   if (!is.null(x.df))
     g = add.to.rel.defs(g,"x_df_def", x.df)
@@ -633,8 +633,6 @@ rel_after_cap_actions = function(g,x=NA, ae, a1.hat,a2.hat, x.T=NA) {
   def = nlist(ae=list(ae),a1.hat=list(a1.hat),a2.hat=list(a2.hat),x=x,x.T=x.T)
   add.to.rel.defs(g,"after_cap_actions_defs",def)
 }
-
-
 
 print.relgame = function(g,...) {
   cat(paste0("\nRelational Contracting Game ", g$name))

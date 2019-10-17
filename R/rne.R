@@ -157,9 +157,19 @@ get_rne = function(g, extra.cols="ae", eq=g[["rne"]]) {
   get_eq(g, extra.cols, eq)
 }
 
+#' Scale equilibrium payoffs
+#'
+#' @param g the game for which an equilibrium was computed
+#' @param factor the factor by which the payoffs U,v1,v2,r1 and r2 are multiplied
+#' @param discounted.sum if TRUE the factor is set to 1/(1-delta). Equilibrium payoffs are then given as discounted sum of payoffs instead of average discounted payoffs.
+rel_scale_eq_payoffs = function(g, factor= if (discounted.sum) 1 / (1-g$param$delta) else 1, discounted.sum = FALSE) {
+  g$eq = scale.eq.payoffs(g[["eq"]], factor)
+  g
+}
+
 #' Get the last computed equilibrium of game g
 #' @export
-get_eq = function(g, extra.cols="ae", eq=g[["eq"]]) {
+get_eq = function(g, extra.cols="ae", eq=g[["eq"]], add.vr=FALSE) {
   restore.point("get_eq")
 
   if (length(extra.cols)>0 & !isTRUE(g$is.multi.stage)) {
@@ -196,6 +206,23 @@ get_eq = function(g, extra.cols="ae", eq=g[["eq"]]) {
       eq = bind_cols(eq,extra)
     }
   }
+
+  if (add.vr) {
+    rho = g$param$rho
+    eq$vr1 = rho*eq$r1 + (1-rho)*eq$v1
+    eq$vr2 = rho*eq$r2 + (1-rho)*eq$v2
+  }
+  eq
+}
+
+scale.eq.payoffs = function(eq, factor) {
+  eq = mutate(eq,
+    U = U*factor,
+    v1 = v1*factor,
+    v2 = v2*factor,
+    r1 = r1*factor,
+    r2 = r2*factor
+  )
   eq
 }
 
@@ -221,7 +248,7 @@ add.action.details = function(g,eq, action.cols=c("ae","a1","a2"), ax.grid=g$ax.
   res
 }
 
-#' Retrieve more details about a computed RNE
+#' Retrieve more details about the last computed RNE
 #' @export
 get_rne_details = function(g, x=NULL) {
   restore.point("get_rne_details")
@@ -276,8 +303,9 @@ rel_rne = function(g, delta=g$param$delta, rho=g$param$rho, adjusted.delta=NULL,
 
   for (row in rows) {
     # Compute U, v, r
+    # Round to 15 digits
     rep = sdf$rep[[row]] %>%
-      filter(adj_delta >= delta_min, adj_delta < delta_max)
+      filter(round(adj_delta,15) >= round(delta_min,15), round(adj_delta,15) <round(delta_max,15))
 
 
     rne$U[row] = rep$U

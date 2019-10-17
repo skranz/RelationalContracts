@@ -1,5 +1,19 @@
-plot.spe.payoff.set = function (g,x=eq$x[1],t=1,  eq=g[["eq"]], xlim=NULL, ylim=NULL, add=FALSE, colors=c("#377EB8","#E41A1C", "#4DAF4A", "#984EA3", "#FF7F00", "#FFFF33", "#A65628", "#F781BF"),plot.r=TRUE, alpha=0.8, black.border=TRUE, add.state.label=TRUE, add.xlim=NULL, add.ylim=NULL, extend.lim.perc=0.05, ...) {
-  restore.point("plot.spe.payoff.set")
+plot.rne.payoff.set = function(g, x=eq$x[1], eq = g[["rne"]],...) {
+  plot_eq_payoff_set(g=g,x=x, eq=eq,...)
+}
+
+#' Show a base R plot of equilibrium payoff set
+#'
+#' @param g The game object for which an equilibrium has been solved
+#' @param x A character vector of the state(s) for which the (continuation) equilibrium payoff set shall be shown. By default only the first stage.
+#' @param eq An equilibrium object. By default the last solved equilibrium.
+#' @param plot.r Shall negotiation payoffs be shown as a point on the Pareto-frontier (default = TRUE)
+#' @param xlim as in \code{\link{plot.default}}
+#' @param ylim as in \code{\link{plot.default}}
+#' @param add as in \code{\link{plot.default}} Setting \code{add=FALSE} can be useful to compare payoff sets of different games.
+#' @param alpha opacity of the fill color
+plot_eq_payoff_set = function (g,x=eq$x[1],t=1,  eq=if(use.vr) get_eq(g, add.vr=TRUE) else g[["eq"]], xlim=NULL, ylim=NULL, add=FALSE,plot.r=TRUE, alpha=0.8, black.border=TRUE, add.state.label=TRUE, colors=c("#377EB8","#E41A1C", "#4DAF4A", "#984EA3", "#FF7F00", "#FFFF33", "#A65628", "#F781BF"), add.xlim=NULL, add.ylim=NULL, extend.lim.perc=0.05,use.vr = FALSE, ...) {
+  restore.point("plot_eq_payoff_set")
   #old.par = par()
   #on.exit(suppressWarnings(par(old.par)))
   if (!add) {
@@ -15,8 +29,15 @@ plot.spe.payoff.set = function (g,x=eq$x[1],t=1,  eq=g[["eq"]], xlim=NULL, ylim=
     dat = dat[rows,]
   }
 
+  if (use.vr) {
+    dat$v1 = dat$vr1
+    dat$v2 = dat$vr2
+  }
+
   dat$u1.max = dat$U-dat$v2
   dat$u2.max = dat$U-dat$v1
+
+
 
   if (is.null(xlim)) {
     xlim = range(c(dat$v1, dat$u1.max, add.xlim))
@@ -32,8 +53,6 @@ plot.spe.payoff.set = function (g,x=eq$x[1],t=1,  eq=g[["eq"]], xlim=NULL, ylim=
     plot(xlim, ylim, col = "white", type = "s", xlim = xlim,
         ylim = ylim, xlab = "u1", ylab = "u2")
   }
-
-
 
   for (row in seq_len(NROW(dat))) {
     col = colors[row]

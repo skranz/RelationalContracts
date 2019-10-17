@@ -402,7 +402,7 @@ rel.capped.rne.multistage.old = function(g,T, save.details=FALSE, tol=1e-10,  de
 
     # Compute U, v, r
     rep = sdf$rep[[row]] %>%
-      filter(adj_delta >= delta_min, adj_delta < delta_max)
+      filter(round(adj_delta,15) >= round(delta_min,15), round(adj_delta,15) < round(delta_max,15))
 
     rne.U[row] = rep[1,"U"]
     rne.r1[row] = rep[1,"r1"]

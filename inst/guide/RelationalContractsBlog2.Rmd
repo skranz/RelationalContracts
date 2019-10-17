@@ -45,7 +45,7 @@ In an initial state `x_0` player 1 decides whether he wants to be permanently vu
 
 In states `x_vul` and `x_not` players play a variation of an infinitley repeated prisoners' dilemma. Each player can choose effort on a grid between 0 and 1 that benefits the other player but involves own cost. In state `x_vul` player 2 can also choose negative effort  at zero cost that reduces player 1 stage game payoff by `-vul=-1`.
 
-We have studied these two repeated games with exogenously given vulnerability already in the first part of the blog. Recall that vulnerability allows to implement higher effort levels (for $\delta=0.3$ we can implement $e_1=e_2=0.6$ without vulnerability bit $e_1=e_2=0.9$ with vulnerability):
+We have studied these two repeated games with exogenously given vulnerability already in the first part of the blog. Recall that vulnerability allows to implement higher effort levels (for $\delta=0.3$ we can implement $e_1=e_2=0.6$ without vulnerability but $e_1=e_2=0.9$ with vulnerability):
 ```{r}
 g = rel_spe(g)
 get_eq(g) %>%
@@ -55,7 +55,7 @@ get_eq(g) %>%
 
 Here are the sets of (average discounted) SPE continuation payoffs in states `x_vul` and `x_not`:
 ```{r}
-plot.spe.payoff.set(g,x = c("x_vul","x_not"))
+plot_eq_payoff_set(g,x = c("x_vul","x_not"))
 ```
 
 Here $u_1$ and $u_2$ denote player 1's and 2's payoffs respectively. Note that we assume for all games studied in this post that at the beginning of each period players can perform voluntary monetary transfers and that players are risk neutral. This causes SPE payoff sets to have such a simple triangular structure.
@@ -66,41 +66,39 @@ But our game starts in state `x_0` where player 1 can freely choose whether to b
 
 <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSd9eP9YjdWC3k8kFCHmS_dPhPS14_S-Oya1sNXUQbtWkEuuBw/viewform?embedded=true" width="640" height="703" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
 
-Let us take a look at player 1's move in the computed optimal simple equilibrium.
+Let us take a look at the computed optimal simple equilibrium.
 ```{r}
 get_eq(g) %>%
   select(x,ae.lab)
 ```
 
-We see that player 1 makes himself vulnerable. Indeed, one can show that in every Pareto-optimal SPE player 1 will make herself vulnerable. Why is player 1 willing to do that even though being vulnerable would put him in a bad position if the future of their relationship would be newly negotiated? The answer is simple that the concept of Pareto-optimal SPE assumes that relational contracts will not be newly negotiated in period 2 or at any time later during the relationship.
+We see from the first row that player 1 makes himself vulnerable in the initial state `x_0`. Indeed, one can show that in *every* Pareto-optimal SPE player 1 will make herself vulnerable. Why is player 1 willing to do that even though being vulnerable would put him in a bad position if the future of their relationship would be newly negotiated? The answer is simple that the concept of Pareto-optimal SPE assumes that relational contracts will not be newly negotiated in period 2 or at any time later during the relationship.
 
-In particular any implicit or explicit threats by player 2 of the form, "Give me more money or I will exploit your vulnerability and hurt you!", are futile by assumption. The incentive constraints imposed by subgame perfection are weak enough to allow players to coordinate one ignoring such threats. While players can agree on punishment that uses player 1's vulnerability should he deviate from cooperative behavior on the equilibrium path, players can also agree to never exploit the vulnerability otherwise.
+In particular any implicit or explicit threats by player 2 of the form, "Give me more money or I will exploit your vulnerability and hurt you!", are futile by assumption. The incentive constraints imposed by subgame perfection are weak enough to allow players to coordinate to ignore such threats. While players can agree on punishment that uses player 1's vulnerability should he deviate from cooperative behavior on the equilibrium path, players can also agree to never exploit the vulnerability otherwise. Is this prediction plausible? In my opinion not.
 
 In our recent paper, my co-author Susanne Goldluecke and me refer to the prediction that player 1 makes himself vulnerable in every Pareto-optimal SPE as the *Vulnerability Paradox* of Pareto-optimal SPE.
 
-We introduce an new concept called Repeated Negotiation Equilibrium (RNE). The key idea is that parties from time to time newly negotiate the terms of their relationship. While past agreements are not automatically void after one period, current relative bargaining positions do matter and shape current and future interactions.
+We introduce an new concept called *Repeated Negotiation Equilibrium* (RNE). The key idea is that parties from time to time newly negotiate the terms of their relationship. While past agreements are not automatically void after one period, current relative bargaining positions do matter and shape current and future interactions.
 
-To formalize this idea in a tractable fashion, we assume that there is an exogenous probability $\rho \in [0,1]$ that an existing relational contract is newly negotiated at the beginning of a period. If there is a new negotiation continuation payoffs are selected via Nash bargaining given the set of continuation payoffs (accounting for future negotation payoffs and taking the lower left point as disagreement point).
+To formalize this idea in a tractable fashion, we assume that there is an exogenous probability $\rho \in [0,1]$ that an existing relational contract is newly negotiated at the beginning of a period. If there is a new negotiation, continuation payoffs are selected via [Nash bargaining](https://en.wikipedia.org/wiki/Bargaining_problem) given the set of continuation payoffs (accounting for future negotation payoffs and taking the lower left point as disagreement point).
 
-Consider the case in our example that player 1 made himself vulnerable. If new negotiations take place, player 1 then suffers from his weak bargaining position. Yet, as long as no new negotiations take place players can stick to an agreement not to exploit player 1 weaker bargaining position. So in a sense for some random time (that is the longer the lower is the new negotiation probability $\rho$) player 1's vulnerability will not be exploited but at some point of time the relationship will be newly negotiated and the vulnerability then harms player 1. 
+Consider the case in our example that player 1 made himself vulnerable. If new negotiations take place, player 1 then suffers from his weak bargaining position. Yet, as long as no new negotiations take place, players can stick to an agreement not to exploit player 1 weaker bargaining position. So in a sense for some random time (that takes longer in expectation for lower negotiation probabilities $\rho$) player 1's vulnerability will not be exploited but at some point of time the relationship will be newly negotiated and the vulnerability then harms player 1. 
 
-The following code solves our game for a high and low negotiation probability:
+The following code solves our game first for a high and then for a low negotiation probability:
 ```{r}
 rel_rne(g,adjusted.delta = 0.3, rho=0.5) %>%
   get_eq() %>%
-  select(x,ae.lab) %>%
-  filter(x == "x_0")
-
+  select(x,ae.lab)
 rel_rne(g,adjusted.delta = 0.3, rho=0.1) %>%
   get_eq() %>%
-  select(x,ae.lab) %>%
-  filter(x == "x_0")
+  select(x,ae.lab)
 ```
-We see that the player makes herself vulnerable only under the low negotiation probability. Under a high negotiation probability it just happens too soon that player 1 will suffer from his weak bargaining position after he made himself vulnerable.
 
-In the corner case of a zero negotiation probability ($\rho=0$) an RNE is simply a Pareto-optimal SPE. The opposite corner case of ($\rho=1$) means the relational contract will be newly negotiated every period. This means there is no scope for relational contracting since informal past agreements are always ignored. This is essentially the behavioral assumptions of [hold-up models](https://en.wikipedia.org/wiki/Hold-up_problem). The crucial element of hold-up is that the terms of the relationship will be newly negotiated after some long term decisions have been made. Traditionally, hold-up models look at investments as long term decisions, but a long term decisions to make oneself more vulnerable can similarly lead to hold up. In our paper, we discuss in detail how our model combines the relational contracting and hold-up literatures and provides intuitive insights that don't arise in these corner cases.
+We see from the rows corresponding to state `x_0` that player 1 makes himself vulnerable only under the low negotiation probability. Under a high negotiation probability it just happens too soon that player 1 will suffer from his weak bargaining position after he made himself vulnerable.
 
-You may wonder why in the code above, we have specified an adjusted discunt factor `adjusted.delta` instead of a discount factor `delta`. The reason is that in repeated games, i.e. games with a single unchanging state, a positive negotiation probability is essentially equivalent to a lower discount factor. For example, if we have a discount factor of $\delta=0.7$ and a negotiation probability of $\rho=0.4$, the game has the same equilibria as if we had an adjusted discount factor of $$\hat \delta = \delta (1-\rho) = 0.42$$. I often prefer comparative statics where I keep the adjusted discount factor constant when changing the negotiation probability.
+In the corner case of a zero negotiation probability ($\rho=0$) an RNE is simply a Pareto-optimal SPE. The opposite corner case of ($\rho=1$) means the relational contract will be newly negotiated every period. This means there is no scope for relational contracting since informal past agreements are always ignored. This is essentially the behavioral assumptions of [hold-up models](https://en.wikipedia.org/wiki/Hold-up_problem). The crucial element of hold-up is that the terms of the relationship will be newly negotiated after some long term decisions have been made. Traditionally, hold-up models study long-term investments, but a long term decisions to make oneself more vulnerable can similarly lead to hold up. In our paper, we discuss in detail how our model combines the relational contracting and hold-up literatures and provides intuitive insights that don't arise in these corner cases.
+
+You may wonder why in the code above, we have specified an adjusted discunt factor `adjusted.delta` instead of a discount factor `delta`. The reason is that in repeated games, i.e. games with a single unchanging state, a positive negotiation probability is essentially equivalent to a lower discount factor. For example, if we have a discount factor of $\delta=0.7$ and a negotiation probability of $\rho=0.4$, the game has the same equilibria as if we had an adjusted discount factor of $$\hat \delta = \delta (1-\rho) = 0.42.$$ I often prefer comparative statics where I keep the adjusted discount factor constant when changing the negotiation probability.
 
 ## Gradually intensifying relationship
 
@@ -181,9 +179,10 @@ g = rel_game("Intensifying Relationship Game") %>%
   rel_param(x.seq=x.seq, e.seq=seq(0,1,by=0.05)) %>%
   rel_states(x.df,A.fun=A.fun,static.A.fun=static.A.fun, pi1=0, pi2=0, vec.static.pi.fun=vec.static.pi.fun, vec.trans.fun=vec.trans.fun)
 ```
-Note that the calls to `restore.point` at the beginning of the custom functions like `vec.trans.fun`, are not neccessary, but I find them very helpful when when developing and debugging games. For usage, take a look the restore point [vignette](https://cran.r-project.org/web/packages/restorepoint/vignettes/Guide_restorepoint.html). 
 
-The following code an optimal simple SPE the game for a discount factor of $\delta=0.25$.
+It is easy to make mistakes when writing these functions, in particular `vec.trans.fun` that determines state transitions. When developing these functions, I want to debug them and take a look at their arguments, like `ax.df` and the computed results. You could do this via the `debug` function, e.g. call `debug(vec.trans.fun)` before specifiying the game. Personally, I prefer to use restore points instead. That is why you see the call to `restore.point` at the beginning of each function. For usage, take a look the restore point [vignette](https://cran.r-project.org/web/packages/restorepoint/vignettes/Guide_restorepoint.html). 
+
+The following code finds an optimal simple SPE (and thereby the whole SPE payoff set) for a discount factor of $\delta=0.25$.
 ```{r}
 g = rel_spe(g, delta=0.25)
 ```
@@ -206,16 +205,74 @@ Why does not a player decide to deviate and stay invulnerable and then benefit f
 We now solve for a RNE assuming a negotiation probability of $\rho=0.7$ fixing the adjusted discount factor at 0.25. 
 ```{r}
 g = g %>%  rel_capped_rne(T=1000, adjusted.delta = 0.25, rho=0.7)
-eq_diagram(g, just.eq.chain = TRUE, label.fun = function(rne,...)  paste0(rne$x1, " ", rne$x2))
 ```
 
+You may now wonder what the parameter `T=1000` means and why the function is called `rne_capped_rne`? It turns out that it is much easier to compute RNE if we assume that after some large number `T ` of periods either no more negotiations take place (`rel_T_rne`) or the states cannot change anymore (`rel_capped_rne`). This means, here I assumed that after period 1000, players cannot change their vulnerability anymore (but they still continue in their relationship and choose effort levels every period).
 
+Here are the equilibrium path actions (in the first period) for the first 8 states:
+```{r}
+g %>% 
+  get_eq() %>% 
+  select(x1,x2, to_x1,to_x2,e1,e2) %>%
+  head(8)
+```
+
+You see that with the positive negotiation probabilities players increase their vulnerabilities only in small steps.
+
+The function `eq_diagram` is useful to illustrate equilibrium path state transitions:
+```{r}
+eq_diagram(g, just.eq.chain = TRUE,x0 = "0_0", label.fun = function(rne,...)  paste0(rne$x1, " ", rne$x2))
+```
+The argument `just.eq.chain = TRUE` means that only the states shall be shown that will be reached with on the equilibrium path when starting in state `x0="0_0"`.
+
+We see how a positive negotiation probability of existing relational contracts makes player gradually and mutually increase their vulnerabilities, while Pareto-optimal SPE predict that both players make themselves immediately fully vulnerable.
+
+
+## A classic hold-up model
+
+The following sections need to be continued...
 
 
 ```{r}
-g = g %>%  rel_rne(T=1000, adjusted.delta = 0.25, rho=0.7)
+inv = 0:1
+x.trade.df = tibble(x=paste0("x_",inv), xval = inv)
 
-eq_diagram(g, just.eq.chain = TRUE, label.fun = function(rne,...)  paste0(rne$x1, " ", rne$x2))
+g = rel_game("Classic Hold-Up 2-Period Game") %>%
+  rel_state("x_invest",
+    A1 = list(i1=inv),
+    pi1 = ~ -0.7*i1,
+    pi2 = 0
+  ) %>%
+  rel_states(x.trade.df,
+    A1 = list(trade1=c(FALSE,TRUE)),
+    A2 = list(trade2=c(FALSE,TRUE)),
+    pi1 = ~ 0.5*xval*(trade1*trade2),
+    pi2 = ~ 0.5*xval*(trade1*trade2)
+  ) %>%
+  rel_state("x_end",pi1 = 0,pi2 = 0) %>%
+  rel_transition("x_invest",x.trade.df$x,i1=inv,prob = 1) %>%
+  rel_transition(x.trade.df$x,"x_end",prob = 1) %>%
+  rel_compile()
 
+```
+
+We now
+```{r}
+g = rel_spe(g,delta=0.9) %>%
+  rel_scale_eq_payoffs(discounted.sum=TRUE)
+get_eq(g) %>%
+  select(x, ae.lab, U)
+
+plot_eq_payoff_set(g,x = c("x_1"))
+```
+
+
+```{r}
+g = rel_rne(g,delta=0.9, rho = 0.7) %>%
+  rel_scale_eq_payoffs(discounted.sum=TRUE)
+get_eq(g, add.vr=TRUE) %>%
+  select(x, ae.lab,U,v1,v2,vr1,vr2, r1,r2)
+
+plot_eq_payoff_set(g, x = c("x_1"),colors="#ffaaaa", use.vr=TRUE, add=TRUE)
 ```
 
