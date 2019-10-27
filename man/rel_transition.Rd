@@ -2,7 +2,7 @@
 % Please edit documentation in R/relhold.R
 \name{rel_transition}
 \alias{rel_transition}
-\title{Add a state transition from one state to one or several states}
+\title{Add a state transition from one state to one or several states. For more complex games, it may be preferable to use the arguments \code{trans.fun} of \code{link{rel_states}} instead.}
 \usage{
 rel_transition(g, xs, xd, ..., prob = 1)
 }
@@ -21,5 +21,5 @@ rel_transition(g, xs, xd, ..., prob = 1)
 Returns the updated game
 }
 \description{
-Add a state transition from one state to one or several states
+Add a state transition from one state to one or several states. For more complex games, it may be preferable to use the arguments \code{trans.fun} of \code{link{rel_states}} instead.
 }

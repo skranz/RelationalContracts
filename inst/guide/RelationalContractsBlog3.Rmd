@@ -1,5 +1,5 @@
 ---
-title: "Analyzing Relational Contracts with R: Part 2"
+title: "Analyzing Relational Contracts with R: Part 3"
 output: html_document
 ---
 
@@ -14,32 +14,158 @@ library(repgame)
 rmarkdown::render("D:/libraries/RelationalHoldup/RelationalContracts/inst/guide/RelationalContractsBlog2.Rmd")
 ```
 
-In this second part of the blog series on relational contracting, we look at more complex infinite horizon games with endogenous states. I also introduce a new equilibrium concept in which players repeatedly negotiate their relational contracts and why in games with endogenous state transitions they yield more plausible results than Pareto-optimal equilibria.
+In the third part of the blog series on relational contracting, we study a more complex game, a game of conflict.
+
+Consider two parties that can invest into weapons. The state is described by `x=(x1,x2)` where `x1` and `x2` are integer numbers between `0` and `x.max` that describe the weapon arsenal of each party.
+
+Each period a party can try increase its weapon arsenal by one unit for an investment cost `c.i`. The investment is successful only with an exogenously given success probability. A party can also reduce its arsenal by one unit for free.
+
+Players can decide each period whether or not they want to attack the other player. If player 1 attacks, he inflicts harm of size `x1` on the other player but has attack costs `c.a * x1`. In addition player 1's attack destroys one unit in player 2's weapon arsenal with probability `d_factor*(x1 / x.max)^d_exp`. The parameters `d_factor` and `d_exp` are exogenously given, like all the cost factors. An attack by player 2 has symmetric effects.
+
+Finally each unit in a player's arsenal has an upkeep cost of `c.x` irrespectively of whether it is used for an attack or not.
+
+Note that there are no direct gains from attacking since it involves costs for both sides. Therefore in a Pareto-optimal subgame perfect equilibrium weapons will never be build nor aquired. Yet, the possibility to harm the other player can increase a player's bargaining position. If we assume that relational contracts are newly negotiated over time, i.e. we consider a repeated negotiation equilibrium, players can thus have incentives to aquire weapons.
+
+
+The following code specifies the game:
+```{r}
+
+# Specify action space for each state
+A.fun = function(x1,x2, x.max,...) {
+  restore.point("A.fun")
+  list(
+    A1=list(
+      a1=c("wait", if (x1>0) "attack"),
+      i1=c(if (x1>0) "d","",if (x1<x.max) "b")
+    ),
+    A2=list(
+      a2=c("wait", if (x2>0) "attack"),
+      i2=c(if (x2>0) "d","",if (x2<x.max) "b")
+    )
+  )
+}
+
+# Vectorized payoff function
+pi.fun = function(ax.df,c.a,c.i,c.x,...) {
+  restore.point("pi.fun")
+  transmute(ax.df,
+    x = x,
+    pi1 = -c.a*(a1=="attack")*x1 - (a2=="attack")*x2 - c.i*(i1=="b")-c.x*x1,
+    pi1 = -c.a*(a2=="attack")*x2 - (a1=="attack")*x1 - c.i*(i2=="b")-c.x*x2
+  )
+}
+
+# Vectorized state transition function
+trans.fun = function(ax.df,x.max, success_prob,fixed.states = FALSE,d_factor=1, d_exp=1,...) {
+  restore.point("trans.fun")
+  #if (x=="0_0") stop()
+
+  # Compute probability to destroy
+  # a weapon unit of other player
+  # if one attacks
+  ax.df = mutate(ax.df,
+    dp1 = d.factor*(x1 / x.max)^d.exp,
+    dp2 = d.factor*(x2 / x.max)^d.exp
+  )
+  
+  # Save success probability of investments
+  # in a shorter
+  # variable name
+  sp = success.prob
+
+  
+  
+  tr = independent.transitions(ax.df,
+    trans_var("b1",default=0,
+      trans_val(1, (i1=="b")*sp),
+      trans_val(-1, (i1=="d")*1)
+    ),
+    trans_var("b2",default=0,
+      trans_val(1, (i2=="b")*sp),
+      trans_val(-1, (i2=="d")*1)
+    ),
+    trans_var("d1",default=0,
+      trans_val(1, (h2>0)*dp2)
+    ),
+    trans_var("d2",default=0,
+      trans_val(1, (h1>0)*dp1)
+    )
+  )
+
+  trans = tr %>%
+    mutate(g1 = b1-d1, g2=b2-d2) %>%
+    mutate(
+      nx1 = pmin(x.max,pmax(x1+g1,0)),
+      nx2 = pmin(x.max,pmax(x2+g2,0)),
+      xd = paste0(nx1,"_",nx2),
+      xs=x
+    ) %>%
+    group_by(xs,x1,x2,xd,i1,i2,h1,h2) %>%
+    summarize(prob = sum(prob)) %>%
+    ungroup() %>%
+    filter(xs != xd) %>%
+    select(xs,xd,h1,h2,i1,i2,prob)
+  trans
+}
+
+
+# Maximum size of weapons arsenal
+x.max = 3
+x.df = as_tibble(expand.grid(x1=0:x.max,x2=0:x.max))
+x.df$x = paste0(x.df$x1,"_", x.df$x2)
+
+g = rel_game("Arms Race") %>%
+  rel_param(delta=0.9, rho=0.4, ch=0.1,cb=0.1, cx=0.01,x.max=x.max, success.prob=0.5, d.factor=0.8, d.exp=1) %>%
+  rel_states(x.df,A.fun=A.fun, pi.fun=pi.fun, trans.fun=trans.fun) %>%
+  rel_compile() %>%
+  rel_capped_rne(T=1000)
+
+rne = get_eq(g)
+
+df.li = eq_diagram(g, show.own.loop = !TRUE, just.eq.chain = !TRUE, return.dfs = TRUE, passive.edge.width = 0)
+edf = df.li$edf
+ndf = left_join(df.li$ndf, rne, by="x")
+ndf = ndf %>% mutate(
+  conflict = ae.h1 != 0 | ae.h2 != 0,
+  shape = ifelse(conflict, "box","circle"),
+  type = ifelse(conflict, "conflict_node", "peace_node")
+)
+graph = create_graph(ndf, edf)
+render_graph(graph, output="visNetwork")
+
+
+
+eq_diagram(g, show.own.loop = !TRUE, just.eq.chain = TRUE)
+
+```
+
+
+we look at more complex infinite horizon games with endogenous states. I also introduce a new equilibrium concept in which players repeatedly negotiate their relational contracts and why in games with endogenous state transitions they yield more plausible results than Pareto-optimal equilibria.
 
 The following code specifies a game with 3 states:
 ```{r}
 library(RelationalContracts)
 g = rel_game("Mutual Gift Game with Endogenous Vulnerability") %>%
-  rel_param(vul=1, delta=0.3) %>%
-  rel_state("x_0",
-    A1 = list(move=c("vul","not")),
-    pi1 = 0,
-    pi2 = 0
-  ) %>%
-  rel_transition("x_0","x_not",move="not",prob = 1) %>%
-  rel_transition("x_0","x_vul",move="vul",prob = 1) %>%
-  rel_state("x_not",
-    A1 = list(e1=seq(0,1,by=0.1)),
-    A2 = list(e2=seq(0,1,by=0.1)),
-    pi1 = ~ e2 - 0.5*e1^2,
-    pi2 = ~ e1 - 0.5*e2^2
-  ) %>%
-  rel_state("x_vul",
-    A1 = list(e1=seq(0,1,by=0.1)),
-    A2 = list(e2=~c(-vul,seq(0,1,by=0.1))),
-    pi1 = ~ e2 - 0.5*e1^2,
-    pi2 = ~ e1 - 0.5*pmax(e2,0)^2
-  )
+rel_param(vul=1, delta=0.3) %>%
+rel_state("x_0",
+  A1 = list(move=c("vul","not")),
+  pi1 = 0,
+  pi2 = 0
+) %>%
+rel_transition("x_0","x_not",move="not",prob = 1) %>%
+rel_transition("x_0","x_vul",move="vul",prob = 1) %>%
+rel_state("x_not",
+  A1 = list(e1=seq(0,1,by=0.1)),
+  A2 = list(e2=seq(0,1,by=0.1)),
+  pi1 = ~ e2 - 0.5*e1^2,
+  pi2 = ~ e1 - 0.5*e2^2
+) %>%
+rel_state("x_vul",
+  A1 = list(e1=seq(0,1,by=0.1)),
+  A2 = list(e2=~c(-vul,seq(0,1,by=0.1))),
+  pi1 = ~ e2 - 0.5*e1^2,
+  pi2 = ~ e1 - 0.5*pmax(e2,0)^2
+)
 ```
 In an initial state `x_0` player 1 decides whether he wants to be permanently vulnerable and transist to state `x_vul`, or not and transist to state `x_not`. (Note that we only specify transitions with `rel_transition` for the cases in which the state changes. By default we assume the state stays the same.) 
 

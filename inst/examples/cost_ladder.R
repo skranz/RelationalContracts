@@ -1,14 +1,14 @@
 examples.cost.ladder.cournot = function() {
   # A Bertrand duopoly
   # with endogenous marginal cost
-  vec.pi.fun = function(ax.df, i.cost=10,...) {
+  pi.fun = function(ax.df, i.cost=10,...) {
     restore.point("pi.fun")
     mutate(ax.df,
       pi1 = -i.cost*i1,
       pi2 = -i.cost*i2
     )
   }
-  vec.static.pi.fun = function(ax.df,x.max,a=x.max, b=1,...) {
+  static.pi.fun = function(ax.df,x.max,a=x.max, b=1,...) {
     restore.point("pi.fun")
     res = mutate(ax.df,
       Q = q1+q2,
@@ -21,7 +21,7 @@ examples.cost.ladder.cournot = function() {
     res
   }
 
-  vec.trans.fun = function(ax.df,x.max,dep.prob=0,alpha=1,x.min=0, ...) {
+  trans.fun = function(ax.df,x.max,dep.prob=0,alpha=1,x.min=0, ...) {
     restore.point("trans.fun")
     #if (x=="0_0") stop()
     ax.df = mutate(ax.df,
@@ -57,7 +57,7 @@ examples.cost.ladder.cournot = function() {
   x.df$x = paste0(x.df$x1,"_", x.df$x2)
   g = rel_game("Cournot with Cost Ladder") %>%
     rel_param(x.min=x.min,x.max=x.max,dep.prob=0.1,a=x.max,b=1, i.cost=1.5,alpha=1) %>%
-    rel_states(x.df,A1=list(i1=i.seq),A2=list(i2=i.seq),static.A1 = list(q1=q.seq), static.A2 = list(q2=q.seq),vec.pi.fun=vec.pi.fun, vec.trans.fun=vec.trans.fun, vec.static.pi.fun = vec.static.pi.fun, x.T = "0_0") %>%
+    rel_states(x.df,A1=list(i1=i.seq),A2=list(i2=i.seq),static.A1 = list(q1=q.seq), static.A2 = list(q2=q.seq),pi.fun=pi.fun, trans.fun=trans.fun, static.pi.fun = static.pi.fun, x.T = "0_0") %>%
     rel_compile()
 
 
@@ -130,14 +130,14 @@ examples.cost.ladder.cournot = function() {
 examples.cost.ladder.bertrand = function() {
   # A Bertrand duopoly
   # with endogenous marginal cost
-  vec.pi.fun = function(ax.df, i.cost=10,...) {
+  pi.fun = function(ax.df, i.cost=10,...) {
     restore.point("pi.fun")
     mutate(ax.df,
       pi1 = -i.cost*i1,
       pi2 = -i.cost*i2
     )
   }
-  vec.static.pi.fun = function(ax.df,x.max,a=x.max, b=1,...) {
+  static.pi.fun = function(ax.df,x.max,a=x.max, b=1,...) {
     restore.point("pi.fun")
     res = mutate(ax.df,
       p = pmin(p1,p2),
@@ -156,7 +156,7 @@ examples.cost.ladder.bertrand = function() {
     res
   }
 
-  vec.trans.fun = function(ax.df,x.max,dep.prob=0,alpha=1,x.min=0, ...) {
+  trans.fun = function(ax.df,x.max,dep.prob=0,alpha=1,x.min=0, ...) {
     restore.point("trans.fun")
     #if (x=="0_0") stop()
     ax.df = mutate(ax.df,
@@ -192,7 +192,7 @@ examples.cost.ladder.bertrand = function() {
   x.df$x = paste0(x.df$x1,"_", x.df$x2)
   g = rel_game("Bertrand with Cost Ladder") %>%
     rel_param(x.min=x.min,x.max=x.max,dep.prob=0.1,a=x.max,b=1, i.cost=0.1,alpha=1) %>%
-    rel_states(x.df,A1=list(i1=i.seq),A2=list(i2=i.seq),static.A1 = list(p1=p.seq), static.A2 = list(p2=p.seq),vec.pi.fun=vec.pi.fun, vec.trans.fun=vec.trans.fun, vec.static.pi.fun = vec.static.pi.fun, x.T = "0_0") %>%
+    rel_states(x.df,A1=list(i1=i.seq),A2=list(i2=i.seq),static.A1 = list(p1=p.seq), static.A2 = list(p2=p.seq),pi.fun=pi.fun, trans.fun=trans.fun, static.pi.fun = static.pi.fun, x.T = "0_0") %>%
     rel_compile()
 
 

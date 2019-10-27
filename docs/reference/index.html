@@ -72,7 +72,18 @@
      
   </a>
 </li>
-<li class="dropdown-header">Manuals</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Manuals
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="../articles/Specifying Games.html">Analyzing Relational Contracts with R: Part I</a>
+    </li>
+  </ul>
+</li>
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
@@ -172,6 +183,12 @@
       </tr><tr>
         
         <td>
+          <p><code><a href="independent_transitions.html">independent_transitions()</a></code> </p>
+        </td>
+        <td><p>Helper function to specify state transitions</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="plot_eq_payoff_set.html">plot_eq_payoff_set()</a></code> </p>
         </td>
         <td><p>Show a base R plot of equilibrium payoff set</p></td>
@@ -208,6 +225,13 @@
       </tr><tr>
         
         <td>
+          <p><code><a href="rel_eq_as_discounted_sums.html">rel_eq_as_discounted_sums()</a></code> </p>
+        </td>
+        <td><p>Translate equilibrium payoffs as discounted sum
+of payoffs</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="rel_game.html">rel_game()</a></code> </p>
         </td>
         <td><p>Creates a new relational contracting game</p></td>
@@ -229,18 +253,6 @@
           <p><code><a href="rel_param.html">rel_param()</a></code> </p>
         </td>
         <td><p>Add parameters to a relational contracting game</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="rel_payoff.html">rel_payoff()</a></code> </p>
-        </td>
-        <td><p>Add a payoff function to one or several states</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="rel_payoff_fun.html">rel_payoff_fun()</a></code> </p>
-        </td>
-        <td><p>Version of rel_payoff that takes a function</p></td>
       </tr><tr>
         
         <td>
@@ -268,33 +280,33 @@
       </tr><tr>
         
         <td>
-          <p><code><a href="rel_state.html">rel_state()</a></code> </p>
+          <p><code><a href="rel_states.html">rel_states()</a></code> <code><a href="rel_states.html">rel_state()</a></code> </p>
         </td>
-        <td><p>Add a state to a relational contracting game</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="rel_states.html">rel_states()</a></code> </p>
-        </td>
-        <td><p>Add multiple states via functions</p></td>
+        <td><p>Add one or multiple states. Allows to specify action spaces, payoffs and state transitions via functions</p></td>
       </tr><tr>
         
         <td>
           <p><code><a href="rel_transition.html">rel_transition()</a></code> </p>
         </td>
-        <td><p>Add a state transition from one state to one or several states</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="rel_transition_fun.html">rel_transition_fun()</a></code> </p>
-        </td>
-        <td><p>Add a state transition function</p></td>
+        <td><p>Add a state transition from one state to one or several states. For more complex games, it may be preferable to use the arguments <code>trans.fun</code> of <code>link{rel_states}</code> instead.</p></td>
       </tr><tr>
         
         <td>
           <p><code><a href="rel_T_rne.html">rel_T_rne()</a></code> </p>
         </td>
         <td><p>Compute a T-RNE</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="trans_val.html">trans_val()</a></code> </p>
+        </td>
+        <td><p>Helper functions to specify state transitions</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="trans_var.html">trans_var()</a></code> </p>
+        </td>
+        <td><p>Helper functions to specify state transitions</p></td>
       </tr>
     </tbody>
     </table>

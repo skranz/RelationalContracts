@@ -44,7 +44,7 @@ examples.rne_capped = function() {
 
 
   e.seq = seq(0,1, by=0.1); xL=0; xH=0.2
-  g = rel_game("Weakly Monotone Vulnerability Paradox") %>%
+  g = rel_game("Weakly Directional Vulnerability Paradox") %>%
     # Initial State
     rel_state("xL", A1=list(move=c("stay","vul")),A2=list(e=e.seq), x.T="xH") %>%
     rel_payoff("xL",pi1=~e, pi2=~ -0.5*e*e*(e>=0)) %>%

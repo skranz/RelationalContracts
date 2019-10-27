@@ -29,8 +29,8 @@ examples.multistage = function() {
     list(A1=A1,A2=A2)
   }
 
-  vec.static.pi.fun = function(ax.df,...) {
-    restore.point("vec.pi.fun")
+  static.pi.fun = function(ax.df,...) {
+    restore.point("pi.fun")
     ax.df %>%
       transmute(
         x=x,
@@ -39,7 +39,7 @@ examples.multistage = function() {
       )
   }
 
-  vec.trans.fun = function(ax.df, final=FALSE,...) {
+  trans.fun = function(ax.df, final=FALSE,...) {
     restore.point("trans.fun")
     ax.df %>%
       select(x,a1,a2) %>%
@@ -58,11 +58,11 @@ examples.multistage = function() {
     rel_states(x.df,
       # Static effort stage
       static.A.fun=static.A.fun,
-      vec.static.pi.fun = vec.static.pi.fun,
+      static.pi.fun = static.pi.fun,
       # Dynamic relationship intensification stage
       A.fun = A.fun,
       pi1 = 0, pi2=0,
-      vec.trans.fun=vec.trans.fun
+      trans.fun=trans.fun
     )
 
   g = rel_compile(g)

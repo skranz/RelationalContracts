@@ -12,7 +12,7 @@ examples.itrans = function() {
 
   ax.df =
 
-  trans = independent.transitions(ax.df,
+  trans = independent_transitions(ax.df,
     trans_var("nx1",default=x1,lower=0, upper=x.max,
       trans_val(x1+k.step, (1-dp)*i1.prob),
       trans_val(x1-k.step, dp*(1-i1.prob))
@@ -25,7 +25,12 @@ examples.itrans = function() {
   trans
 
 
-  trans = independent.transitions(ax.df,
+  independent_transitions(
+
+
+  )
+
+  trans = independent_transitions(ax.df,
     itrans(g1=1,  (i1==1 & x1<x.max) * (1-dp)),
     itrans(g1=0,  (i1==1) * dp + (i1==0 | x1==x.max & i1==1)*(1-dp)),
     itrans(g1=-1, (i1==0) * dp),
@@ -34,7 +39,7 @@ examples.itrans = function() {
     itrans(g2=-1, (i2==0) * dp)
   )
 
-  trans = independent.transitions(ax.df,
+  trans = independent_transitions(ax.df,
     itrans(g1=1,  (i1==1 & x1<x.max) * (1-dp)),
     itrans(g1=0,  NA),
     itrans(g1=-1, (i1==0 & x1>0) * dp),
@@ -48,24 +53,37 @@ examples.itrans = function() {
 
 }
 
+#' Helper functions to specify state transitions
+#'
+#' To be used as argument of \code{\link{independent_transitions}}
+#'
+#' See vignette for examples
 trans_var = function(var, ...,default=NULL, lower=NULL, upper=NULL,  vals.unique=TRUE) {
   val.df = bind_rows(list(...))
   default = substitute(default)
   list(var=var, default=default, lower=lower, upper=upper, val.df = val.df, vals.unique=vals.unique)
 }
 
+#' Helper functions to specify state transitions
+#'
+#' To be used as argument of \code{\link{trans_var}}
+#'
+#' See vignette for examples
 trans_val = function(val, prob) {
   val = substitute(val)
   prob = substitute(prob)
   quick_df(val=list(val), prob=list(prob))
 }
 
-independent.transitions = function(ax.df, ..., enclos=parent.frame(), remove.zero.prob=TRUE, prob.var = "prob") {
+#' Helper function to specify state transitions
+#'
+#' See vignette for examples
+independent_transitions = function(ax.df, ..., enclos=parent.frame(), remove.zero.prob=TRUE, prob.var = "prob") {
   var.defs = list(...)
-  restore.point("independent.transitions")
+  restore.point("independent_transitions")
   res = ax.df
   res[[prob.var]] = 1.
-  def = var.defs[[1]]
+  def = var.defs[[2]]
   for (def in var.defs) {
     res$.row.id = seq_len(NROW(res))
     vals.unique = def$vals.unique
@@ -124,6 +142,7 @@ independent.transitions = function(ax.df, ..., enclos=parent.frame(), remove.zer
       res = sum.res
     }
   }
+  res = res[,setdiff(colnames(res),".row.id")]
   res
 
 }

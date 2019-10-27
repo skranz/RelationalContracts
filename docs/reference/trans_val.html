@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Show a base R plot of equilibrium payoff set — plot_eq_payoff_set • RelationalContracts</title>
+<title>Helper functions to specify state transitions — trans_val • RelationalContracts</title>
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
@@ -30,9 +30,9 @@
 
 
 
-<meta property="og:title" content="Show a base R plot of equilibrium payoff set — plot_eq_payoff_set" />
+<meta property="og:title" content="Helper functions to specify state transitions — trans_val" />
 
-<meta property="og:description" content="Show a base R plot of equilibrium payoff set" />
+<meta property="og:description" content="To be used as argument of trans_var" />
 <meta name="twitter:card" content="summary" />
 
 
@@ -111,69 +111,31 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Show a base R plot of equilibrium payoff set</h1>
+    <h1>Helper functions to specify state transitions</h1>
     
-    <div class="hidden name"><code>plot_eq_payoff_set.Rd</code></div>
+    <div class="hidden name"><code>trans_val.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>Show a base R plot of equilibrium payoff set</p>
+    <p>To be used as argument of <code><a href='trans_var.html'>trans_var</a></code></p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>plot_eq_payoff_set</span>(<span class='no'>g</span>, <span class='kw'>x</span> <span class='kw'>=</span> <span class='no'>eq</span>$<span class='no'>x</span>[<span class='fl'>1</span>], <span class='kw'>t</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>eq</span> <span class='kw'>=</span> <span class='kw'>if</span> (<span class='no'>use.vr</span>) <span class='fu'><a href='get_eq.html'>get_eq</a></span>(<span class='no'>g</span>,
-  <span class='kw'>add.vr</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>) <span class='kw'>else</span> <span class='no'>g</span><span class='kw'>[[</span><span class='st'>"eq"</span>]], <span class='kw'>xlim</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>ylim</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>add</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>plot.r</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>alpha</span> <span class='kw'>=</span> <span class='fl'>0.8</span>, <span class='kw'>black.border</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
-  <span class='kw'>add.state.label</span> <span class='kw'>=</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/NULL'>is.null</a></span>(<span class='no'>labels</span>), <span class='kw'>labels</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>colors</span> <span class='kw'>=</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/c'>c</a></span>(<span class='st'>"#377EB8"</span>,
-  <span class='st'>"#E41A1C"</span>, <span class='st'>"#4DAF4A"</span>, <span class='st'>"#984EA3"</span>, <span class='st'>"#FF7F00"</span>, <span class='st'>"#FFFF33"</span>, <span class='st'>"#A65628"</span>, <span class='st'>"#F781BF"</span>),
-  <span class='kw'>add.xlim</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>add.ylim</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>extend.lim.perc</span> <span class='kw'>=</span> <span class='fl'>0.05</span>,
-  <span class='kw'>use.vr</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='no'>...</span>)</pre>
-    
-    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
-    <table class="ref-arguments">
-    <colgroup><col class="name" /><col class="desc" /></colgroup>
-    <tr>
-      <th>g</th>
-      <td><p>The game object for which an equilibrium has been solved</p></td>
-    </tr>
-    <tr>
-      <th>x</th>
-      <td><p>A character vector of the state(s) for which the (continuation) equilibrium payoff set shall be shown. By default only the first stage.</p></td>
-    </tr>
-    <tr>
-      <th>eq</th>
-      <td><p>An equilibrium object. By default the last solved equilibrium.</p></td>
-    </tr>
-    <tr>
-      <th>xlim</th>
-      <td><p>as in <code><a href='https://www.rdocumentation.org/packages/graphics/topics/plot.default'>plot.default</a></code></p></td>
-    </tr>
-    <tr>
-      <th>ylim</th>
-      <td><p>as in <code><a href='https://www.rdocumentation.org/packages/graphics/topics/plot.default'>plot.default</a></code></p></td>
-    </tr>
-    <tr>
-      <th>add</th>
-      <td><p>as in <code><a href='https://www.rdocumentation.org/packages/graphics/topics/plot.default'>plot.default</a></code> Setting <code>add=FALSE</code> can be useful to compare payoff sets of different games.</p></td>
-    </tr>
-    <tr>
-      <th>plot.r</th>
-      <td><p>Shall negotiation payoffs be shown as a point on the Pareto-frontier (default = TRUE)</p></td>
-    </tr>
-    <tr>
-      <th>alpha</th>
-      <td><p>opacity of the fill color</p></td>
-    </tr>
-    </table>
+    <pre class="usage"><span class='fu'>trans_val</span>(<span class='no'>val</span>, <span class='no'>prob</span>)</pre>
+        
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    <p>See vignette for examples</p>
     
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
-      <li><a href="#arguments">Arguments</a></li>
-                </ul>
+      
+      <li><a href="#details">Details</a></li>
+          </ul>
 
   </div>
 </div>

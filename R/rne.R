@@ -56,7 +56,7 @@ example.rne = function() {
 
   plot(e, e-0.5*e*e)
 
-  g = rel_game("Weakly Monotone Vulnerability Paradox") %>%
+  g = rel_game("Weakly Directional Vulnerability Paradox") %>%
     rel_param(delta=0.5, rho=0.1, c=0.5, xL=xL,xH=xH) %>%
     # Initial State
     rel_state("xL", A1=list(move=c("stay","vul")),A2=list(e=e.seq)) %>%
@@ -157,12 +157,32 @@ get_rne = function(g, extra.cols="ae", eq=g[["rne"]]) {
   get_eq(g, extra.cols, eq)
 }
 
+#' Translate equilibrium payoffs as discounted sum
+#' of payoffs
+#'
+#' By default equilibrium payoffs are given as average discounted payoffs. This is the discounted sum of payoffs multiplied by (1-delta).
+#'
+#' Call this function after you have solved an equilibrium if you want to present the equilibrium
+#'
+#'  @param g the game for which an equilibrium was computedayoffs as the discounted sum of payoffs instead.
+rel_eq_as_discounted_sums = function(g) {
+  spe = identical(g[["eq"]], g[["spe"]])
+  rne = identical(g[["rne"]], g[["eq"]])
+
+  g$eq = scale.eq.payoffs(g[["eq"]], 1 / (1-g$param$delta))
+  if (spe) g$spe = g$eq
+  if (rne) g$rne = g$eq
+
+
+  g
+
+}
+
 #' Scale equilibrium payoffs
 #'
 #' @param g the game for which an equilibrium was computed
 #' @param factor the factor by which the payoffs U,v1,v2,r1 and r2 are multiplied
-#' @param discounted.sum if TRUE the factor is set to 1/(1-delta). Equilibrium payoffs are then given as discounted sum of payoffs instead of average discounted payoffs.
-rel_scale_eq_payoffs = function(g, factor= if (discounted.sum) 1 / (1-g$param$delta) else 1, discounted.sum = FALSE) {
+rel_scale_eq_payoffs = function(g, factor) {
   g$eq = scale.eq.payoffs(g[["eq"]], factor)
   g
 }
@@ -350,15 +370,15 @@ rel_rne = function(g, delta=g$param$delta, rho=g$param$rho, adjusted.delta=NULL,
     # Check if state transists to itself
     if (x %in% colnames(trans.mat)) {
       if (verbose)
-        cat("\nSolve weakly monotone state", x, "...")
-      res = solve.weakly.monotone.state(x,rne,g,sdf)
+        cat("\nSolve weakly directional state", x, "...")
+      res = solve.weakly.directional.state(x,rne,g,sdf)
       if (res$ok) {
         rne[row, names(res$rne.row)] = res$rne.row
         rne$solved[row] = TRUE
         cat(" ok")
         next
       } else {
-        stop("Cannot find an RNE in weakly monotone state ", x)
+        stop("Cannot find an RNE when trying to solve the weakly directional state ", x)
       }
     }
 
@@ -436,8 +456,8 @@ rel_rne = function(g, delta=g$param$delta, rho=g$param$rho, adjusted.delta=NULL,
 
 
 
-solve.weakly.monotone.state = function(x,rne,g, sdf, tol=1e-12) {
-  restore.point("solve.weakly.monotone.state")
+solve.weakly.directional.state = function(x,rne,g, sdf, tol=1e-12) {
+  restore.point("solve.weakly.directional.state")
   rne = rne
   delta = g$param$delta
   rho = g$param$rho

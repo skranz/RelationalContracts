@@ -40,7 +40,7 @@ examples.capacity.bertrand = function() {
     )
   }
 
-  vec.pi.fun = function(ax.df, i.cost=10*x.step, x.step=1,...) {
+  pi.fun = function(ax.df, i.cost=10*x.step, x.step=1,...) {
     restore.point("pi.fun")
     mutate(ax.df,
       pi1 = -i.cost*i1,
@@ -49,7 +49,7 @@ examples.capacity.bertrand = function() {
   }
 
 
-  vec.static.pi.fun = function(ax.df, a=40,b=10,gamma=0,eta=10,max.mc=2*a,...) {
+  static.pi.fun = function(ax.df, a=40,b=10,gamma=0,eta=10,max.mc=2*a,...) {
     restore.point("pi.fun")
     res = mutate(ax.df,
       p = pmin(p1,p2),
@@ -72,7 +72,7 @@ examples.capacity.bertrand = function() {
     res
   }
 
-  vec.trans.fun = function(ax.df,x.step,x.max,dep.prob=0,alpha=1,x.min=0,full.dep=FALSE, ...) {
+  trans.fun = function(ax.df,x.step,x.max,dep.prob=0,alpha=1,x.min=0,full.dep=FALSE, ...) {
     restore.point("trans.fun")
     #if (x=="0_0") stop()
     ax.df = mutate(ax.df,
@@ -127,7 +127,7 @@ examples.capacity.bertrand = function() {
   x.df$x = paste0(x.df$x1,"_", x.df$x2)
   g = rel_game("Bertrand with Investment") %>%
     rel_param(x.min=x.min,x.max=x.max,x.step=x.step,dep.prob=0.2,a=50,b=1, i.cost=10, i.seq=c(0,1), alpha=1, eta=10, p.seq=c(seq(10,40,length=31),1000)) %>%
-    rel_states(x.df,A.fun=A.fun, vec.pi.fun=vec.pi.fun, vec.trans.fun=vec.trans.fun, vec.static.pi.fun = vec.static.pi.fun, static.A.fun = static.A.fun) %>%
+    rel_states(x.df,A.fun=A.fun, pi.fun=pi.fun, trans.fun=trans.fun, static.pi.fun = static.pi.fun, static.A.fun = static.A.fun) %>%
     rel_compile()
   g = g %>%  rel_capped_rne(T=400, delta=0.9, rho=0.8, save.history = !FALSE, use.cpp = TRUE, add.stationary = TRUE, save.details = !TRUE,tie.breaking = "max_r1")
   (capped = get_eq(g))
@@ -146,7 +146,7 @@ examples.capacity.bertrand = function() {
   x.df$x = paste0(x.df$x1,"_", x.df$x2)
   g = rel_game("Bertrand with Investment") %>%
     rel_param(x.min=x.min,x.max=x.max,x.step=x.step,dep.prob=0.2,a=50,b=1, i.cost=10, i.seq=c(0,1), alpha=1, eta=10, p.seq=c(seq(0,40,length=41),1000)) %>%
-    rel_states(x.df,A.fun=A.fun, vec.pi.fun=vec.pi.fun, vec.trans.fun=vec.trans.fun, vec.static.pi.fun = vec.static.pi.fun, static.A.fun = static.A.fun) %>%
+    rel_states(x.df,A.fun=A.fun, pi.fun=pi.fun, trans.fun=trans.fun, static.pi.fun = static.pi.fun, static.A.fun = static.A.fun) %>%
     rel_compile()
 
 
@@ -228,11 +228,11 @@ examples.capacity.differentiated.bertrand = function() {
       A2=list(p2=p.seq)
     )
   }
-  vec.extra.info = function(ax.df, a=40,b=10,gamma=0,eta=10,max.C = 1e7) {
+  extra.info = function(ax.df, a=40,b=10,gamma=0,eta=10,max.C = 1e7) {
 
   }
 
-  vec.pi.fun = function(ax.df, i.cost=10*x.step, x.step=1,...) {
+  pi.fun = function(ax.df, i.cost=10*x.step, x.step=1,...) {
     restore.point("pi.fun")
     mutate(ax.df,
       pi1 = -i.cost*i1,
@@ -241,7 +241,7 @@ examples.capacity.differentiated.bertrand = function() {
   }
 
 
-  vec.static.pi.fun = function(ax.df, a=40,b=10,gamma=0,eta=10,max.C = 1e7,...) {
+  static.pi.fun = function(ax.df, a=40,b=10,gamma=0,eta=10,max.C = 1e7,...) {
     restore.point("pi.fun")
     res = mutate(ax.df,
       q1 = pmax(0,(1/(1-gamma^2)) * (a*(1-gamma) - b*p1 + gamma*b*p2)),
@@ -256,7 +256,7 @@ examples.capacity.differentiated.bertrand = function() {
     res
   }
 
-  vec.trans.fun = function(ax.df,x.step,x.max,dep.prob=0,alpha=1,x.min=0,...) {
+  trans.fun = function(ax.df,x.step,x.max,dep.prob=0,alpha=1,x.min=0,...) {
     restore.point("trans.fun")
     #if (x=="0_0") stop()
     ax.df = mutate(ax.df,
@@ -294,7 +294,7 @@ examples.capacity.differentiated.bertrand = function() {
   x.df$x = paste0(x.df$x1,"_", x.df$x2)
   g = rel_game("Bertrand with Investment") %>%
     rel_param(x.min=x.min,x.max=x.max,x.step=x.step,dep.prob=0.05,a=40,b=1, i.cost=40, i.seq=c(0,1), alpha=1, eta=10, gamma=0.9, p.seq=seq(18,40,length=21)) %>%
-    rel_states(x.df,A.fun=A.fun, vec.pi.fun=vec.pi.fun, vec.trans.fun=vec.trans.fun, vec.static.pi.fun = vec.static.pi.fun, static.A.fun = static.A.fun) %>%
+    rel_states(x.df,A.fun=A.fun, pi.fun=pi.fun, trans.fun=trans.fun, static.pi.fun = static.pi.fun, static.A.fun = static.A.fun) %>%
     rel_compile()
 
   g = g %>%  rel_capped_rne(T=20, delta=0.9, rho=0.9, save.history = FALSE, use.cpp = FALSE, add.stationary = TRUE, save.details = TRUE)
@@ -330,14 +330,14 @@ examples.capacity.cournot = function() {
   }
 
 
-  vec.pi.fun = function(ax.df, i.cost=10*x.step, x.step=1,...) {
+  pi.fun = function(ax.df, i.cost=10*x.step, x.step=1,...) {
     restore.point("pi.fun")
     mutate(ax.df,
       pi1 = -i.cost*i1,
       pi2 = -i.cost*i2
     )
   }
-  vec.static.pi.fun = function(ax.df, c1=0, c2=0,a=10,b=1,...) {
+  static.pi.fun = function(ax.df, c1=0, c2=0,a=10,b=1,...) {
     restore.point("pi.fun")
     mutate(ax.df,
       pi1 = (a-b*(q1+q2)-c1)*q1,
@@ -345,7 +345,7 @@ examples.capacity.cournot = function() {
     )
   }
 
-  vec.trans.fun = function(ax.df,x.step,x.max,dep.prob=0,...) {
+  trans.fun = function(ax.df,x.step,x.max,dep.prob=0,...) {
     restore.point("trans.fun")
     #if (x=="0_0") stop()
     ax.df = mutate(ax.df,
@@ -353,7 +353,7 @@ examples.capacity.cournot = function() {
       i2.prob = i2 / (1+i2)
     )
     dp = dep.prob
-    trans = independent.transitions(ax.df,
+    trans = independent_transitions(ax.df,
       trans_var("nx1",default=x1,lower=0, upper=x.max,
         trans_val(x1+x.step, (1-dp)*i1.prob),
         trans_val(x1, (1-dp)*(1-i1.prob)),
@@ -378,18 +378,95 @@ examples.capacity.cournot = function() {
 
   x.max = 100; x.step = 20
   x.seq = seq(0,x.max, by=x.step)
-  x.df = as_data_frame(expand.grid(x1=x.seq,x2=x.seq))
+  x.df = as_tibble(expand.grid(x1=x.seq,x2=x.seq))
   x.df$x = paste0(x.df$x1,"_", x.df$x2)
 
   g = rel_game("Cournot with Investment") %>%
     rel_param(c1=0,c2=0,x.step=x.step, x.max=x.max,dep.prob=0.05,a=100, i.cost=50, i.seq=c(0,1,2,5)) %>%
-    rel_states(x.df,A.fun=A.fun, vec.pi.fun=vec.pi.fun, vec.trans.fun=vec.trans.fun, vec.static.pi.fun = vec.static.pi.fun, static.A.fun = static.A.fun) %>%
+    rel_states(x.df,A.fun=A.fun, pi.fun=pi.fun, trans.fun=trans.fun, static.pi.fun = static.pi.fun, static.A.fun = static.A.fun) %>%
     rel_compile()
 
-  g = g %>%  rel_capped_rne(T=20, delta=0.9, rho=1, save.history = FALSE, use.cpp = TRUE, add.stationary = TRUE, save.details = !TRUE)
+  g = g %>%  rel_capped_rne(T=1000, delta=0.9, rho=1, add.stationary = TRUE)
+
+
   eq = g$eq
   eq$r_lab = paste0(round(eq$r1)," ", round(eq$r2),"\n", eq$ae.lab)
-  ggplot(eq, aes(x=x1,y=x2, fill=stationary)) + geom_raster(interpolate=FALSE) + geom_label(aes(label=r_lab), fill="white", alpha=0.5, size=3, label.padding=unit(0.1,"lines"))
+  library(ggplot2)
+  ggplot(eq, aes(x=x1,y=x2, fill=stationary.prob)) + geom_raster(interpolate=FALSE) + geom_label(aes(label=r_lab), fill="white", alpha=0.5, size=3, label.padding=unit(0.1,"lines"))
+  eq_diagram(g, just.eq.chain = TRUE)
+
+  det = get_rne_details(g, x="100_0")
+}
+
+examples.capacity.cournot.det = function() {
+  # A Cournot Game with Capacity Building
+
+  A.fun = function(...) {
+    restore.point("A.fun")
+    list(
+      A1=list(i1=c(0,1)),
+      A2=list(i2=c(0,1))
+    )
+  }
+  static.A.fun = function(x1,x2,q.step=1,...) {
+    restore.point("static.A.fun")
+    list(
+      A1=list(q1=seq(0,x1,by=q.step)),
+      A2=list(q2=seq(0,x2,by=q.step))
+    )
+  }
+
+
+  pi.fun = function(ax.df, i.cost=10*x.step, x.step=1,...) {
+    restore.point("pi.fun")
+    mutate(ax.df,
+      pi1 = -i.cost*i1,
+      pi2 = -i.cost*i2
+    )
+  }
+  static.pi.fun = function(ax.df, c1=0, c2=0,a=10,b=1,...) {
+    restore.point("pi.fun")
+    mutate(ax.df,
+      pi1 = (a-b*(q1+q2)-c1)*q1,
+      pi2 = (a-b*(q1+q2)-c2)*q2
+    )
+  }
+
+  trans.fun = function(ax.df,x.step,x.max,dep.prob=0,...) {
+    restore.point("trans.fun")
+    #if (x=="0_0") stop()
+
+
+    trans = ax.df %>%
+      mutate(
+        nx1 = pmin(x1+i1*x.step,x.max),
+        nx2 = pmin(x2+i2*x.step,x.max),
+        xd = paste0(nx1,"_",nx2),
+        xs=x,
+        prob = 1
+      ) %>%
+      select(xs,xd,i1,i2,prob) %>%
+      unique()
+    trans
+  }
+
+  x.max = 100; x.step = 20
+  x.seq = seq(0,x.max, by=x.step)
+  x.df = as_tibble(expand.grid(x1=x.seq,x2=x.seq))
+  x.df$x = paste0(x.df$x1,"_", x.df$x2)
+
+  g = rel_game("Cournot with Investment") %>%
+    rel_param(c1=0,c2=0,x.step=x.step, x.max=x.max,dep.prob=0.05,a=100, i.cost=50, i.seq=c(0,1,2,5)) %>%
+    rel_states(x.df,A.fun=A.fun, pi.fun=pi.fun, trans.fun=trans.fun, static.pi.fun = static.pi.fun, static.A.fun = static.A.fun) %>%
+    rel_compile()
+
+  g = g %>%  rel_capped_rne(T=1000, delta=0.9, rho=1, add.stationary = TRUE)
+
+
+  eq = g$eq
+  eq$r_lab = paste0(round(eq$r1)," ", round(eq$r2),"\n", eq$ae.lab)
+  library(ggplot2)
+  ggplot(eq, aes(x=x1,y=x2, fill=stationary.prob)) + geom_raster(interpolate=FALSE) + geom_label(aes(label=r_lab), fill="white", alpha=0.5, size=3, label.padding=unit(0.1,"lines"))
   eq_diagram(g, just.eq.chain = TRUE)
 
   det = get_rne_details(g, x="100_0")

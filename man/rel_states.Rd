@@ -2,36 +2,37 @@
 % Please edit documentation in R/relhold.R
 \name{rel_states}
 \alias{rel_states}
-\title{Add multiple states via functions}
+\alias{rel_state}
+\title{Add one or multiple states. Allows to specify action spaces, payoffs and state transitions via functions}
 \usage{
 rel_states(g, x, A1 = NULL, A2 = NULL, pi1 = NULL, pi2 = NULL,
-  A.fun = NULL, pi.fun = NULL, vec.pi.fun = NULL, trans.fun = NULL,
-  vec.trans.fun = NULL, static.A.fun = NULL, static.pi.fun = NULL,
-  vec.static.pi.fun = NULL, static.A1 = NULL, static.A2 = NULL,
-  static.pi1 = NULL, static.pi2 = NULL, x.T = NULL, ...)
+  A.fun = NULL, pi.fun = NULL, trans.fun = NULL, static.A1 = NULL,
+  static.A2 = NULL, static.A.fun = NULL, static.pi1 = NULL,
+  static.pi2 = NULL, static.pi.fun = NULL, x.T = NULL, ...)
+
+rel_state(g, x, A1 = NULL, A2 = NULL, pi1 = NULL, pi2 = NULL,
+  A.fun = NULL, pi.fun = NULL, trans.fun = NULL, static.A1 = NULL,
+  static.A2 = NULL, static.A.fun = NULL, static.pi1 = NULL,
+  static.pi2 = NULL, static.pi.fun = NULL, x.T = NULL, ...)
 }
 \arguments{
 \item{g}{a relational contracting game created with rel_game}
 
 \item{x}{The names of the states}
 
-\item{A1}{The action set of player 1. Can be a numeric or character vector (possible a formula creating one)}
+\item{A1}{The action set of player 1. A named list, like \code{A1=list(e1=1:10)}, where each element is a numeric or character vector.}
 
-\item{A2}{The action set of player 2. Can be a numeric or character vector (possible a formula creating one)}
+\item{A2}{The action set of player 2. See A1.}
 
 \item{pi1}{Player 1's payoff. Value(s) or formula}
 
 \item{pi2}{Player 2's payoff. Values(s) or formula}
 
-\item{A.fun}{Alternative to specify fixed A1 and A2, a function that returns action sets.}
+\item{A.fun}{Alternative to specify A1 and A2, a function that returns action sets.}
 
-\item{pi.fun}{Alternative to specify pi1 and pi2 as formula, a function that returns for each state a data frame with with pi1 and pi2 and as many rows as action profiles}
-
-\item{vec.pi.fun}{Alternative to pi.fun. A vectorized function that returns payoffs directly for all combinations of states and action profiles.}
+\item{pi.fun}{Alternative to specify pi1 and pi2 as formula. A vectorized function that returns payoffs directly for all combinations of states and action profiles.}
 
 \item{trans.fun}{A function that specifies state transitions}
-
-\item{vec.trans.fun}{Alternative to trans.fun, a vectorized function that specifies state transitions}
 
 \item{x.T}{Relevant when solving a capped game. Which terminal state shall be set in period T onwards. By default, we stay in state x.}
 }
@@ -39,5 +40,10 @@ rel_states(g, x, A1 = NULL, A2 = NULL, pi1 = NULL, pi2 = NULL,
 Returns the updated game
 }
 \description{
-Add multiple states via functions
+Add one or multiple states. Allows to specify action spaces, payoffs and state transitions via functions
 }
+\section{Functions}{
+\itemize{
+\item \code{rel_state}: rel_state is just a synonym for the rel_states. You may want to use it if you specify just a single state.
+}}
+

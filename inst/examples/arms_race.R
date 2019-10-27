@@ -10,7 +10,7 @@ arms.race.example = function() {
     )
   }
 
-  vec.pi.fun = function(ax.df,ch,cb,cx,...) {
+  pi.fun = function(ax.df,ch,cb,cx,...) {
     restore.point("pi.fun")
     transmute(ax.df,
       x = x,
@@ -72,7 +72,7 @@ arms.race.example = function() {
 
   g = rel_game("Arms Race") %>%
     rel_param(delta=0.99, rho=0.7, ch=0.1,cb=0.1, cx=0.13,x.max=x.max, success.prob=1) %>%
-    rel_states(x.df,A.fun=A.fun, vec.pi.fun=vec.pi.fun, trans.fun=trans.fun) %>%
+    rel_states(x.df,A.fun=A.fun, pi.fun=pi.fun, trans.fun=trans.fun) %>%
     rel_compile() %>%
     rel_capped_rne(T=1000)
 
@@ -126,7 +126,7 @@ arms.race.destroy.example = function() {
     )
   }
 
-  vec.pi.fun = function(ax.df,ch,cb,cx,...) {
+  pi.fun = function(ax.df,ch,cb,cx,...) {
     restore.point("pi.fun")
     transmute(ax.df,
       x = x,
@@ -135,8 +135,8 @@ arms.race.destroy.example = function() {
     )
   }
 
-  vec.trans.fun = function(ax.df,x.max, success.prob,fixed.states = FALSE,d.factor=1, d.exp=1,...) {
-    restore.point("vec.trans.fun")
+  trans.fun = function(ax.df,x.max, success.prob,fixed.states = FALSE,d.factor=1, d.exp=1,...) {
+    restore.point("trans.fun")
     #if (x=="0_0") stop()
 
     ax.df = mutate(ax.df,
@@ -145,7 +145,7 @@ arms.race.destroy.example = function() {
     )
     sp = success.prob
 
-    tr = independent.transitions(ax.df,
+    tr = independent_transitions(ax.df,
       trans_var("b1",default=0,
         trans_val(1, (i1=="b")*sp),
         trans_val(-1, (i1=="d")*1)
@@ -185,7 +185,7 @@ arms.race.destroy.example = function() {
 
   g = rel_game("Arms Race") %>%
     rel_param(delta=0.9, rho=0.4, ch=0.1,cb=0.1, cx=0.01,x.max=x.max, success.prob=0.5, d.factor=0.8, d.exp=1) %>%
-    rel_states(x.df,A.fun=A.fun, vec.pi.fun=vec.pi.fun, vec.trans.fun=vec.trans.fun) %>%
+    rel_states(x.df,A.fun=A.fun, pi.fun=pi.fun, trans.fun=trans.fun) %>%
     rel_compile() %>%
     rel_capped_rne(T=1000)
 

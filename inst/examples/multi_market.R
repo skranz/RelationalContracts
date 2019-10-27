@@ -1,14 +1,14 @@
 examples.cost.ladder.cournot.multimarket = function() {
   # A Cournot duopoly in 2 markets
   # with endogenous marginal cost
-  vec.pi.fun = function(ax.df, i.cost=10,...) {
+  pi.fun = function(ax.df, i.cost=10,...) {
     restore.point("pi.fun")
     mutate(ax.df,
       pi1 = -i.cost*i1,
       pi2 = -i.cost*i2
     )
   }
-  vec.static.pi.fun = function(ax.df,x.max,a=x.max, b=1,...) {
+  static.pi.fun = function(ax.df,x.max,a=x.max, b=1,...) {
     restore.point("pi.fun")
     res = mutate(ax.df,
       Q = q1+q2,
@@ -23,7 +23,7 @@ examples.cost.ladder.cournot.multimarket = function() {
     res
   }
 
-  vec.trans.fun = function(ax.df,x.max,dep.prob=0,alpha=1,x.min=0, ...) {
+  trans.fun = function(ax.df,x.max,dep.prob=0,alpha=1,x.min=0, ...) {
     restore.point("trans.fun")
     #if (x=="0_0") stop()
     ax.df = mutate(ax.df,
@@ -98,7 +98,7 @@ examples.cost.ladder.cournot.multimarket = function() {
   x.df$x = paste0(x.df$market,"_",x.df$x1A,"_", x.df$x2A,"_",x.df$x1B,"_", x.df$x2B)
   g = rel_game("Multimarket Cournot with Cost Ladder") %>%
     rel_param(x.min=x.min,x.max=x.max,dep.prob=0.1,a=x.max,b=1, i.cost=1,alpha=1) %>%
-    rel_states(x.df,A1=list(i1=i.seq),A2=list(i2=i.seq),static.A1 = list(q1=q.seq), static.A2 = list(q2=q.seq),vec.pi.fun=vec.pi.fun, vec.trans.fun=vec.trans.fun, vec.static.pi.fun = vec.static.pi.fun, x.T = "A_0_0_0_0") %>%
+    rel_states(x.df,A1=list(i1=i.seq),A2=list(i2=i.seq),static.A1 = list(q1=q.seq), static.A2 = list(q2=q.seq),pi.fun=pi.fun, trans.fun=trans.fun, static.pi.fun = static.pi.fun, x.T = "A_0_0_0_0") %>%
     rel_compile()
 
   g = g %>%  rel_capped_rne(T=100, delta=0.9, rho=0.5, save.history = FALSE, use.cpp = TRUE, add.stationary = TRUE, save.details = FALSE)

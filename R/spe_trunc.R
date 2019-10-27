@@ -19,14 +19,14 @@ examples.multistage.spe.trunc = function() {
   }
 
 
-  vec.pi.fun = function(ax.df, i.cost=10*x.step, x.step=1,...) {
+  pi.fun = function(ax.df, i.cost=10*x.step, x.step=1,...) {
     restore.point("pi.fun")
     mutate(ax.df,
       pi1 = -i.cost*i1,
       pi2 = -i.cost*i2
     )
   }
-  vec.static.pi.fun = function(ax.df, c1=0, c2=0,a=10,b=1,...) {
+  static.pi.fun = function(ax.df, c1=0, c2=0,a=10,b=1,...) {
     restore.point("pi.fun")
     mutate(ax.df,
       pi1 = (a-b*(q1+q2)-c1)*q1,
@@ -34,7 +34,7 @@ examples.multistage.spe.trunc = function() {
     )
   }
 
-  vec.trans.fun = function(ax.df,x.step,x.max,dep.prob=0,...) {
+  trans.fun = function(ax.df,x.step,x.max,dep.prob=0,...) {
     restore.point("trans.fun")
     #if (x=="0_0") stop()
     ax.df = mutate(ax.df,
@@ -72,7 +72,7 @@ examples.multistage.spe.trunc = function() {
 
   g = rel_game("Cournot with Investment") %>%
     rel_param(c1=0,c2=0,x.step=x.step, x.max=x.max,dep.prob=0.05,a=100, i.cost=50, i.seq=c(0,1,2,5)) %>%
-    rel_states(x.df,A.fun=A.fun, vec.pi.fun=vec.pi.fun, vec.trans.fun=vec.trans.fun, vec.static.pi.fun = vec.static.pi.fun, static.A.fun = static.A.fun) %>%
+    rel_states(x.df,A.fun=A.fun, pi.fun=pi.fun, trans.fun=trans.fun, static.pi.fun = static.pi.fun, static.A.fun = static.A.fun) %>%
     rel_compile()
 
   g = rel_spe(g, delta=0.9)

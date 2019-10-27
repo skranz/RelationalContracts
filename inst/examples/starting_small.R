@@ -17,15 +17,15 @@ starting_small = function() {
       A2=list(e=e.seq, h2=unique(c(0,x1)))
     )
   }
-  vec.static.pi.fun = function(ax.df, cost=1/2,...) {
-    restore.point("vec.pi.fun")
+  static.pi.fun = function(ax.df, cost=1/2,...) {
+    restore.point("pi.fun")
     mutate(ax.df,
            pi1 = e - h2,
            pi2 = -cost*e^2 - h1
     )
   }
 
-  vec.trans.fun = function(ax.df,x.seq, ...) {
+  trans.fun = function(ax.df,x.seq, ...) {
     restore.point("trans.fun")
     ax.df %>%
       select(xs=x, to_x1, to_x2) %>%
@@ -37,7 +37,7 @@ starting_small = function() {
   x.df$x = paste0(x.df$x1,"_", x.df$x2)
   g = rel_game("Starting Small Game") %>%
     rel_param(cost = 1/2, x.seq=x.seq, e.seq=seq(0,1,by=0.01)) %>%
-    rel_states(x.df,A.fun=A.fun,static.A.fun=static.A.fun, pi1=0, pi2=0, vec.static.pi.fun=vec.static.pi.fun, vec.trans.fun=vec.trans.fun) %>%
+    rel_states(x.df,A.fun=A.fun,static.A.fun=static.A.fun, pi1=0, pi2=0, static.pi.fun=static.pi.fun, trans.fun=trans.fun) %>%
     rel_compile() %>%
     rel_solve_repgames()
 

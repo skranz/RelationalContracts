@@ -1,27 +1,6 @@
 examples.eq_diagram = function() {
 
 
-  e.seq = c(0,1); xL=0; xH=5;
-  g = rel_game("Simple Vulnerability Paradox") %>%
-    rel_param(delta=0.8, rho=0.5, c=0.4, xL=xL,xH=xH) %>%
-    # Initial State
-    rel_state("x0", A1=c("to_xL","to_xH"),A2=list(e=e.seq)) %>%
-    rel_payoff("x0",pi1=0,pi2=0) %>%
-    rel_transition("x0",c("xL","xH"),a1=c("to_xL","to_xH")) %>%
-    # Low vulnerability
-    rel_state("xL", A2=list(e=unique(c(-xL,e.seq)))) %>%
-    rel_payoff("xL",pi1=~e, pi2=~ -c*e*(e>=0)) %>%
-    # High vulnerability
-    rel_state("xH", A1=NULL,A2=list(e=unique(c(-xH,e.seq)))) %>%
-    rel_payoff("xH",pi1=~e, pi2=~ -c*e*(e>=0)) %>%
-    #rel_transition("xH","x0", prob=1) %>%
-    rel_compile() %>%
-    rel_rne()
-
-
-  eq_diagram(g)
-
-  rel_diagram(g)
 
 
   x.max = 3

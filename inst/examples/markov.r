@@ -67,8 +67,8 @@ counot.example = function() {
     list(A1=A1,A2=A2)
   }
 
-  vec.static.pi.fun = function(ax.df,c1,c2,...) {
-    restore.point("vec.static.pi.fun")
+  static.pi.fun = function(ax.df,c1,c2,...) {
+    restore.point("static.pi.fun")
     ax.df %>%
       transmute(
         x=x,
@@ -78,8 +78,8 @@ counot.example = function() {
       )
   }
 
-  vec.trans.fun = function(ax.df, k.step,...) {
-    restore.point("vec.trans.fun")
+  trans.fun = function(ax.df, k.step,...) {
+    restore.point("trans.fun")
     ax.df %>%
       mutate(
         k1d = k1+(i1=="i")*k.step,
@@ -103,11 +103,11 @@ counot.example = function() {
     rel_states(x.df,
       # Static effort stage
       static.A.fun=static.A.fun,
-      vec.static.pi.fun = vec.static.pi.fun,
+      static.pi.fun = static.pi.fun,
       # Dynamic relationship intensification stage
       A.fun = A.fun,
       pi1 =~ (i1=="i")*i_cost, pi2=~ (i2=="i")*i_cost,
-      vec.trans.fun=vec.trans.fun
+      trans.fun=trans.fun
     )
 
   g = rel_compile(g)

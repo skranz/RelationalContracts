@@ -4,15 +4,12 @@
 \alias{rel_scale_eq_payoffs}
 \title{Scale equilibrium payoffs}
 \usage{
-rel_scale_eq_payoffs(g, factor = if (discounted.sum) 1/(1 - g$param$delta)
-  else 1, discounted.sum = FALSE)
+rel_scale_eq_payoffs(g, factor)
 }
 \arguments{
 \item{g}{the game for which an equilibrium was computed}
 
 \item{factor}{the factor by which the payoffs U,v1,v2,r1 and r2 are multiplied}
-
-\item{discounted.sum}{if TRUE the factor is set to 1/(1-delta). Equilibrium payoffs are then given as discounted sum of payoffs instead of average discounted payoffs.}
 }
 \description{
 Scale equilibrium payoffs

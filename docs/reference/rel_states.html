@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Add multiple states via functions — rel_states • RelationalContracts</title>
+<title>Add one or multiple states. Allows to specify action spaces, payoffs and state transitions via functions — rel_states • RelationalContracts</title>
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
@@ -30,9 +30,9 @@
 
 
 
-<meta property="og:title" content="Add multiple states via functions — rel_states" />
+<meta property="og:title" content="Add one or multiple states. Allows to specify action spaces, payoffs and state transitions via functions — rel_states" />
 
-<meta property="og:description" content="Add multiple states via functions" />
+<meta property="og:description" content="Add one or multiple states. Allows to specify action spaces, payoffs and state transitions via functions" />
 <meta name="twitter:card" content="summary" />
 
 
@@ -75,7 +75,18 @@
      
   </a>
 </li>
-<li class="dropdown-header">Manuals</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Manuals
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="../articles/Specifying Games.html">Analyzing Relational Contracts with R: Part I</a>
+    </li>
+  </ul>
+</li>
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
@@ -100,22 +111,26 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Add multiple states via functions</h1>
+    <h1>Add one or multiple states. Allows to specify action spaces, payoffs and state transitions via functions</h1>
     
     <div class="hidden name"><code>rel_states.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>Add multiple states via functions</p>
+    <p>Add one or multiple states. Allows to specify action spaces, payoffs and state transitions via functions</p>
     
     </div>
 
     <pre class="usage"><span class='fu'>rel_states</span>(<span class='no'>g</span>, <span class='no'>x</span>, <span class='kw'>A1</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>A2</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>pi1</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>pi2</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>A.fun</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>pi.fun</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>vec.pi.fun</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>trans.fun</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>vec.trans.fun</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>static.A.fun</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>static.pi.fun</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>vec.static.pi.fun</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>static.A1</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>static.A2</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>static.pi1</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>static.pi2</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>x.T</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>...</span>)</pre>
+  <span class='kw'>A.fun</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>pi.fun</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>trans.fun</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>static.A1</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>static.A2</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>static.A.fun</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>static.pi1</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>static.pi2</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>static.pi.fun</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>x.T</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>...</span>)
+
+<span class='fu'>rel_state</span>(<span class='no'>g</span>, <span class='no'>x</span>, <span class='kw'>A1</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>A2</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>pi1</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>pi2</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>A.fun</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>pi.fun</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>trans.fun</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>static.A1</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>static.A2</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>static.A.fun</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>static.pi1</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>static.pi2</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>static.pi.fun</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>x.T</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -130,11 +145,11 @@
     </tr>
     <tr>
       <th>A1</th>
-      <td><p>The action set of player 1. Can be a numeric or character vector (possible a formula creating one)</p></td>
+      <td><p>The action set of player 1. A named list, like <code>A1=list(e1=1:10)</code>, where each element is a numeric or character vector.</p></td>
     </tr>
     <tr>
       <th>A2</th>
-      <td><p>The action set of player 2. Can be a numeric or character vector (possible a formula creating one)</p></td>
+      <td><p>The action set of player 2. See A1.</p></td>
     </tr>
     <tr>
       <th>pi1</th>
@@ -146,23 +161,15 @@
     </tr>
     <tr>
       <th>A.fun</th>
-      <td><p>Alternative to specify fixed A1 and A2, a function that returns action sets.</p></td>
+      <td><p>Alternative to specify A1 and A2, a function that returns action sets.</p></td>
     </tr>
     <tr>
       <th>pi.fun</th>
-      <td><p>Alternative to specify pi1 and pi2 as formula, a function that returns for each state a data frame with with pi1 and pi2 and as many rows as action profiles</p></td>
-    </tr>
-    <tr>
-      <th>vec.pi.fun</th>
-      <td><p>Alternative to pi.fun. A vectorized function that returns payoffs directly for all combinations of states and action profiles.</p></td>
+      <td><p>Alternative to specify pi1 and pi2 as formula. A vectorized function that returns payoffs directly for all combinations of states and action profiles.</p></td>
     </tr>
     <tr>
       <th>trans.fun</th>
       <td><p>A function that specifies state transitions</p></td>
-    </tr>
-    <tr>
-      <th>vec.trans.fun</th>
-      <td><p>Alternative to trans.fun, a vectorized function that specifies state transitions</p></td>
     </tr>
     <tr>
       <th>x.T</th>
@@ -174,6 +181,12 @@
 
     <p>Returns the updated game</p>
     
+    <h2 class="hasAnchor" id="functions"><a class="anchor" href="#functions"></a>Functions</h2>
+
+    <ul>
+<li><p><code>rel_state</code>: rel_state is just a synonym for the rel_states. You may want to use it if you specify just a single state.</p></li>
+</ul>
+    
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
@@ -182,6 +195,8 @@
       <li><a href="#arguments">Arguments</a></li>
       
       <li><a href="#value">Value</a></li>
+
+      <li><a href="#functions">Functions</a></li>
           </ul>
 
   </div>
