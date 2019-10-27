@@ -334,35 +334,71 @@ ax.df %>%
 ```
 Starting with this data frame, we can easily compute the new capacities of both players by adding their investments to the current capacities. The new state `xd` is then simply created by pasting the new capacities together. We also have to add the transition probability of `prob=1` since state transitions are deterministic and set the source state column `xs` just to the original state `x`.
 
-## Cournot Duopoly where investments are not always successful. Specifying state transitions using the helper function `independent_transitions`
+## Specifying state transitions using the helper function `independent_transitions`: Cournot duopoly where investments are not always successful
 
 Consider now a variant of our previous game in which an investment leads to a successful capacity expansion only with an exogenous success probability `sp`.
 
 Specifying state transitions becomes more complicated now. Assume both players invest, then there are 4 different possible outcomes: no investment is successful, only player 1's investment is successful, only player 2's investment is successful, or both investments are successful.
 
 
-Before writing 
+Relational Contracts has a helper function `irv_joint_dist` that allows to compute joint distributions of independent discrete random variables using a format suitable to specify state transitions. Consider the following example.
 ```{r}
-# success probability
+# success probability of investment
 sp = 0.7
 
-# Small subset of relevant rows
-df = tibble(
-  x="0_0",x1=0,x2=0,i1=c(0,1),i2=1
-)
-df
+# An example row for which we want
+# to compute transition probabiluties
+df = tibble(x="0_0",x1=0,x2=0,i1=1,i2=1)
 
-# Use independent_transitions
-independent_transitions(df,
-  trans_var("new_x1",default=x1,
-    trans_val(val=x1+1,prob=i1*sp)
+# Compute joint distribution of independent
+# random varibles
+irv_joint_dist(df,
+  irv("new_x1",default=x1,
+    irv_val(val=x1+1,prob=i1*sp)
   ),
-  trans_var("new_x2",default=x2,
-    trans_val(val=x2+1,prob=i2*sp)
+  irv("new_x2",default=x2,
+    irv_val(val=x2+1,prob=i2*sp)
   )
 )
 ```
+Inside the call to `irv_joint_dist` we specify with `irv_var` two discrete valued random variables `new_x1` and `new_x2` that shall be independently distributed from each other.
+Inside `irv_var` we call `irv_val` to specify values that the variable can take and their realiziation probabilities. These values and probabilities are computed using the columns of the data frame `df` passed to `irv_joint_dist` using lazy evaluation.
 
+For convenience, we can also set a default value for each random variables that is realized with probability 1 minus the some of all explicitly specified probabilities via `irv_val`. E.g. without default values, we could have equivalently specified `new_x1` by
+```{r eval=FALSE}
+  irv("new_x1",
+    irv_val(val=x1+1,prob=i1*sp),
+    irv_val(val=x1, prob=1-(i1*sp))
+  )
+```
+For each row of the passed data frame `df`, `irv_joint_dist` creates several rows: one for each possible outcome combination of the specified independent random variables. Since `df` only has a single row and there are 4 combinations of `new_x1` and `new_x2`, we get a data frame with 4 rows. The column `prob` contains the probability of the particular outcome combination.
+
+If `df` contains multiple rows, these computations will be performed separately for each row and the resulting rows are combined together. Consider this example where in one row player 1 invests and in the other not:
+```{r}
+# success probability of investment
+sp = 0.7
+
+# Two example rows for which we want
+# to compute transition probabiluties
+df = tibble(x="0_0",x1=0,x2=0,i1=c(0,1),i2=1)
+df
+
+# Compute joint distribution of independent
+# random varibles
+irv_joint_dist(df,
+  irv("new_x1",default=x1,
+    irv_val(val=x1+1,prob=i1*sp)
+  ),
+  irv("new_x2",default=x2,
+    irv_val(val=x2+1,prob=i2*sp)
+  )
+)
+```
+The result has now 2+4=6 rows. If player 1 does not invest (`i1==0`), the variable `new_x1` always is 0 and there are only two outcomes. 
+
+Note that the order of the resulting rows is not very intutive. Internally `irv_joint_dist` tries to use vectorization for fast computation that sorts the rows in a peculiar way and for time reasons there is no unneccessary rearrangement afterwards.  
+
+Below is a specification of the transition function for our Cournot game using `irv_joint_dist`:
 ```{r}
 sp = 0.7
 trans.fun = function(ax.df,...) {
@@ -370,18 +406,59 @@ trans.fun = function(ax.df,...) {
   ax.df %>%
     select(x,x1,x2,i1,i2) %>%
     unique() %>%
-    independent_transitions(
-      trans_var("new_x1",default=x1,
-        trans_val(val=x1+1,prob=i1*sp)
+    irv_joint_dist(df,
+      irv("new_x1",default=x1,
+        irv_val(val=x1+1,prob=i1*sp)
       ),
-      trans_var("new_x2",default=x2,
-        trans_val(val=x2+1,prob=i2*sp)
+      irv("new_x2",default=x2,
+        irv_val(val=x2+1,prob=i2*sp)
       )
-    ) %>% 
+    ) %>%    
     mutate(
       xd = paste0(new_x1,"_",new_x2),
       xs=x
     )
+}
+```
+
+This code may look complicated, but specifying transition probabilities correctly is typically the most difficult task in a game specificiation. And while it requires some time to learn, in my experience, `irv_joint_dist` is often quite a useful tool for this task.
+
+## Advanced use of `irv_joint_dist`: Cournot duopoly where investments are not always successful and capacity may depreciate
+
+Consider now a variant in which existing capacity can also depricate with positive depreciation probability `dp`.
+
+```{r}
+sp = 0.7
+dp = 0.2
+ax.df = tibble(x="1_1",x1=1,x2=1,i1=c(0,1),i2=1)
+
+trans.fun = function(ax.df,...) {
+  restore.point("trans.fun")
+  ax.df %>%
+    select(x,x1,x2,i1,i2) %>%
+    unique() %>%
+    irv_joint_dist(
+      irv("add_x1",default=0,
+        irv_val(1,prob=i1*sp)
+      ),
+      irv("add_x2",default=0,
+        irv_val(1,prob=i2*sp)
+      ),
+      irv("rem_x1",default=0,
+        irv_val(1,prob=(x1>0)*dp)
+      ),
+      irv("rem_x2",default=0,
+        irv_val(1,prob=(x2>0)*dp)
+      )
+    ) %>%
+    mutate(
+      new_x1 = x1+add_x1 - rem_x1,
+      new_x2 = x2+add_x2 - rem_x2,
+      xd = paste0(new_x1,"_",new_x2),
+      xs=x
+    ) %>%
+    group_by(xs,xd,i1,i2) %>%
+    summarize(prob=sum(prob))
 }
 ```
 

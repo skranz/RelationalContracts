@@ -292,6 +292,7 @@ rel_compile = function(g,..., compute.just.static=FALSE) {
     if (!is.data.frame(res) & is.list(res)) {
       res = bind_rows(res)
     }
+    res = ungroup(res)
 
     res$.def.ind = ind + length(g$trans_defs)
     check.rel(has.cols(res,c("xs","xd","prob")), "Your state transition function trans.fun must return a data frame that has the columns 'xs','xd', 'prob' as well as one column for each action variable that affects the state transitions (purely static actions can be ommited).")
