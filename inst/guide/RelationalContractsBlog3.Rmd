@@ -29,7 +29,6 @@ Note that there are no direct gains from attacking since it involves costs for b
 
 The following code specifies the game:
 ```{r}
-
 # Action space for each state
 A.fun = function(x1,x2, x.max,...) {
   restore.point("A.fun")
@@ -44,7 +43,6 @@ A.fun = function(x1,x2, x.max,...) {
     )
   )
 }
-
 
 # State transition function
 trans.fun = function(ax.df,x.max, sp,d.factor=1, d.exp=1,...) {
@@ -69,10 +67,10 @@ trans.fun = function(ax.df,x.max, sp,d.factor=1, d.exp=1,...) {
       irv_val(-1, (i2=="d")*1)
     ),
     irv("d1",default=0,
-      irv_val(1, (h2>0)*dp2)
+      irv_val(1, (a2=="attack")*dp2)
     ),
     irv("d2",default=0,
-      irv_val(1, (h1>0)*dp1)
+      irv_val(1, (a1=="attack")*dp1)
     )
   )
 
@@ -83,7 +81,7 @@ trans.fun = function(ax.df,x.max, sp,d.factor=1, d.exp=1,...) {
       xd = paste0(new_x1,"_",new_x2),
       xs=x
     ) %>%
-    group_by(xs,xd,i1,i2,h1,h2) %>%
+    group_by(xs,xd,i1,i2,a1,a2) %>%
     summarize(prob = sum(prob))
 }
 
@@ -94,21 +92,29 @@ x.df = tidyr::expand_grid(x1=0:x.max,x2=0:x.max) %>%
 
 
 g = rel_game("Arms Race") %>%
-  rel_param(delta=0.9, rho=0.4, c.a=0.1,c.i=0.1, c.x=0.01,x.max=x.max, sp=0.5, d.factor=0.8, d.exp=1) %>%
+  rel_param(delta=0.9, rho=0.5, c.a=0.1,c.i=0.1, c.x=0.01,x.max=x.max, sp=0.5, d.factor=0.8, d.exp=2) %>%
   rel_states(x.df,A.fun=A.fun, trans.fun=trans.fun,
     pi1 = -c.a*(a1=="attack")*x1 - (a2=="attack")*x2 - c.i*(i1=="b")-c.x*x1,
     pi2 = -c.a*(a2=="attack")*x2 - (a1=="attack")*x1 - c.i*(i2=="b")-c.x*x2
   ) %>%
-  rel_compile() %>%
-  rel_capped_rne(T=1000)
+  rel_compile()
+
+```
+
+
+
+````{r }
+g = g %>% rel_capped_rne(T=1000)
 
 rne = get_eq(g)
 
 df.li = eq_diagram(g, show.own.loop = !TRUE, just.eq.chain = !TRUE, return.dfs = TRUE, passive.edge.width = 0)
+
+
 edf = df.li$edf
 ndf = left_join(df.li$ndf, rne, by="x")
 ndf = ndf %>% mutate(
-  conflict = ae.h1 != 0 | ae.h2 != 0,
+  conflict = ae.a1 == "attack" | ae.a2 == "attack",
   shape = ifelse(conflict, "box","circle"),
   type = ifelse(conflict, "conflict_node", "peace_node")
 )
@@ -116,7 +122,151 @@ graph = create_graph(ndf, edf)
 render_graph(graph, output="visNetwork")
 
 
+edf = edf[integer(),]
+ndf = ndf[1,]
+graph = create_graph(ndf, edf)
+
+render_graph(graph, output="visNetwork")
+
 
 eq_diagram(g, show.own.loop = !TRUE, just.eq.chain = TRUE)
 
 ```
+
+
+## Consider only one active player
+
+```{r}
+# Action space for each state
+A.fun = function(x1,x2,ap, x.max,...) {
+  restore.point("A.fun")
+  list(
+    A1=if (ap==1) list(
+      a1=c("wait", if (x1>0) "attack"),
+      i1=c(if (x1>0) "d","",if (x1<x.max) "b")
+    ),
+    A2= if (ap==2) list(
+      a2=c("wait", if (x2>0) "attack"),
+      i2=c(if (x2>0) "d","",if (x2<x.max) "b")
+    )
+  )
+}
+
+pi.fun = function(ax.df,c.a,c.x,c.i, ...) {
+  restore.point("pi.fun")
+  ax1 = filter(ax.df, ap==1) %>%
+    mutate(
+      pi1 = -c.a*(a1=="attack")*x1  - c.i*(i1=="b")-c.x*x1,
+      pi2 = - (a1=="attack")*x1 -c.x*x2
+    )
+  ax2 = filter(ax.df, ap==2) %>%
+    mutate(
+      pi1 = - (a2=="attack")*x2 -c.x*x1,
+      pi2 = -c.a*(a2=="attack")*x2 - c.i*(i2=="b")-c.x*x2
+    )
+  bind_rows(ax1,ax2)
+}
+
+# State transition function
+trans.fun = function(ax.df,x.max, sp,d.factor=1, d.exp=1,...) {
+  restore.point("trans.fun")
+
+  # Compute probability to destroy
+  # a weapon unit of other player
+  # if one attacks
+  ax.df = mutate(ax.df,
+    i = ifelse(ap==1,i1,i2),
+    a = ifelse(ap==1,a1,a2),
+    xi = ifelse(ap==1,x1,x2),
+    xj = ifelse(ap==1,x2,x1),
+    dp = d.factor*(xi / x.max)^d.exp
+  )
+  
+  tr = ax.df %>% 
+    distinct(ap,xi,xj,i,a) %>%
+    left_join(ax.df, by = c("ap", "xi", "xj", "i", "a"))
+  
+
+  tr = irv_joint_dist(tr,
+    irv("bi",default=0,
+      irv_val(1, (i=="b")*sp),
+      irv_val(-1, (i=="d")*1)
+    ),
+    irv("dj",default=0,
+      irv_val(1, (a=="attack")*dp)
+    ),
+    irv("new_ap",irv_val(1, 0.5), irv_val(2, 0.5))
+  )
+
+  tr = tr %>%
+    mutate(
+      new_xi = pmax(xi+bi,0),
+      new_xj = pmax(xj-dj,0),
+      new_x1 = ifelse(ap==1, new_xi,new_xj),
+      new_x2 = ifelse(ap==1, new_xj,new_xi),
+      xd = paste0("p",new_ap,"_",new_x1,"_",new_x2),
+      xs=x
+    )
+  tr
+  
+  test = tr %>%
+    select(xs,xd,ap,i1,i2,a1,a2, prob)
+}
+
+# Maximum size of weapons arsenal
+x.max = 3
+x.df1 = tidyr::expand_grid(ap=1,x1=0:x.max,x2=0:x.max)  
+x.df2 = x.df1 %>% mutate(ap=2)
+x.df = bind_rows(x.df1, x.df2) %>%
+  mutate(
+    x = paste0("p",ap,"_" ,x1,"_", x2),
+    xgroup = paste0(x1,"_",x2)
+  )
+
+g = rel_game("Arms Race Turns") %>%
+  rel_param(delta=0.9, rho=0.5, c.a=0.01,c.i=0.01, c.x=0.01,x.max=x.max, sp=0.2, d.factor=0.8, d.exp=2) %>%
+  rel_states(x.df,A.fun=A.fun, trans.fun=trans.fun,pi.fun=pi.fun) %>%
+  rel_compile()
+
+g = g %>% rel_capped_rne(T=1000)
+
+rne = get_eq(g)
+plot.turns.arms.race(g)
+
+plot.turns.arms.race = function(g, eq=get_eq(g)) {
+
+  eq_group = eq %>%
+    group_by(x1,x2, xgroup) %>%
+    summarize(
+      attack1 = any(ae.a1=="attack", na.rm=TRUE),
+      attack2 = any(ae.a2=="attack", na.rm=TRUE),
+      b1 = any(ae.i1=="b", na.rm=TRUE),
+      b2 = any(ae.i2=="b", na.rm=TRUE),
+      d1 = any(ae.i1=="d", na.rm=TRUE),
+      d2 = any(ae.i2=="d", na.rm=TRUE),
+      r1 = round(mean(r1),1),
+      r2 = round(mean(r2),1)
+    )
+
+  res = eq_diagram_xgroup(g,return.dfs = TRUE, passive.edge.width = 0)
+  edf = res$edf
+    
+  ndf = left_join(res$ndf, eq_group, by="xgroup")
+  ndf = ndf %>% mutate(
+    conflict = attack1 | attack2,
+    shape = ifelse(conflict, "box","circle"),
+    type = ifelse(conflict, "conflict_node", "peace_node"),
+    label = paste0(xgroup,"\n", 
+      ifelse(attack1,"a",""), ifelse(b1,"b","") , ifelse(d1,"d",""),
+      " ",
+      ifelse(attack2,"a",""),ifelse(b2,"b","") , ifelse(d2,"d",""),
+      "\n",
+      r1, " ",r2
+    )
+  )
+  graph = create_graph(ndf, edf)
+  render_graph(graph, output="visNetwork")
+}
+
+```
+
