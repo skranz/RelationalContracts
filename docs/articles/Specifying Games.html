@@ -5,11 +5,11 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Analyzing Relational Contracts with R: Part I • RelationalContracts</title>
+<title>Specifying Games • RelationalContracts</title>
 <!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script><!-- Bootstrap --><link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.3.7/cerulean/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script><!-- sticky kit --><script src="https://cdnjs.cloudflare.com/ajax/libs/sticky-kit/1.1.3/sticky-kit.min.js" integrity="sha256-c4Rlo1ZozqTPE2RLuvbusY3+SU1pQaJC0TjuhygMipw=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
-<script src="../pkgdown.js"></script><meta property="og:title" content="Analyzing Relational Contracts with R: Part I">
+<script src="../pkgdown.js"></script><meta property="og:title" content="Specifying Games">
 <meta property="og:description" content="">
 <meta name="twitter:card" content="summary">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
@@ -50,7 +50,7 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="../articles/Specifying%20Games.html">Analyzing Relational Contracts with R: Part I</a>
+      <a href="../articles/Specifying%20Games.html">Specifying Games</a>
     </li>
   </ul>
 </li>
@@ -77,7 +77,7 @@
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
-      <h1>Analyzing Relational Contracts with R: Part I</h1>
+      <h1>Specifying Games</h1>
             
       
       
@@ -87,9 +87,11 @@
 
     
     
+<p>This vignette illustrates how you can specify dynamic games with the <code>RelationalContracts</code> package. We start with simple examples and move to more complex use cases.</p>
+<p>In particular, sections 7-9 give advice on how to effectively specify state transitions for complex game with multidimensional state spaces.</p>
 <div id="specifying-a-simple-repeated-game" class="section level2">
 <h2 class="hasAnchor">
-<a href="#specifying-a-simple-repeated-game" class="anchor"></a>Specifying a simple repeated game</h2>
+<a href="#specifying-a-simple-repeated-game" class="anchor"></a>1. Specifying a simple repeated game</h2>
 <p>Consider a simple two player repeated game. Each player <span class="math inline">\(i\)</span> chooses an effort level <span class="math inline">\(e_i\)</span> on a grid between 0 and 1 that directly benefits the other player. Effort involves for player <span class="math inline">\(i\)</span> cost of <span class="math inline">\(\frac 1 2 e_i\)</span> and grants the other player a benefit of <span class="math inline">\(e_i\)</span>:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(RelationalContracts)</a>
 <a class="sourceLine" id="cb1-2" title="2">effort.seq =<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/seq">seq</a></span>(<span class="dv">0</span>,<span class="dv">1</span>,<span class="dt">by=</span><span class="fl">0.1</span>)</a>
@@ -101,8 +103,8 @@
 <a class="sourceLine" id="cb1-8" title="8">    <span class="dt">A2 =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">e2=</span>effort.seq),</a>
 <a class="sourceLine" id="cb1-9" title="9"></a>
 <a class="sourceLine" id="cb1-10" title="10">    <span class="co"># Stage game payoffs</span></a>
-<a class="sourceLine" id="cb1-11" title="11">    <span class="dt">pi1 =</span> <span class="op">~</span><span class="st"> </span>e2 <span class="op">-</span><span class="st"> </span><span class="fl">0.5</span><span class="op">*</span>e1<span class="op">^</span><span class="dv">2</span>,</a>
-<a class="sourceLine" id="cb1-12" title="12">    <span class="dt">pi2 =</span> <span class="op">~</span><span class="st"> </span>e1 <span class="op">-</span><span class="st"> </span><span class="fl">0.5</span><span class="op">*</span>e2<span class="op">^</span><span class="dv">2</span></a>
+<a class="sourceLine" id="cb1-11" title="11">    <span class="dt">pi1 =</span> e2 <span class="op">-</span><span class="st"> </span><span class="fl">0.5</span><span class="op">*</span>e1<span class="op">^</span><span class="dv">2</span>,</a>
+<a class="sourceLine" id="cb1-12" title="12">    <span class="dt">pi2 =</span> e1 <span class="op">-</span><span class="st"> </span><span class="fl">0.5</span><span class="op">*</span>e2<span class="op">^</span><span class="dv">2</span></a>
 <a class="sourceLine" id="cb1-13" title="13">  )</a>
 <a class="sourceLine" id="cb1-14" title="14"></a>
 <a class="sourceLine" id="cb1-15" title="15"><span class="co"># Solve SPE</span></a>
@@ -113,11 +115,11 @@
 ## 1 x0    0.6 0.6</code></pre>
 <p>The function <code>rel_game</code> specifies an empty game object and <code>rel_state</code> specifies a state. A repeated game has just a single state, but one can also specify more general <a href="https://en.wikipedia.org/wiki/Stochastic_game">stochastic games</a> with several states.</p>
 <p>The parameters <code>A1</code> and <code>A2</code> specify the action spaces of each player. You have to provide a named list of actions for each player, here we have the actions <code>e1</code> for player 1 and <code>e2</code> for player 2. Note that you must choose different names for each player’s actions, i.e. you could not call both actions just <code>e</code>.</p>
-<p>The parameters <code>pi1</code> and <code>pi2</code> specify payoffs for both players. Payoffs will usually be formula’s (starting with <code>~</code>), which means that they can depend on the chosen action or parameters specified for the game or state.</p>
+<p>The parameters <code>pi1</code> and <code>pi2</code> specify payoffs for both players. Payoffs will be lazily evaluated later on the corresponding action space. This means they can depend on the chosen action or parameters specified for the game or state.</p>
 </div>
 <div id="a-game-with-2-states-and-transitions" class="section level2">
 <h2 class="hasAnchor">
-<a href="#a-game-with-2-states-and-transitions" class="anchor"></a>A game with 2 states and transitions</h2>
+<a href="#a-game-with-2-states-and-transitions" class="anchor"></a>2. A game with 2 states and transitions</h2>
 <p>Consider now the following game with two states:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" title="1"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(RelationalContracts)</a>
 <a class="sourceLine" id="cb3-2" title="2">effort.seq =<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/seq">seq</a></span>(<span class="dv">0</span>,<span class="dv">1</span>,<span class="dt">by=</span><span class="fl">0.1</span>)</a>
@@ -126,14 +128,14 @@
 <a class="sourceLine" id="cb3-5" title="5"><span class="st">  </span><span class="kw"><a href="../reference/rel_states.html">rel_state</a></span>(<span class="st">"not_vul"</span>,</a>
 <a class="sourceLine" id="cb3-6" title="6">    <span class="dt">A1 =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">e1=</span>effort.seq, <span class="dt">make_vul =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/c">c</a></span>(<span class="ot">FALSE</span>, <span class="ot">TRUE</span>)),</a>
 <a class="sourceLine" id="cb3-7" title="7">    <span class="dt">A2 =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">e2=</span>effort.seq),</a>
-<a class="sourceLine" id="cb3-8" title="8">    <span class="dt">pi1 =</span> <span class="op">~</span><span class="st"> </span>e2 <span class="op">-</span><span class="st"> </span><span class="fl">0.5</span><span class="op">*</span>e1<span class="op">^</span><span class="dv">2</span>,</a>
-<a class="sourceLine" id="cb3-9" title="9">    <span class="dt">pi2 =</span> <span class="op">~</span><span class="st"> </span>e1 <span class="op">-</span><span class="st"> </span><span class="fl">0.5</span><span class="op">*</span>e2<span class="op">^</span><span class="dv">2</span></a>
+<a class="sourceLine" id="cb3-8" title="8">    <span class="dt">pi1 =</span> e2 <span class="op">-</span><span class="st"> </span><span class="fl">0.5</span><span class="op">*</span>e1<span class="op">^</span><span class="dv">2</span>,</a>
+<a class="sourceLine" id="cb3-9" title="9">    <span class="dt">pi2 =</span> e1 <span class="op">-</span><span class="st"> </span><span class="fl">0.5</span><span class="op">*</span>e2<span class="op">^</span><span class="dv">2</span></a>
 <a class="sourceLine" id="cb3-10" title="10">  ) <span class="op">%&gt;%</span></a>
 <a class="sourceLine" id="cb3-11" title="11"><span class="st">  </span><span class="kw"><a href="../reference/rel_states.html">rel_state</a></span>(<span class="st">"vul"</span>,</a>
 <a class="sourceLine" id="cb3-12" title="12">    <span class="dt">A1 =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">e1=</span>effort.seq),</a>
 <a class="sourceLine" id="cb3-13" title="13">    <span class="dt">A2 =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">e2=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/c">c</a></span>(<span class="op">-</span>vul,effort.seq)),</a>
-<a class="sourceLine" id="cb3-14" title="14">    <span class="dt">pi1 =</span> <span class="op">~</span><span class="st"> </span>e2 <span class="op">-</span><span class="st"> </span><span class="fl">0.5</span><span class="op">*</span>e1<span class="op">^</span><span class="dv">2</span>,</a>
-<a class="sourceLine" id="cb3-15" title="15">    <span class="dt">pi2 =</span> <span class="op">~</span><span class="st"> </span>e1 <span class="op">-</span><span class="st"> </span><span class="fl">0.5</span><span class="op">*</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/Extremes">pmax</a></span>(e2,<span class="dv">0</span>)<span class="op">^</span><span class="dv">2</span></a>
+<a class="sourceLine" id="cb3-14" title="14">    <span class="dt">pi1 =</span> e2 <span class="op">-</span><span class="st"> </span><span class="fl">0.5</span><span class="op">*</span>e1<span class="op">^</span><span class="dv">2</span>,</a>
+<a class="sourceLine" id="cb3-15" title="15">    <span class="dt">pi2 =</span> e1 <span class="op">-</span><span class="st"> </span><span class="fl">0.5</span><span class="op">*</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/Extremes">pmax</a></span>(e2,<span class="dv">0</span>)<span class="op">^</span><span class="dv">2</span></a>
 <a class="sourceLine" id="cb3-16" title="16">  ) <span class="op">%&gt;%</span></a>
 <a class="sourceLine" id="cb3-17" title="17"><span class="st">  </span><span class="kw"><a href="../reference/rel_transition.html">rel_transition</a></span>(<span class="st">"not_vul"</span>,<span class="st">"vul"</span>, <span class="dt">make_vul=</span><span class="ot">TRUE</span>,<span class="dt">prob=</span><span class="dv">1</span>) <span class="op">%&gt;%</span></a>
 <a class="sourceLine" id="cb3-18" title="18"><span class="st">  </span><span class="kw"><a href="../reference/rel_transition.html">rel_transition</a></span>(<span class="st">"vul"</span>,<span class="st">"not_vul"</span>, <span class="dt">prob =</span> <span class="fl">0.05</span>) <span class="op">%&gt;%</span></a>
@@ -154,15 +156,15 @@
 </div>
 <div id="specifying-multiple-states-at-once" class="section level2">
 <h2 class="hasAnchor">
-<a href="#specifying-multiple-states-at-once" class="anchor"></a>Specifying Multiple States at Once</h2>
+<a href="#specifying-multiple-states-at-once" class="anchor"></a>3. Specifying Multiple States at Once</h2>
 <p>Consider the following game specification that has 6 different states determined by increasing vulnerability of player 1:</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" title="1">effort.seq =<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/seq">seq</a></span>(<span class="dv">0</span>,<span class="dv">1</span>,<span class="dt">by=</span><span class="fl">0.1</span>)</a>
 <a class="sourceLine" id="cb5-2" title="2">g =<span class="st"> </span><span class="kw"><a href="../reference/rel_game.html">rel_game</a></span>() <span class="op">%&gt;%</span></a>
 <a class="sourceLine" id="cb5-3" title="3"><span class="st">  </span><span class="kw"><a href="../reference/rel_states.html">rel_states</a></span>(<span class="dt">x =</span> <span class="dv">0</span><span class="op">:</span><span class="dv">5</span>,</a>
 <a class="sourceLine" id="cb5-4" title="4">    <span class="dt">A1 =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">e1=</span>effort.seq, <span class="dt">inc_vul =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/c">c</a></span>(<span class="ot">FALSE</span>, <span class="ot">TRUE</span>)),</a>
 <a class="sourceLine" id="cb5-5" title="5">    <span class="dt">A2 =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">e2=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/c">c</a></span>(<span class="op">-</span><span class="dv">1</span>,effort.seq)),</a>
-<a class="sourceLine" id="cb5-6" title="6">    <span class="dt">pi1 =</span> <span class="op">~</span><span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/ifelse">ifelse</a></span>(e2 <span class="op">!=</span><span class="st"> </span><span class="dv">-1</span>,e2, <span class="op">-</span>x<span class="op">/</span><span class="dv">5</span>) <span class="op">-</span><span class="st"> </span><span class="fl">0.5</span><span class="op">*</span>e1<span class="op">^</span><span class="dv">2</span>,</a>
-<a class="sourceLine" id="cb5-7" title="7">    <span class="dt">pi2 =</span> <span class="op">~</span><span class="st"> </span>e1 <span class="op">-</span><span class="st"> </span><span class="fl">0.5</span><span class="op">*</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/Extremes">pmax</a></span>(e2,<span class="dv">0</span>)<span class="op">^</span><span class="dv">2</span></a>
+<a class="sourceLine" id="cb5-6" title="6">    <span class="dt">pi1 =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/ifelse">ifelse</a></span>(e2 <span class="op">!=</span><span class="st"> </span><span class="dv">-1</span>,e2, <span class="op">-</span>x<span class="op">/</span><span class="dv">5</span>) <span class="op">-</span><span class="st"> </span><span class="fl">0.5</span><span class="op">*</span>e1<span class="op">^</span><span class="dv">2</span>,</a>
+<a class="sourceLine" id="cb5-7" title="7">    <span class="dt">pi2 =</span> e1 <span class="op">-</span><span class="st"> </span><span class="fl">0.5</span><span class="op">*</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/Extremes">pmax</a></span>(e2,<span class="dv">0</span>)<span class="op">^</span><span class="dv">2</span></a>
 <a class="sourceLine" id="cb5-8" title="8">  ) <span class="op">%&gt;%</span></a>
 <a class="sourceLine" id="cb5-9" title="9"><span class="st">  </span><span class="kw"><a href="../reference/rel_transition.html">rel_transition</a></span>(<span class="dt">xs =</span> <span class="dv">0</span><span class="op">:</span><span class="dv">4</span>,<span class="dt">xd=</span><span class="dv">1</span><span class="op">:</span><span class="dv">5</span>, <span class="dt">inc_vul=</span><span class="ot">TRUE</span>,<span class="dt">prob=</span><span class="dv">1</span>)</a>
 <a class="sourceLine" id="cb5-10" title="10">  </a>
@@ -188,22 +190,22 @@
 <a class="sourceLine" id="cb7-3" title="3"><span class="st">  </span><span class="kw"><a href="../reference/rel_states.html">rel_states</a></span>(<span class="dt">x =</span> <span class="dv">0</span><span class="op">:</span><span class="dv">4</span>,</a>
 <a class="sourceLine" id="cb7-4" title="4">    <span class="dt">A1 =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">e1=</span>effort.seq, <span class="dt">inc_vul =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/c">c</a></span>(<span class="ot">FALSE</span>, <span class="ot">TRUE</span>)),</a>
 <a class="sourceLine" id="cb7-5" title="5">    <span class="dt">A2 =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">e2=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/c">c</a></span>(<span class="op">-</span><span class="dv">1</span>,effort.seq)),</a>
-<a class="sourceLine" id="cb7-6" title="6">    <span class="dt">pi1 =</span> <span class="op">~</span><span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/ifelse">ifelse</a></span>(e2 <span class="op">!=</span><span class="st"> </span><span class="dv">-1</span>,e2, <span class="op">-</span>x<span class="op">/</span><span class="dv">5</span>) <span class="op">-</span><span class="st"> </span><span class="fl">0.5</span><span class="op">*</span>e1<span class="op">^</span><span class="dv">2</span>,</a>
-<a class="sourceLine" id="cb7-7" title="7">    <span class="dt">pi2 =</span> <span class="op">~</span><span class="st"> </span>e1 <span class="op">-</span><span class="st"> </span><span class="fl">0.5</span><span class="op">*</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/Extremes">pmax</a></span>(e2,<span class="dv">0</span>)<span class="op">^</span><span class="dv">2</span></a>
+<a class="sourceLine" id="cb7-6" title="6">    <span class="dt">pi1 =</span>  <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/ifelse">ifelse</a></span>(e2 <span class="op">!=</span><span class="st"> </span><span class="dv">-1</span>,e2, <span class="op">-</span>x<span class="op">/</span><span class="dv">5</span>) <span class="op">-</span><span class="st"> </span><span class="fl">0.5</span><span class="op">*</span>e1<span class="op">^</span><span class="dv">2</span>,</a>
+<a class="sourceLine" id="cb7-7" title="7">    <span class="dt">pi2 =</span>  e1 <span class="op">-</span><span class="st"> </span><span class="fl">0.5</span><span class="op">*</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/Extremes">pmax</a></span>(e2,<span class="dv">0</span>)<span class="op">^</span><span class="dv">2</span></a>
 <a class="sourceLine" id="cb7-8" title="8">  ) <span class="op">%&gt;%</span></a>
 <a class="sourceLine" id="cb7-9" title="9"><span class="st">  </span><span class="co"># Specify state x=5 separately without inc_vul action</span></a>
 <a class="sourceLine" id="cb7-10" title="10"><span class="st">  </span><span class="kw"><a href="../reference/rel_states.html">rel_states</a></span>(<span class="dt">x =</span> <span class="dv">5</span>,</a>
 <a class="sourceLine" id="cb7-11" title="11">    <span class="dt">A1 =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">e1=</span>effort.seq),</a>
 <a class="sourceLine" id="cb7-12" title="12">    <span class="dt">A2 =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">e2=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/c">c</a></span>(<span class="op">-</span><span class="dv">1</span>,effort.seq)),</a>
-<a class="sourceLine" id="cb7-13" title="13">    <span class="dt">pi1 =</span> <span class="op">~</span><span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/ifelse">ifelse</a></span>(e2 <span class="op">!=</span><span class="st"> </span><span class="dv">-1</span>,e2, <span class="op">-</span>x<span class="op">/</span><span class="dv">5</span>) <span class="op">-</span><span class="st"> </span><span class="fl">0.5</span><span class="op">*</span>e1<span class="op">^</span><span class="dv">2</span>,</a>
-<a class="sourceLine" id="cb7-14" title="14">    <span class="dt">pi2 =</span> <span class="op">~</span><span class="st"> </span>e1 <span class="op">-</span><span class="st"> </span><span class="fl">0.5</span><span class="op">*</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/Extremes">pmax</a></span>(e2,<span class="dv">0</span>)<span class="op">^</span><span class="dv">2</span></a>
+<a class="sourceLine" id="cb7-13" title="13">    <span class="dt">pi1 =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/ifelse">ifelse</a></span>(e2 <span class="op">!=</span><span class="st"> </span><span class="dv">-1</span>,e2, <span class="op">-</span>x<span class="op">/</span><span class="dv">5</span>) <span class="op">-</span><span class="st"> </span><span class="fl">0.5</span><span class="op">*</span>e1<span class="op">^</span><span class="dv">2</span>,</a>
+<a class="sourceLine" id="cb7-14" title="14">    <span class="dt">pi2 =</span> e1 <span class="op">-</span><span class="st"> </span><span class="fl">0.5</span><span class="op">*</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/Extremes">pmax</a></span>(e2,<span class="dv">0</span>)<span class="op">^</span><span class="dv">2</span></a>
 <a class="sourceLine" id="cb7-15" title="15">  ) <span class="op">%&gt;%</span></a>
 <a class="sourceLine" id="cb7-16" title="16"><span class="st">  </span><span class="kw"><a href="../reference/rel_transition.html">rel_transition</a></span>(<span class="dt">xs =</span> <span class="dv">0</span><span class="op">:</span><span class="dv">4</span>,<span class="dt">xd=</span><span class="dv">1</span><span class="op">:</span><span class="dv">5</span>, <span class="dt">inc_vul=</span><span class="ot">TRUE</span>,<span class="dt">prob=</span><span class="dv">1</span>) <span class="op">%&gt;%</span></a>
 <a class="sourceLine" id="cb7-17" title="17"><span class="st">  </span><span class="kw"><a href="../reference/rel_transition.html">rel_transition</a></span>(<span class="dt">xs =</span> <span class="dv">1</span><span class="op">:</span><span class="dv">5</span>,<span class="dt">xd=</span><span class="dv">0</span><span class="op">:</span><span class="dv">4</span>, <span class="dt">prob=</span><span class="fl">0.05</span>)</a></code></pre></div>
 </div>
 <div id="specify-action-spaces-via-a-fun-instead-of-a1-and-a2" class="section level2">
 <h2 class="hasAnchor">
-<a href="#specify-action-spaces-via-a-fun-instead-of-a1-and-a2" class="anchor"></a>Specify action spaces via A.fun instead of A1 and A2</h2>
+<a href="#specify-action-spaces-via-a-fun-instead-of-a1-and-a2" class="anchor"></a>4. Specify action spaces via A.fun instead of A1 and A2</h2>
 <p>If you want to specify several states with different action spaces in a single call to <code>rel_states</code> you should use the argument <code>A.fun</code> instead of <code>A1</code> and <code>A2</code>. Below is an example:</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" title="1">effort.seq =<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/seq">seq</a></span>(<span class="dv">0</span>,<span class="dv">1</span>,<span class="dt">by=</span><span class="fl">0.1</span>)</a>
 <a class="sourceLine" id="cb8-2" title="2"></a>
@@ -218,8 +220,8 @@
 <a class="sourceLine" id="cb8-11" title="11">g =<span class="st"> </span><span class="kw"><a href="../reference/rel_game.html">rel_game</a></span>() <span class="op">%&gt;%</span></a>
 <a class="sourceLine" id="cb8-12" title="12"><span class="st">  </span><span class="kw"><a href="../reference/rel_states.html">rel_states</a></span>(<span class="dt">x =</span> <span class="dv">0</span><span class="op">:</span><span class="dv">5</span>,</a>
 <a class="sourceLine" id="cb8-13" title="13">    <span class="dt">A.fun =</span> A.fun,</a>
-<a class="sourceLine" id="cb8-14" title="14">    <span class="dt">pi1 =</span> <span class="op">~</span><span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/ifelse">ifelse</a></span>(e2 <span class="op">!=</span><span class="st"> </span><span class="dv">-1</span>,e2, <span class="op">-</span>x<span class="op">/</span><span class="dv">5</span>) <span class="op">-</span><span class="st"> </span><span class="fl">0.5</span><span class="op">*</span>e1<span class="op">^</span><span class="dv">2</span>,</a>
-<a class="sourceLine" id="cb8-15" title="15">    <span class="dt">pi2 =</span> <span class="op">~</span><span class="st"> </span>e1 <span class="op">-</span><span class="st"> </span><span class="fl">0.5</span><span class="op">*</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/Extremes">pmax</a></span>(e2,<span class="dv">0</span>)<span class="op">^</span><span class="dv">2</span></a>
+<a class="sourceLine" id="cb8-14" title="14">    <span class="dt">pi1 =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/ifelse">ifelse</a></span>(e2 <span class="op">!=</span><span class="st"> </span><span class="dv">-1</span>,e2, <span class="op">-</span>x<span class="op">/</span><span class="dv">5</span>) <span class="op">-</span><span class="st"> </span><span class="fl">0.5</span><span class="op">*</span>e1<span class="op">^</span><span class="dv">2</span>,</a>
+<a class="sourceLine" id="cb8-15" title="15">    <span class="dt">pi2 =</span> e1 <span class="op">-</span><span class="st"> </span><span class="fl">0.5</span><span class="op">*</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/Extremes">pmax</a></span>(e2,<span class="dv">0</span>)<span class="op">^</span><span class="dv">2</span></a>
 <a class="sourceLine" id="cb8-16" title="16">  ) <span class="op">%&gt;%</span></a>
 <a class="sourceLine" id="cb8-17" title="17"><span class="st">  </span><span class="kw"><a href="../reference/rel_transition.html">rel_transition</a></span>(<span class="dt">xs =</span> <span class="dv">0</span><span class="op">:</span><span class="dv">4</span>,<span class="dt">xd=</span><span class="dv">1</span><span class="op">:</span><span class="dv">5</span>, <span class="dt">inc_vul=</span><span class="ot">TRUE</span>,<span class="dt">prob=</span><span class="dv">1</span>) <span class="op">%&gt;%</span></a>
 <a class="sourceLine" id="cb8-18" title="18"><span class="st">  </span><span class="kw"><a href="../reference/rel_transition.html">rel_transition</a></span>(<span class="dt">xs =</span> <span class="dv">1</span><span class="op">:</span><span class="dv">5</span>,<span class="dt">xd=</span><span class="dv">0</span><span class="op">:</span><span class="dv">4</span>, <span class="dt">prob=</span><span class="fl">0.05</span>)</a>
@@ -232,7 +234,7 @@
 </div>
 <div id="specify-payoffs-via-pi-fun-instead-of-pi1-and-pi2" class="section level2">
 <h2 class="hasAnchor">
-<a href="#specify-payoffs-via-pi-fun-instead-of-pi1-and-pi2" class="anchor"></a>Specify payoffs via pi.fun instead of pi1 and pi2</h2>
+<a href="#specify-payoffs-via-pi-fun-instead-of-pi1-and-pi2" class="anchor"></a>5. Specify payoffs via pi.fun instead of pi1 and pi2</h2>
 <p>The argument <code>pi.fun</code> of <code>rel_states</code> allows to specify payoffs via a vectorized functions instead of providing formulas to the arguments <code>pi1</code> and <code>pi2</code>. Here is an example:</p>
 <div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" title="1">effort.seq =<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/seq">seq</a></span>(<span class="dv">0</span>,<span class="dv">1</span>,<span class="dt">by=</span><span class="fl">0.1</span>)</a>
 <a class="sourceLine" id="cb10-2" title="2">pi.fun =<span class="st"> </span><span class="cf">function</span>(ax.df, ...) {</a>
@@ -253,7 +255,15 @@
 <a class="sourceLine" id="cb10-17" title="17"></a>
 <a class="sourceLine" id="cb10-18" title="18"><span class="co"># Solve SPE</span></a>
 <a class="sourceLine" id="cb10-19" title="19">g <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="../reference/rel_spe.html">rel_spe</a></span>(<span class="dt">delta=</span><span class="fl">0.3</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="../reference/get_eq.html">get_eq</a></span>() <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">select</span>(x, ae.lab)</a></code></pre></div>
-<pre><code>## Error in mutate(ax.df, pi1 = ifelse(e2 != -1, e2, -x/5) - 0.5 * e1^2, : argument "ax.df" is missing, with no default</code></pre>
+<pre><code>## # A tibble: 6 x 2
+##       x ae.lab       
+##   &lt;int&gt; &lt;chr&gt;        
+## 1     0 0.6 TRUE 0.6 
+## 2     1 0.7 TRUE 0.7 
+## 3     2 0.7 TRUE 0.8 
+## 4     3 0.8 TRUE 0.8 
+## 5     4 0.8 TRUE 0.9 
+## 6     5 0.9 FALSE 0.9</code></pre>
 <p>While <code>A.fun</code> will be called separately for each state <code>x</code>, the function <code>pi.fun</code> will be called only once with an argument <code>ax.df</code> (and possible some parameters specified in the game). <code>ax.df</code> is a tibble that contains one row for every action profile in every state. n our example, its head and tail looks as follows:</p>
 <pre><code>head(ax.df,3)
 
@@ -277,7 +287,7 @@ tail(ax.df,3)
 </div>
 <div id="specify-state-transitions-via-trans-fun" class="section level2">
 <h2 class="hasAnchor">
-<a href="#specify-state-transitions-via-trans-fun" class="anchor"></a>Specify state transitions via trans.fun</h2>
+<a href="#specify-state-transitions-via-trans-fun" class="anchor"></a>6. Specify state transitions via trans.fun</h2>
 <p>As an alternative to specifying state transitions with one or several calls to <code>rel_transition</code>, one can use the argument <code>trans.fun</code> or <code>rel_states</code>. Here is an example:</p>
 <div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb13-1" title="1">trans.fun =<span class="st"> </span><span class="cf">function</span>(ax.df, ...) {</a>
 <a class="sourceLine" id="cb13-2" title="2">  <span class="kw">tibble</span>(<span class="dt">xs=</span><span class="dv">0</span><span class="op">:</span><span class="dv">4</span>,<span class="dt">xd=</span><span class="dv">1</span><span class="op">:</span><span class="dv">5</span>, <span class="dt">inc_vul=</span><span class="ot">TRUE</span>, <span class="dt">prob=</span><span class="dv">1</span>)</a>
@@ -286,8 +296,8 @@ tail(ax.df,3)
 <a class="sourceLine" id="cb13-5" title="5"><span class="st">  </span><span class="kw"><a href="../reference/rel_states.html">rel_states</a></span>(<span class="dt">x =</span> <span class="dv">0</span><span class="op">:</span><span class="dv">5</span>,</a>
 <a class="sourceLine" id="cb13-6" title="6">    <span class="dt">A1 =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">e1=</span>effort.seq, <span class="dt">inc_vul =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/c">c</a></span>(<span class="ot">FALSE</span>, <span class="ot">TRUE</span>)),</a>
 <a class="sourceLine" id="cb13-7" title="7">    <span class="dt">A2 =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">e2=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/c">c</a></span>(<span class="op">-</span><span class="dv">1</span>,effort.seq)),</a>
-<a class="sourceLine" id="cb13-8" title="8">    <span class="dt">pi1 =</span> <span class="op">~</span><span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/ifelse">ifelse</a></span>(e2 <span class="op">!=</span><span class="st"> </span><span class="dv">-1</span>,e2, <span class="op">-</span>x<span class="op">/</span><span class="dv">5</span>) <span class="op">-</span><span class="st"> </span><span class="fl">0.5</span><span class="op">*</span>e1<span class="op">^</span><span class="dv">2</span>,</a>
-<a class="sourceLine" id="cb13-9" title="9">    <span class="dt">pi2 =</span> <span class="op">~</span><span class="st"> </span>e1 <span class="op">-</span><span class="st"> </span><span class="fl">0.5</span><span class="op">*</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/Extremes">pmax</a></span>(e2,<span class="dv">0</span>)<span class="op">^</span><span class="dv">2</span>,</a>
+<a class="sourceLine" id="cb13-8" title="8">    <span class="dt">pi1 =</span>  <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/ifelse">ifelse</a></span>(e2 <span class="op">!=</span><span class="st"> </span><span class="dv">-1</span>,e2, <span class="op">-</span>x<span class="op">/</span><span class="dv">5</span>) <span class="op">-</span><span class="st"> </span><span class="fl">0.5</span><span class="op">*</span>e1<span class="op">^</span><span class="dv">2</span>,</a>
+<a class="sourceLine" id="cb13-9" title="9">    <span class="dt">pi2 =</span>  e1 <span class="op">-</span><span class="st"> </span><span class="fl">0.5</span><span class="op">*</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/Extremes">pmax</a></span>(e2,<span class="dv">0</span>)<span class="op">^</span><span class="dv">2</span>,</a>
 <a class="sourceLine" id="cb13-10" title="10">    <span class="dt">trans.fun =</span> trans.fun</a>
 <a class="sourceLine" id="cb13-11" title="11">  )</a></code></pre></div>
 <p><code>trans.fun</code> is a function that takes the same arguments as explained in the subsection about <code>pi.fun</code> above. It returns a data frame that whose columns are essentially the same as the arguments of <code>rel_transition</code>. Each row specifies a transition from the state in column <code>xs</code> to the state in column <code>xd</code> with probability of column <code>prob</code> given that the actions take the values specified in additional columns.</p>
@@ -299,7 +309,7 @@ tail(ax.df,3)
 </div>
 <div id="state-space-with-multiple-dimensions-and-helper-variables-a-cournot-duopoly-with-capacity-investments" class="section level2">
 <h2 class="hasAnchor">
-<a href="#state-space-with-multiple-dimensions-and-helper-variables-a-cournot-duopoly-with-capacity-investments" class="anchor"></a>State Space with multiple dimensions and helper variables: A Cournot Duopoly with Capacity Investments</h2>
+<a href="#state-space-with-multiple-dimensions-and-helper-variables-a-cournot-duopoly-with-capacity-investments" class="anchor"></a>7. State Space with multiple dimensions and helper variables: A Cournot Duopoly with Capacity Investments</h2>
 <p>The following examples will be variants of a dynamic Cournot duopoly with capacity investments. A state <code>x</code> is characterized by a tuple <code>(x1,x2)</code> that describes the production capacities of each player. In each period players simultaneously choose integer outputs <code>q1</code> and <code>q2</code> between 0 and their capacity and decide whether to invest into new capacity, at least as long as the maximum capacity <code>x.max</code> has not been reached.</p>
 <p>Product market prices in a period are given by <code>a-q1-q2</code> where <code>a</code> is an exogenous parameter.</p>
 <p>The following code specifies such a Cournot duopoly:</p>
@@ -338,13 +348,26 @@ tail(ax.df,3)
 <a class="sourceLine" id="cb15-33" title="33">g =<span class="st"> </span><span class="kw"><a href="../reference/rel_game.html">rel_game</a></span>(<span class="st">"Cournot with Investment"</span>) <span class="op">%&gt;%</span></a>
 <a class="sourceLine" id="cb15-34" title="34"><span class="st">  </span><span class="kw"><a href="../reference/rel_states.html">rel_states</a></span>(<span class="dt">x=</span>x.df,</a>
 <a class="sourceLine" id="cb15-35" title="35">    <span class="dt">A.fun=</span>A.fun,</a>
-<a class="sourceLine" id="cb15-36" title="36">    <span class="dt">pi1 =</span><span class="op">~</span><span class="st"> </span>(a<span class="op">-</span>(q1<span class="op">+</span>q2))<span class="op">*</span>q1 <span class="op">-</span><span class="st"> </span>i.cost<span class="op">*</span>i1,</a>
-<a class="sourceLine" id="cb15-37" title="37">    <span class="dt">pi2 =</span><span class="op">~</span><span class="st"> </span>(a<span class="op">-</span>(q1<span class="op">+</span>q2))<span class="op">*</span>q2 <span class="op">-</span><span class="st"> </span>i.cost<span class="op">*</span>i2,</a>
+<a class="sourceLine" id="cb15-36" title="36">    <span class="dt">pi1 =</span> (a<span class="op">-</span>(q1<span class="op">+</span>q2))<span class="op">*</span>q1 <span class="op">-</span><span class="st"> </span>i.cost<span class="op">*</span>i1,</a>
+<a class="sourceLine" id="cb15-37" title="37">    <span class="dt">pi2 =</span> (a<span class="op">-</span>(q1<span class="op">+</span>q2))<span class="op">*</span>q2 <span class="op">-</span><span class="st"> </span>i.cost<span class="op">*</span>i2,</a>
 <a class="sourceLine" id="cb15-38" title="38">    <span class="dt">trans.fun=</span>trans.fun</a>
 <a class="sourceLine" id="cb15-39" title="39">  )</a>
 <a class="sourceLine" id="cb15-40" title="40"></a>
 <a class="sourceLine" id="cb15-41" title="41">g <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="../reference/rel_spe.html">rel_spe</a></span>(<span class="dt">delta=</span><span class="fl">0.3</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="../reference/get_eq.html">get_eq</a></span>() <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">select</span>(x, ae.lab,U)</a></code></pre></div>
-<pre><code>## Error in eval(lhs, parent, parent): argument "ax.df" is missing, with no default</code></pre>
+<pre><code>## # A tibble: 36 x 3
+##    x     ae.lab         U
+##    &lt;chr&gt; &lt;chr&gt;      &lt;dbl&gt;
+##  1 0_0   "0 1 0 1 "  2.26
+##  2 0_1   "0 1 1 1 "  8   
+##  3 0_2   "0 1 2 0 " 12.2 
+##  4 0_3   "0 1 3 0 " 14.6 
+##  5 0_4   "0 0 4 0 " 16   
+##  6 0_5   "0 0 4 0 " 16   
+##  7 1_0   "1 1 0 1 "  8   
+##  8 1_1   "1 0 1 1 " 12.2 
+##  9 1_2   "1 0 2 0 " 15.  
+## 10 1_3   "1 0 3 0 " 16   
+## # ... with 26 more rows</code></pre>
 <p>First note that in the call to <code>rel_states</code>, the argument <code>x</code> is not a vector of state names, but instead a data frame specified further above. The data frame has a column <code>x</code> but also two additional columns <code>x1</code> and <code>x2</code> that provide additional information about each state, namely the capacities of each player. The column <code>x</code> that uniquely identifies each state is just a label pasting <code>x1</code> and <code>x2</code> together.</p>
 <p>The additional state variables <code>x1</code> and <code>x2</code>could be used in the formula’s for <code>pi1</code> and <code>pi2</code>, are passed as additional arguments to <code>A.fun</code>, and are additional columns in the <code>ax.df</code> argument passed to <code>trans.fun</code>. You can add as many columns to such a state data frame as you like. The only requirement is that there is a column <code>x</code> with unique values in each row.</p>
 <p>The specification of <code>A.fun</code> is pretty straightforward. Note how the action space depends on the current capacity of each player.</p>
@@ -382,55 +405,323 @@ tail(ax.df,3)
 # ... with 115 more rows</code></pre>
 <p>Starting with this data frame, we can easily compute the new capacities of both players by adding their investments to the current capacities. The new state <code>xd</code> is then simply created by pasting the new capacities together. We also have to add the transition probability of <code>prob=1</code> since state transitions are deterministic and set the source state column <code>xs</code> just to the original state <code>x</code>.</p>
 </div>
-<div id="cournot-duopoly-where-investments-are-not-always-successful--specifying-state-transitions-using-the-helper-function-independent_transitions" class="section level2">
+<div id="specifying-state-transitions-using-the-helper-function-irv_joint_dist-cournot-duopoly-where-investments-are-not-always-successful" class="section level2">
 <h2 class="hasAnchor">
-<a href="#cournot-duopoly-where-investments-are-not-always-successful--specifying-state-transitions-using-the-helper-function-independent_transitions" class="anchor"></a>Cournot Duopoly where investments are not always successful. Specifying state transitions using the helper function <code>independent_transitions</code>
-</h2>
+<a href="#specifying-state-transitions-using-the-helper-function-irv_joint_dist-cournot-duopoly-where-investments-are-not-always-successful" class="anchor"></a>8. Specifying state transitions using the helper function <code>irv_joint_dist</code>: Cournot duopoly where investments are not always successful</h2>
 <p>Consider now a variant of our previous game in which an investment leads to a successful capacity expansion only with an exogenous success probability <code>sp</code>.</p>
 <p>Specifying state transitions becomes more complicated now. Assume both players invest, then there are 4 different possible outcomes: no investment is successful, only player 1’s investment is successful, only player 2’s investment is successful, or both investments are successful.</p>
-<p>Before writing</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb19-1" title="1"><span class="co"># success probability</span></a>
+<p>Relational Contracts has a helper function <code>irv_joint_dist</code> that allows to compute joint distributions of independent discrete random variables using a format suitable to specify state transitions. Consider the following example.</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb19-1" title="1"><span class="co"># success probability of investment</span></a>
 <a class="sourceLine" id="cb19-2" title="2">sp =<span class="st"> </span><span class="fl">0.7</span></a>
 <a class="sourceLine" id="cb19-3" title="3"></a>
-<a class="sourceLine" id="cb19-4" title="4"><span class="co"># Small subset of relevant rows</span></a>
-<a class="sourceLine" id="cb19-5" title="5">df =<span class="st"> </span><span class="kw">tibble</span>(</a>
-<a class="sourceLine" id="cb19-6" title="6">  <span class="dt">x=</span><span class="st">"0_0"</span>,<span class="dt">x1=</span><span class="dv">0</span>,<span class="dt">x2=</span><span class="dv">0</span>,<span class="dt">i1=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/c">c</a></span>(<span class="dv">0</span>,<span class="dv">1</span>),<span class="dt">i2=</span><span class="dv">1</span></a>
-<a class="sourceLine" id="cb19-7" title="7">)</a>
-<a class="sourceLine" id="cb19-8" title="8">df</a></code></pre></div>
+<a class="sourceLine" id="cb19-4" title="4"><span class="co"># An example row for which we want</span></a>
+<a class="sourceLine" id="cb19-5" title="5"><span class="co"># to compute transition probabiluties</span></a>
+<a class="sourceLine" id="cb19-6" title="6">df =<span class="st"> </span><span class="kw">tibble</span>(<span class="dt">x=</span><span class="st">"0_0"</span>,<span class="dt">x1=</span><span class="dv">0</span>,<span class="dt">x2=</span><span class="dv">0</span>,<span class="dt">i1=</span><span class="dv">1</span>,<span class="dt">i2=</span><span class="dv">1</span>)</a>
+<a class="sourceLine" id="cb19-7" title="7"></a>
+<a class="sourceLine" id="cb19-8" title="8"><span class="co"># Compute joint distribution of independent</span></a>
+<a class="sourceLine" id="cb19-9" title="9"><span class="co"># random varibles</span></a>
+<a class="sourceLine" id="cb19-10" title="10"><span class="kw">irv_joint_dist</span>(df,</a>
+<a class="sourceLine" id="cb19-11" title="11">  <span class="kw">irv</span>(<span class="st">"new_x1"</span>,<span class="dt">default=</span>x1,</a>
+<a class="sourceLine" id="cb19-12" title="12">    <span class="kw">irv_val</span>(<span class="dt">val=</span>x1<span class="op">+</span><span class="dv">1</span>,<span class="dt">prob=</span>i1<span class="op">*</span>sp)</a>
+<a class="sourceLine" id="cb19-13" title="13">  ),</a>
+<a class="sourceLine" id="cb19-14" title="14">  <span class="kw">irv</span>(<span class="st">"new_x2"</span>,<span class="dt">default=</span>x2,</a>
+<a class="sourceLine" id="cb19-15" title="15">    <span class="kw">irv_val</span>(<span class="dt">val=</span>x2<span class="op">+</span><span class="dv">1</span>,<span class="dt">prob=</span>i2<span class="op">*</span>sp)</a>
+<a class="sourceLine" id="cb19-16" title="16">  )</a>
+<a class="sourceLine" id="cb19-17" title="17">)</a></code></pre></div>
+<pre><code>## # A tibble: 4 x 8
+##   x        x1    x2    i1    i2  prob new_x1 new_x2
+##   &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;
+## 1 0_0       0     0     1     1 0.490      1      1
+## 2 0_0       0     0     1     1 0.21       0      1
+## 3 0_0       0     0     1     1 0.21       1      0
+## 4 0_0       0     0     1     1 0.09       0      0</code></pre>
+<p>Inside the call to <code>irv_joint_dist</code> we specify with <code>irv_var</code> two discrete valued random variables <code>new_x1</code> and <code>new_x2</code> that shall be independently distributed from each other. Inside <code>irv_var</code> we call <code>irv_val</code> to specify values that the variable can take and their realiziation probabilities. These values and probabilities are computed using the columns of the data frame <code>df</code> passed to <code>irv_joint_dist</code> using lazy evaluation.</p>
+<p>For convenience, we can also set a default value for each random variables that is realized with probability 1 minus the some of all explicitly specified probabilities via <code>irv_val</code>. E.g. without default values, we could have equivalently specified <code>new_x1</code> by</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb21-1" title="1">  <span class="kw">irv</span>(<span class="st">"new_x1"</span>,</a>
+<a class="sourceLine" id="cb21-2" title="2">    <span class="kw">irv_val</span>(<span class="dt">val=</span>x1<span class="op">+</span><span class="dv">1</span>,<span class="dt">prob=</span>i1<span class="op">*</span>sp),</a>
+<a class="sourceLine" id="cb21-3" title="3">    <span class="kw">irv_val</span>(<span class="dt">val=</span>x1, <span class="dt">prob=</span><span class="dv">1</span><span class="op">-</span>(i1<span class="op">*</span>sp))</a>
+<a class="sourceLine" id="cb21-4" title="4">  )</a></code></pre></div>
+<p>For each row of the passed data frame <code>df</code>, <code>irv_joint_dist</code> creates several rows: one for each possible outcome combination of the specified independent random variables. Since <code>df</code> only has a single row and there are 4 combinations of <code>new_x1</code> and <code>new_x2</code>, we get a data frame with 4 rows. The column <code>prob</code> contains the probability of the particular outcome combination.</p>
+<p>If <code>df</code> contains multiple rows, these computations will be performed separately for each row and the resulting rows are combined together. Consider this example where in one row player 1 invests and in the other not:</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb22-1" title="1"><span class="co"># success probability of investment</span></a>
+<a class="sourceLine" id="cb22-2" title="2">sp =<span class="st"> </span><span class="fl">0.7</span></a>
+<a class="sourceLine" id="cb22-3" title="3"></a>
+<a class="sourceLine" id="cb22-4" title="4"><span class="co"># Two example rows for which we want</span></a>
+<a class="sourceLine" id="cb22-5" title="5"><span class="co"># to compute transition probabiluties</span></a>
+<a class="sourceLine" id="cb22-6" title="6">df =<span class="st"> </span><span class="kw">tibble</span>(<span class="dt">x=</span><span class="st">"0_0"</span>,<span class="dt">x1=</span><span class="dv">0</span>,<span class="dt">x2=</span><span class="dv">0</span>,<span class="dt">i1=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/c">c</a></span>(<span class="dv">0</span>,<span class="dv">1</span>),<span class="dt">i2=</span><span class="dv">1</span>)</a>
+<a class="sourceLine" id="cb22-7" title="7">df</a></code></pre></div>
 <pre><code>## # A tibble: 2 x 5
 ##   x        x1    x2    i1    i2
 ##   &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
 ## 1 0_0       0     0     0     1
 ## 2 0_0       0     0     1     1</code></pre>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb21-1" title="1"><span class="co"># Use independent_transitions</span></a>
-<a class="sourceLine" id="cb21-2" title="2"><span class="kw"><a href="../reference/independent_transitions.html">independent_transitions</a></span>(df,</a>
-<a class="sourceLine" id="cb21-3" title="3">  <span class="kw"><a href="../reference/trans_var.html">trans_var</a></span>(<span class="st">"new_x1"</span>,<span class="dt">default=</span>x1,</a>
-<a class="sourceLine" id="cb21-4" title="4">    <span class="kw"><a href="../reference/trans_val.html">trans_val</a></span>(<span class="dt">val=</span>x1<span class="op">+</span><span class="dv">1</span>,<span class="dt">prob=</span>i1<span class="op">*</span>sp)</a>
-<a class="sourceLine" id="cb21-5" title="5">  ),</a>
-<a class="sourceLine" id="cb21-6" title="6">  <span class="kw"><a href="../reference/trans_var.html">trans_var</a></span>(<span class="st">"new_x2"</span>,<span class="dt">default=</span>x2,</a>
-<a class="sourceLine" id="cb21-7" title="7">    <span class="kw"><a href="../reference/trans_val.html">trans_val</a></span>(<span class="dt">val=</span>x2<span class="op">+</span><span class="dv">1</span>,<span class="dt">prob=</span>i2<span class="op">*</span>sp)</a>
-<a class="sourceLine" id="cb21-8" title="8">  )</a>
-<a class="sourceLine" id="cb21-9" title="9">)</a></code></pre></div>
-<pre><code>## Error in independent_transitions(df, trans_var("new_x1", default = x1, : could not find function "independent_transitions"</code></pre>
-<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb23-1" title="1">sp =<span class="st"> </span><span class="fl">0.7</span></a>
-<a class="sourceLine" id="cb23-2" title="2">trans.fun =<span class="st"> </span><span class="cf">function</span>(ax.df,...) {</a>
-<a class="sourceLine" id="cb23-3" title="3">  <span class="kw">restore.point</span>(<span class="st">"trans.fun"</span>)</a>
-<a class="sourceLine" id="cb23-4" title="4">  ax.df <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb23-5" title="5"><span class="st">    </span><span class="kw">select</span>(x,x1,x2,i1,i2) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb23-6" title="6"><span class="st">    </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/unique">unique</a></span>() <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb23-7" title="7"><span class="st">    </span><span class="kw"><a href="../reference/independent_transitions.html">independent_transitions</a></span>(</a>
-<a class="sourceLine" id="cb23-8" title="8">      <span class="kw"><a href="../reference/trans_var.html">trans_var</a></span>(<span class="st">"new_x1"</span>,<span class="dt">default=</span>x1,</a>
-<a class="sourceLine" id="cb23-9" title="9">        <span class="kw"><a href="../reference/trans_val.html">trans_val</a></span>(<span class="dt">val=</span>x1<span class="op">+</span><span class="dv">1</span>,<span class="dt">prob=</span>i1<span class="op">*</span>sp)</a>
-<a class="sourceLine" id="cb23-10" title="10">      ),</a>
-<a class="sourceLine" id="cb23-11" title="11">      <span class="kw"><a href="../reference/trans_var.html">trans_var</a></span>(<span class="st">"new_x2"</span>,<span class="dt">default=</span>x2,</a>
-<a class="sourceLine" id="cb23-12" title="12">        <span class="kw"><a href="../reference/trans_val.html">trans_val</a></span>(<span class="dt">val=</span>x2<span class="op">+</span><span class="dv">1</span>,<span class="dt">prob=</span>i2<span class="op">*</span>sp)</a>
-<a class="sourceLine" id="cb23-13" title="13">      )</a>
-<a class="sourceLine" id="cb23-14" title="14">    ) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb23-15" title="15"><span class="st">    </span><span class="kw">mutate</span>(</a>
-<a class="sourceLine" id="cb23-16" title="16">      <span class="dt">xd =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/paste">paste0</a></span>(new_x1,<span class="st">"_"</span>,new_x2),</a>
-<a class="sourceLine" id="cb23-17" title="17">      <span class="dt">xs=</span>x</a>
-<a class="sourceLine" id="cb23-18" title="18">    )</a>
-<a class="sourceLine" id="cb23-19" title="19">}</a></code></pre></div>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb24-1" title="1"><span class="co"># Compute joint distribution of independent</span></a>
+<a class="sourceLine" id="cb24-2" title="2"><span class="co"># random varibles</span></a>
+<a class="sourceLine" id="cb24-3" title="3"><span class="kw">irv_joint_dist</span>(df,</a>
+<a class="sourceLine" id="cb24-4" title="4">  <span class="kw">irv</span>(<span class="st">"new_x1"</span>,<span class="dt">default=</span>x1,</a>
+<a class="sourceLine" id="cb24-5" title="5">    <span class="kw">irv_val</span>(<span class="dt">val=</span>x1<span class="op">+</span><span class="dv">1</span>,<span class="dt">prob=</span>i1<span class="op">*</span>sp)</a>
+<a class="sourceLine" id="cb24-6" title="6">  ),</a>
+<a class="sourceLine" id="cb24-7" title="7">  <span class="kw">irv</span>(<span class="st">"new_x2"</span>,<span class="dt">default=</span>x2,</a>
+<a class="sourceLine" id="cb24-8" title="8">    <span class="kw">irv_val</span>(<span class="dt">val=</span>x2<span class="op">+</span><span class="dv">1</span>,<span class="dt">prob=</span>i2<span class="op">*</span>sp)</a>
+<a class="sourceLine" id="cb24-9" title="9">  )</a>
+<a class="sourceLine" id="cb24-10" title="10">)</a></code></pre></div>
+<pre><code>## # A tibble: 6 x 8
+##   x        x1    x2    i1    i2  prob new_x1 new_x2
+##   &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;
+## 1 0_0       0     0     1     1 0.490      1      1
+## 2 0_0       0     0     0     1 0.7        0      1
+## 3 0_0       0     0     1     1 0.21       0      1
+## 4 0_0       0     0     1     1 0.21       1      0
+## 5 0_0       0     0     0     1 0.3        0      0
+## 6 0_0       0     0     1     1 0.09       0      0</code></pre>
+<p>The result has now 2+4=6 rows. If player 1 does not invest (<code>i1==0</code>), the variable <code>new_x1</code> always is 0 and there are only two outcomes.</p>
+<p>Note that the order of the resulting rows is not very intutive. Internally <code>irv_joint_dist</code> tries to use vectorization for fast computation that sorts the rows in a peculiar way and for time reasons there is no unneccessary rearrangement afterwards.</p>
+<p>Below is a specification of the transition function for our Cournot game using <code>irv_joint_dist</code>:</p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb26-1" title="1">sp =<span class="st"> </span><span class="fl">0.7</span></a>
+<a class="sourceLine" id="cb26-2" title="2">trans.fun =<span class="st"> </span><span class="cf">function</span>(ax.df,...) {</a>
+<a class="sourceLine" id="cb26-3" title="3">  <span class="kw">restore.point</span>(<span class="st">"trans.fun"</span>)</a>
+<a class="sourceLine" id="cb26-4" title="4">  ax.df <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb26-5" title="5"><span class="st">    </span><span class="kw">select</span>(x,x1,x2,i1,i2) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb26-6" title="6"><span class="st">    </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/unique">unique</a></span>() <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb26-7" title="7"><span class="st">    </span><span class="kw">irv_joint_dist</span>(df,</a>
+<a class="sourceLine" id="cb26-8" title="8">      <span class="kw">irv</span>(<span class="st">"new_x1"</span>,<span class="dt">default=</span>x1,</a>
+<a class="sourceLine" id="cb26-9" title="9">        <span class="kw">irv_val</span>(<span class="dt">val=</span>x1<span class="op">+</span><span class="dv">1</span>,<span class="dt">prob=</span>i1<span class="op">*</span>sp)</a>
+<a class="sourceLine" id="cb26-10" title="10">      ),</a>
+<a class="sourceLine" id="cb26-11" title="11">      <span class="kw">irv</span>(<span class="st">"new_x2"</span>,<span class="dt">default=</span>x2,</a>
+<a class="sourceLine" id="cb26-12" title="12">        <span class="kw">irv_val</span>(<span class="dt">val=</span>x2<span class="op">+</span><span class="dv">1</span>,<span class="dt">prob=</span>i2<span class="op">*</span>sp)</a>
+<a class="sourceLine" id="cb26-13" title="13">      )</a>
+<a class="sourceLine" id="cb26-14" title="14">    ) <span class="op">%&gt;%</span><span class="st">    </span></a>
+<a class="sourceLine" id="cb26-15" title="15"><span class="st">    </span><span class="kw">mutate</span>(</a>
+<a class="sourceLine" id="cb26-16" title="16">      <span class="dt">xd =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/paste">paste0</a></span>(new_x1,<span class="st">"_"</span>,new_x2),</a>
+<a class="sourceLine" id="cb26-17" title="17">      <span class="dt">xs=</span>x</a>
+<a class="sourceLine" id="cb26-18" title="18">    )</a>
+<a class="sourceLine" id="cb26-19" title="19">}</a></code></pre></div>
+<p>This code may look complicated, but specifying transition probabilities correctly is typically the most difficult task in a game specificiation. And while it requires some time to learn, in my experience, <code>irv_joint_dist</code> is often quite a useful tool for this task.</p>
+</div>
+<div id="advanced-use-of-irv_joint_dist-cournot-duopoly-where-investments-are-not-always-successful-and-capacity-may-depreciate" class="section level2">
+<h2 class="hasAnchor">
+<a href="#advanced-use-of-irv_joint_dist-cournot-duopoly-where-investments-are-not-always-successful-and-capacity-may-depreciate" class="anchor"></a>9. Advanced use of <code>irv_joint_dist</code>: Cournot duopoly where investments are not always successful and capacity may depreciate</h2>
+<p>Consider now a variant in which existing capacity can also depricate with positive depreciation probability <code>dp</code>.</p>
+<p>The following code specifies the transition function:</p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb27-1" title="1">trans.fun =<span class="st"> </span><span class="cf">function</span>(ax.df,...) {</a>
+<a class="sourceLine" id="cb27-2" title="2">  <span class="kw">restore.point</span>(<span class="st">"trans.fun"</span>)</a>
+<a class="sourceLine" id="cb27-3" title="3">  ax.df <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb27-4" title="4"><span class="st">    </span><span class="kw">select</span>(x,x1,x2,i1,i2) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb27-5" title="5"><span class="st">    </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/unique">unique</a></span>() <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb27-6" title="6"><span class="st">    </span><span class="kw">irv_joint_dist</span>(</a>
+<a class="sourceLine" id="cb27-7" title="7">      <span class="kw">irv</span>(<span class="st">"add_x1"</span>,<span class="dt">default=</span><span class="dv">0</span>,</a>
+<a class="sourceLine" id="cb27-8" title="8">        <span class="kw">irv_val</span>(<span class="dv">1</span>,<span class="dt">prob=</span>i1<span class="op">*</span>sp)</a>
+<a class="sourceLine" id="cb27-9" title="9">      ),</a>
+<a class="sourceLine" id="cb27-10" title="10">      <span class="kw">irv</span>(<span class="st">"add_x2"</span>,<span class="dt">default=</span><span class="dv">0</span>,</a>
+<a class="sourceLine" id="cb27-11" title="11">        <span class="kw">irv_val</span>(<span class="dv">1</span>,<span class="dt">prob=</span>i2<span class="op">*</span>sp)</a>
+<a class="sourceLine" id="cb27-12" title="12">      ),</a>
+<a class="sourceLine" id="cb27-13" title="13">      <span class="kw">irv</span>(<span class="st">"rem_x1"</span>,<span class="dt">default=</span><span class="dv">0</span>,</a>
+<a class="sourceLine" id="cb27-14" title="14">        <span class="kw">irv_val</span>(<span class="dv">1</span>,<span class="dt">prob=</span>(x1<span class="op">&gt;</span><span class="dv">0</span>)<span class="op">*</span>dp)</a>
+<a class="sourceLine" id="cb27-15" title="15">      ),</a>
+<a class="sourceLine" id="cb27-16" title="16">      <span class="kw">irv</span>(<span class="st">"rem_x2"</span>,<span class="dt">default=</span><span class="dv">0</span>,</a>
+<a class="sourceLine" id="cb27-17" title="17">        <span class="kw">irv_val</span>(<span class="dv">1</span>,<span class="dt">prob=</span>(x2<span class="op">&gt;</span><span class="dv">0</span>)<span class="op">*</span>dp)</a>
+<a class="sourceLine" id="cb27-18" title="18">      )</a>
+<a class="sourceLine" id="cb27-19" title="19">    ) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb27-20" title="20"><span class="st">    </span><span class="kw">mutate</span>(</a>
+<a class="sourceLine" id="cb27-21" title="21">      <span class="dt">new_x1 =</span> x1<span class="op">+</span>add_x1 <span class="op">-</span><span class="st"> </span>rem_x1,</a>
+<a class="sourceLine" id="cb27-22" title="22">      <span class="dt">new_x2 =</span> x2<span class="op">+</span>add_x2 <span class="op">-</span><span class="st"> </span>rem_x2,</a>
+<a class="sourceLine" id="cb27-23" title="23">      <span class="dt">xd =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/paste">paste0</a></span>(new_x1,<span class="st">"_"</span>,new_x2),</a>
+<a class="sourceLine" id="cb27-24" title="24">      <span class="dt">xs=</span>x</a>
+<a class="sourceLine" id="cb27-25" title="25">    ) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb27-26" title="26"><span class="st">    </span><span class="kw">group_by</span>(xs,xd,i1,i2) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb27-27" title="27"><span class="st">    </span><span class="kw">summarize</span>(<span class="dt">prob=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/sum">sum</a></span>(prob))</a>
+<a class="sourceLine" id="cb27-28" title="28">}</a></code></pre></div>
+<p>We now specify 4 independent random variables. Each new capacity now depends on two random variables describing whether or nor investment successful and whether or not there is depreciation.</p>
+<p>To understand why the final <code>group_by</code> and <code>summarize</code> is neccessary let us take a look at the computation before for a single intial row:</p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb28-1" title="1">sp =<span class="st"> </span><span class="fl">0.7</span></a>
+<a class="sourceLine" id="cb28-2" title="2">dp =<span class="st"> </span><span class="fl">0.1</span></a>
+<a class="sourceLine" id="cb28-3" title="3"></a>
+<a class="sourceLine" id="cb28-4" title="4"><span class="kw">tibble</span>(<span class="dt">x=</span><span class="st">"1_0"</span>,<span class="dt">x1=</span><span class="dv">1</span>,<span class="dt">x2=</span><span class="dv">0</span>,<span class="dt">i1=</span><span class="dv">1</span>,<span class="dt">i2=</span><span class="dv">0</span>) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb28-5" title="5"><span class="st">  </span><span class="kw">select</span>(x,x1,x2,i1,i2) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb28-6" title="6"><span class="st">  </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/unique">unique</a></span>() <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb28-7" title="7"><span class="st">  </span><span class="kw">irv_joint_dist</span>(</a>
+<a class="sourceLine" id="cb28-8" title="8">    <span class="kw">irv</span>(<span class="st">"add_x1"</span>,<span class="dt">default=</span><span class="dv">0</span>,</a>
+<a class="sourceLine" id="cb28-9" title="9">      <span class="kw">irv_val</span>(<span class="dv">1</span>,<span class="dt">prob=</span>i1<span class="op">*</span>sp)</a>
+<a class="sourceLine" id="cb28-10" title="10">    ),</a>
+<a class="sourceLine" id="cb28-11" title="11">    <span class="kw">irv</span>(<span class="st">"add_x2"</span>,<span class="dt">default=</span><span class="dv">0</span>,</a>
+<a class="sourceLine" id="cb28-12" title="12">      <span class="kw">irv_val</span>(<span class="dv">1</span>,<span class="dt">prob=</span>i2<span class="op">*</span>sp)</a>
+<a class="sourceLine" id="cb28-13" title="13">    ),</a>
+<a class="sourceLine" id="cb28-14" title="14">    <span class="kw">irv</span>(<span class="st">"rem_x1"</span>,<span class="dt">default=</span><span class="dv">0</span>,</a>
+<a class="sourceLine" id="cb28-15" title="15">      <span class="kw">irv_val</span>(<span class="dv">1</span>,<span class="dt">prob=</span>(x1<span class="op">&gt;</span><span class="dv">0</span>)<span class="op">*</span>dp)</a>
+<a class="sourceLine" id="cb28-16" title="16">    ),</a>
+<a class="sourceLine" id="cb28-17" title="17">    <span class="kw">irv</span>(<span class="st">"rem_x2"</span>,<span class="dt">default=</span><span class="dv">0</span>,</a>
+<a class="sourceLine" id="cb28-18" title="18">      <span class="kw">irv_val</span>(<span class="dv">1</span>,<span class="dt">prob=</span>(x2<span class="op">&gt;</span><span class="dv">0</span>)<span class="op">*</span>dp)</a>
+<a class="sourceLine" id="cb28-19" title="19">    )</a>
+<a class="sourceLine" id="cb28-20" title="20">  ) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb28-21" title="21"><span class="st">  </span><span class="kw">mutate</span>(</a>
+<a class="sourceLine" id="cb28-22" title="22">    <span class="dt">new_x1 =</span> x1<span class="op">+</span>add_x1 <span class="op">-</span><span class="st"> </span>rem_x1,</a>
+<a class="sourceLine" id="cb28-23" title="23">    <span class="dt">new_x2 =</span> x2<span class="op">+</span>add_x2 <span class="op">-</span><span class="st"> </span>rem_x2,</a>
+<a class="sourceLine" id="cb28-24" title="24">    <span class="dt">xd =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/paste">paste0</a></span>(new_x1,<span class="st">"_"</span>,new_x2),</a>
+<a class="sourceLine" id="cb28-25" title="25">    <span class="dt">xs=</span>x</a>
+<a class="sourceLine" id="cb28-26" title="26">  ) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb28-27" title="27"><span class="st">  </span><span class="kw">select</span>(xs,xd,i1,i2,prob,add_x1,rem_x1)</a></code></pre></div>
+<pre><code>## # A tibble: 4 x 7
+##   xs    xd       i1    i2   prob add_x1 rem_x1
+##   &lt;chr&gt; &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;
+## 1 1_0   1_0       1     0 0.0700      1      1
+## 2 1_0   0_0       1     0 0.03        0      1
+## 3 1_0   2_0       1     0 0.63        1      0
+## 4 1_0   1_0       1     0 0.27        0      0</code></pre>
+<p>We see that both the first and last row transist to the same state. In the first row both investment and depreciation for player 1 happens, and in the last row neither one happens. Both yield the same net result: no change of capacity. The final <code>group_by</code> and <code>summarize</code> command inside <code>trans.fun</code> add up the probabilities of such rows with the same outcomes.</p>
+</div>
+<div id="separating-static-and-dynamic-actions" class="section level2">
+<h2 class="hasAnchor">
+<a href="#separating-static-and-dynamic-actions" class="anchor"></a>10. Separating static and dynamic actions</h2>
+<p>Consider the following variant of the dynamic Cournot duopoly, where we have splitted the “static” actions <code>q1</code> and <code>q2</code> which don’t affect the state transitions from the “dynamic” actions <code>i1</code> and <code>i2</code>:</p>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb30-1" title="1"><span class="co"># Exogenous paramaters</span></a>
+<a class="sourceLine" id="cb30-2" title="2">x.max =<span class="st"> </span><span class="dv">5</span></a>
+<a class="sourceLine" id="cb30-3" title="3">a =<span class="st"> </span><span class="dv">8</span></a>
+<a class="sourceLine" id="cb30-4" title="4">i.cost =<span class="st"> </span><span class="dv">1</span></a>
+<a class="sourceLine" id="cb30-5" title="5"></a>
+<a class="sourceLine" id="cb30-6" title="6"><span class="co"># State matrix</span></a>
+<a class="sourceLine" id="cb30-7" title="7">x.df =<span class="st"> </span>tidyr<span class="op">::</span><span class="kw"><a href="https://tidyr.tidyverse.org/reference/expand_grid.html">expand_grid</a></span>(<span class="dt">x1=</span><span class="dv">0</span><span class="op">:</span>x.max, <span class="dt">x2=</span><span class="dv">0</span><span class="op">:</span>x.max) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb30-8" title="8"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">x=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/paste">paste0</a></span>(x1,<span class="st">"_"</span>,x2))</a>
+<a class="sourceLine" id="cb30-9" title="9"></a>
+<a class="sourceLine" id="cb30-10" title="10"><span class="co"># static action space</span></a>
+<a class="sourceLine" id="cb30-11" title="11">static.A.fun =<span class="st"> </span><span class="cf">function</span>(x1,x2,...) {</a>
+<a class="sourceLine" id="cb30-12" title="12">  <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(</a>
+<a class="sourceLine" id="cb30-13" title="13">    <span class="dt">A1=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">q1 =</span> <span class="dv">0</span><span class="op">:</span>x1),</a>
+<a class="sourceLine" id="cb30-14" title="14">    <span class="dt">A2=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">q2 =</span> <span class="dv">0</span><span class="op">:</span>x2)</a>
+<a class="sourceLine" id="cb30-15" title="15">  )</a>
+<a class="sourceLine" id="cb30-16" title="16">}</a>
+<a class="sourceLine" id="cb30-17" title="17"></a>
+<a class="sourceLine" id="cb30-18" title="18"><span class="co"># dynamic action space </span></a>
+<a class="sourceLine" id="cb30-19" title="19">A.fun =<span class="st"> </span><span class="cf">function</span>(x1,x2,...) {</a>
+<a class="sourceLine" id="cb30-20" title="20">  <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(</a>
+<a class="sourceLine" id="cb30-21" title="21">    <span class="dt">A1=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">i1=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/c">c</a></span>(<span class="dv">0</span>, <span class="cf">if</span> (x1 <span class="op">&lt;</span><span class="st"> </span>x.max) <span class="dv">1</span>)),</a>
+<a class="sourceLine" id="cb30-22" title="22">    <span class="dt">A2=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">i2=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/c">c</a></span>(<span class="dv">0</span>, <span class="cf">if</span> (x2 <span class="op">&lt;</span><span class="st"> </span>x.max) <span class="dv">1</span>))</a>
+<a class="sourceLine" id="cb30-23" title="23">  )</a>
+<a class="sourceLine" id="cb30-24" title="24">}</a>
+<a class="sourceLine" id="cb30-25" title="25"></a>
+<a class="sourceLine" id="cb30-26" title="26"><span class="co"># State transitions: deterministic investments</span></a>
+<a class="sourceLine" id="cb30-27" title="27">trans.fun =<span class="st"> </span><span class="cf">function</span>(ax.df,...) {</a>
+<a class="sourceLine" id="cb30-28" title="28">  <span class="kw">restore.point</span>(<span class="st">"trans.fun"</span>)</a>
+<a class="sourceLine" id="cb30-29" title="29">  ax.df <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb30-30" title="30"><span class="st">    </span><span class="kw">select</span>(x,x1,x2,i1,i2) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb30-31" title="31"><span class="st">    </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/unique">unique</a></span>() <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb30-32" title="32"><span class="st">    </span><span class="kw">mutate</span>(</a>
+<a class="sourceLine" id="cb30-33" title="33">      <span class="dt">new_x1 =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/Extremes">pmin</a></span>(x1<span class="op">+</span>i1,x.max),</a>
+<a class="sourceLine" id="cb30-34" title="34">      <span class="dt">new_x2 =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/Extremes">pmin</a></span>(x2<span class="op">+</span>i2,x.max),</a>
+<a class="sourceLine" id="cb30-35" title="35">      <span class="dt">xd =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/paste">paste0</a></span>(new_x1,<span class="st">"_"</span>,new_x2),</a>
+<a class="sourceLine" id="cb30-36" title="36">      <span class="dt">xs=</span>x,</a>
+<a class="sourceLine" id="cb30-37" title="37">      <span class="dt">prob =</span> <span class="dv">1</span></a>
+<a class="sourceLine" id="cb30-38" title="38">    )</a>
+<a class="sourceLine" id="cb30-39" title="39">}</a>
+<a class="sourceLine" id="cb30-40" title="40"></a>
+<a class="sourceLine" id="cb30-41" title="41">g =<span class="st"> </span><span class="kw"><a href="../reference/rel_game.html">rel_game</a></span>(<span class="st">"Cournot with Investment"</span>) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb30-42" title="42"><span class="st">  </span><span class="kw"><a href="../reference/rel_states.html">rel_states</a></span>(<span class="dt">x=</span>x.df,</a>
+<a class="sourceLine" id="cb30-43" title="43">    <span class="dt">A.fun=</span>A.fun,</a>
+<a class="sourceLine" id="cb30-44" title="44">    <span class="dt">static.A.fun =</span> static.A.fun,</a>
+<a class="sourceLine" id="cb30-45" title="45">    <span class="dt">static.pi1 =</span> (a<span class="op">-</span>(q1<span class="op">+</span>q2))<span class="op">*</span>q1,</a>
+<a class="sourceLine" id="cb30-46" title="46">    <span class="dt">static.pi2 =</span> (a<span class="op">-</span>(q1<span class="op">+</span>q2))<span class="op">*</span>q2,</a>
+<a class="sourceLine" id="cb30-47" title="47">    <span class="dt">pi1 =</span> <span class="op">-</span><span class="st"> </span>i.cost<span class="op">*</span>i1,</a>
+<a class="sourceLine" id="cb30-48" title="48">    <span class="dt">pi2 =</span> <span class="op">-</span><span class="st"> </span>i.cost<span class="op">*</span>i2,</a>
+<a class="sourceLine" id="cb30-49" title="49">    <span class="dt">trans.fun=</span>trans.fun</a>
+<a class="sourceLine" id="cb30-50" title="50">  )</a>
+<a class="sourceLine" id="cb30-51" title="51"></a>
+<a class="sourceLine" id="cb30-52" title="52">g <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="../reference/rel_spe.html">rel_spe</a></span>(<span class="dt">delta=</span><span class="fl">0.3</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="../reference/get_eq.html">get_eq</a></span>() <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">select</span>(x, ae.lab,U)</a></code></pre></div>
+<pre><code>##      x    ae.lab     U
+## 1  0_0 0 0 | 1 1  2.26
+## 2  0_1 0 1 | 1 1  8.00
+## 3  0_2 0 2 | 1 0 12.20
+## 4  0_3 0 3 | 1 0 14.60
+## 5  0_4 0 4 | 0 0 16.00
+## 6  0_5 0 4 | 0 0 16.00
+## 7  1_0 1 0 | 1 1  8.00
+## 8  1_1 1 1 | 0 1 12.20
+## 9  1_2 1 2 | 0 0 15.00
+## 10 1_3 1 3 | 0 0 16.00
+## 11 1_4 1 3 | 0 0 16.00
+## 12 1_5 1 3 | 0 0 16.00
+## 13 2_0 2 0 | 0 1 12.20
+## 14 2_1 2 1 | 0 0 15.00
+## 15 2_2 2 2 | 0 0 16.00
+## 16 2_3 2 2 | 0 0 16.00
+## 17 2_4 2 2 | 0 0 16.00
+## 18 2_5 2 2 | 0 0 16.00
+## 19 3_0 3 0 | 0 1 14.60
+## 20 3_1 3 1 | 0 0 16.00
+## 21 3_2 2 2 | 0 0 16.00
+## 22 3_3 2 2 | 0 0 16.00
+## 23 3_4 2 2 | 0 0 16.00
+## 24 3_5 2 2 | 0 0 16.00
+## 25 4_0 4 0 | 0 0 16.00
+## 26 4_1 3 1 | 0 0 16.00
+## 27 4_2 2 2 | 0 0 16.00
+## 28 4_3 2 2 | 0 0 16.00
+## 29 4_4 2 2 | 0 0 16.00
+## 30 4_5 2 2 | 0 0 16.00
+## 31 5_0 4 0 | 0 0 16.00
+## 32 5_1 3 1 | 0 0 16.00
+## 33 5_2 2 2 | 0 0 16.00
+## 34 5_3 2 2 | 0 0 16.00
+## 35 5_4 2 2 | 0 0 16.00
+## 36 5_5 2 2 | 0 0 16.00</code></pre>
+<p>If we specify static actions via <code>static.A.fun</code>, or<code>static.A1</code> and <code>static.A2</code> it means that each period consists of two stages in which actions can be chosen (each preceded by a stage in which transfers can be performed). First, the static actions are chosen and then the dynamic actions. Splitting up actions in this fashion can substantially reduce numerical complexity in form of memory requirements and run time of the solution algorithms.</p>
+</div>
+<div id="specifying-parameters-inside-the-game" class="section level2">
+<h2 class="hasAnchor">
+<a href="#specifying-parameters-inside-the-game" class="anchor"></a>11. Specifying parameters inside the game</h2>
+<p>So far we have specified the parameters <code>x.max</code>, <code>i.cost</code> and <code>a</code> as global variables. Alternatively, you could also specify them in the game using the function <code>rel_param</code>. Consider the following variant:</p>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb32-1" title="1"><span class="co"># Action space</span></a>
+<a class="sourceLine" id="cb32-2" title="2">A.fun =<span class="st"> </span><span class="cf">function</span>(x1,x2,x.max,...) {</a>
+<a class="sourceLine" id="cb32-3" title="3">  <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(</a>
+<a class="sourceLine" id="cb32-4" title="4">    <span class="dt">A1=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">q1 =</span> <span class="dv">0</span><span class="op">:</span>x1, <span class="dt">i1=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/c">c</a></span>(<span class="dv">0</span>, <span class="cf">if</span> (x1 <span class="op">&lt;</span><span class="st"> </span>x.max) <span class="dv">1</span>)),</a>
+<a class="sourceLine" id="cb32-5" title="5">    <span class="dt">A2=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">q2 =</span> <span class="dv">0</span><span class="op">:</span>x2, <span class="dt">i2=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/c">c</a></span>(<span class="dv">0</span>, <span class="cf">if</span> (x2 <span class="op">&lt;</span><span class="st"> </span>x.max) <span class="dv">1</span>))</a>
+<a class="sourceLine" id="cb32-6" title="6">  )</a>
+<a class="sourceLine" id="cb32-7" title="7">}</a>
+<a class="sourceLine" id="cb32-8" title="8"></a>
+<a class="sourceLine" id="cb32-9" title="9"><span class="co"># State transitions</span></a>
+<a class="sourceLine" id="cb32-10" title="10">trans.fun =<span class="st"> </span><span class="cf">function</span>(ax.df,x.max,...) {</a>
+<a class="sourceLine" id="cb32-11" title="11">  <span class="kw">restore.point</span>(<span class="st">"trans.fun"</span>)</a>
+<a class="sourceLine" id="cb32-12" title="12">  ax.df <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb32-13" title="13"><span class="st">    </span><span class="kw">select</span>(x,x1,x2,i1,i2) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb32-14" title="14"><span class="st">    </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/unique">unique</a></span>() <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb32-15" title="15"><span class="st">    </span><span class="kw">mutate</span>(</a>
+<a class="sourceLine" id="cb32-16" title="16">      <span class="dt">new_x1 =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/Extremes">pmin</a></span>(x1<span class="op">+</span>i1,x.max),</a>
+<a class="sourceLine" id="cb32-17" title="17">      <span class="dt">new_x2 =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/Extremes">pmin</a></span>(x2<span class="op">+</span>i2,x.max),</a>
+<a class="sourceLine" id="cb32-18" title="18">      <span class="dt">xd =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/paste">paste0</a></span>(new_x1,<span class="st">"_"</span>,new_x2),</a>
+<a class="sourceLine" id="cb32-19" title="19">      <span class="dt">xs=</span>x,</a>
+<a class="sourceLine" id="cb32-20" title="20">      <span class="dt">prob =</span> <span class="dv">1</span></a>
+<a class="sourceLine" id="cb32-21" title="21">    )</a>
+<a class="sourceLine" id="cb32-22" title="22">}</a>
+<a class="sourceLine" id="cb32-23" title="23"></a>
+<a class="sourceLine" id="cb32-24" title="24"><span class="co"># State matrix</span></a>
+<a class="sourceLine" id="cb32-25" title="25">x.max =<span class="st"> </span><span class="dv">5</span></a>
+<a class="sourceLine" id="cb32-26" title="26">x.df =<span class="st"> </span>tidyr<span class="op">::</span><span class="kw"><a href="https://tidyr.tidyverse.org/reference/expand_grid.html">expand_grid</a></span>(<span class="dt">x1=</span><span class="dv">0</span><span class="op">:</span>x.max, <span class="dt">x2=</span><span class="dv">0</span><span class="op">:</span>x.max) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb32-27" title="27"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">x=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/paste">paste0</a></span>(x1,<span class="st">"_"</span>,x2))</a>
+<a class="sourceLine" id="cb32-28" title="28"></a>
+<a class="sourceLine" id="cb32-29" title="29">g =<span class="st"> </span><span class="kw"><a href="../reference/rel_game.html">rel_game</a></span>(<span class="st">"Cournot with Investment"</span>) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb32-30" title="30"><span class="st">  </span><span class="kw"><a href="../reference/rel_param.html">rel_param</a></span>(<span class="dt">a =</span> <span class="dv">10</span>,<span class="dt">i.cost =</span> <span class="fl">1.5</span>,<span class="dt">x.max=</span>x.max) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb32-31" title="31"><span class="st">  </span><span class="kw"><a href="../reference/rel_states.html">rel_states</a></span>(<span class="dt">x=</span>x.df,</a>
+<a class="sourceLine" id="cb32-32" title="32">    <span class="dt">A.fun=</span>A.fun,</a>
+<a class="sourceLine" id="cb32-33" title="33">    <span class="dt">pi1 =</span> (a<span class="op">-</span>(q1<span class="op">+</span>q2))<span class="op">*</span>q1 <span class="op">-</span><span class="st"> </span>i.cost<span class="op">*</span>i1,</a>
+<a class="sourceLine" id="cb32-34" title="34">    <span class="dt">pi2 =</span> (a<span class="op">-</span>(q1<span class="op">+</span>q2))<span class="op">*</span>q2 <span class="op">-</span><span class="st"> </span>i.cost<span class="op">*</span>i2,</a>
+<a class="sourceLine" id="cb32-35" title="35">    <span class="dt">trans.fun=</span>trans.fun</a>
+<a class="sourceLine" id="cb32-36" title="36">  )</a>
+<a class="sourceLine" id="cb32-37" title="37"></a>
+<a class="sourceLine" id="cb32-38" title="38">g <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="../reference/rel_spe.html">rel_spe</a></span>(<span class="dt">delta=</span><span class="fl">0.3</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="../reference/get_eq.html">get_eq</a></span>() <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">select</span>(x, ae.lab,U)</a></code></pre></div>
+<pre><code>## # A tibble: 36 x 3
+##    x     ae.lab         U
+##    &lt;chr&gt; &lt;chr&gt;      &lt;dbl&gt;
+##  1 0_0   "0 1 0 1 "  2.84
+##  2 0_1   "0 1 1 1 " 10.5 
+##  3 0_2   "0 1 2 0 " 16.4 
+##  4 0_3   "0 1 3 0 " 20.8 
+##  5 0_4   "0 0 4 0 " 24.0 
+##  6 0_5   "0 0 5 0 " 25   
+##  7 1_0   "1 1 0 1 " 10.5 
+##  8 1_1   "1 0 1 1 " 16.4 
+##  9 1_2   "1 0 2 0 " 21   
+## 10 1_3   "1 0 3 0 " 24.0 
+## # ... with 26 more rows</code></pre>
+<p>The specified parameters will then be passed as additional arguments to <code>A.fun</code>, <code>trans.fun</code> etc and will also be used when <code>pi1</code> and <code>pi2</code> are evaluated.</p>
+<p>If you want to create at the same time several game obects with different parameters, it seems advisable to store parameters inside the game and not rely on global variables. Otherwise it is a matter of taste, which style you want to use.</p>
 </div>
   </div>
 
@@ -439,14 +730,17 @@ tail(ax.df,3)
       <h2 class="hasAnchor">
 <a href="#tocnav" class="anchor"></a>Contents</h2>
       <ul class="nav nav-pills nav-stacked">
-<li><a href="#specifying-a-simple-repeated-game">Specifying a simple repeated game</a></li>
-      <li><a href="#a-game-with-2-states-and-transitions">A game with 2 states and transitions</a></li>
-      <li><a href="#specifying-multiple-states-at-once">Specifying Multiple States at Once</a></li>
-      <li><a href="#specify-action-spaces-via-a-fun-instead-of-a1-and-a2">Specify action spaces via A.fun instead of A1 and A2</a></li>
-      <li><a href="#specify-payoffs-via-pi-fun-instead-of-pi1-and-pi2">Specify payoffs via pi.fun instead of pi1 and pi2</a></li>
-      <li><a href="#specify-state-transitions-via-trans-fun">Specify state transitions via trans.fun</a></li>
-      <li><a href="#state-space-with-multiple-dimensions-and-helper-variables-a-cournot-duopoly-with-capacity-investments">State Space with multiple dimensions and helper variables: A Cournot Duopoly with Capacity Investments</a></li>
-      <li><a href="#cournot-duopoly-where-investments-are-not-always-successful--specifying-state-transitions-using-the-helper-function-independent_transitions">Cournot Duopoly where investments are not always successful. Specifying state transitions using the helper function <code>independent_transitions</code></a></li>
+<li><a href="#specifying-a-simple-repeated-game">1. Specifying a simple repeated game</a></li>
+      <li><a href="#a-game-with-2-states-and-transitions">2. A game with 2 states and transitions</a></li>
+      <li><a href="#specifying-multiple-states-at-once">3. Specifying Multiple States at Once</a></li>
+      <li><a href="#specify-action-spaces-via-a-fun-instead-of-a1-and-a2">4. Specify action spaces via A.fun instead of A1 and A2</a></li>
+      <li><a href="#specify-payoffs-via-pi-fun-instead-of-pi1-and-pi2">5. Specify payoffs via pi.fun instead of pi1 and pi2</a></li>
+      <li><a href="#specify-state-transitions-via-trans-fun">6. Specify state transitions via trans.fun</a></li>
+      <li><a href="#state-space-with-multiple-dimensions-and-helper-variables-a-cournot-duopoly-with-capacity-investments">7. State Space with multiple dimensions and helper variables: A Cournot Duopoly with Capacity Investments</a></li>
+      <li><a href="#specifying-state-transitions-using-the-helper-function-irv_joint_dist-cournot-duopoly-where-investments-are-not-always-successful">8. Specifying state transitions using the helper function <code>irv_joint_dist</code>: Cournot duopoly where investments are not always successful</a></li>
+      <li><a href="#advanced-use-of-irv_joint_dist-cournot-duopoly-where-investments-are-not-always-successful-and-capacity-may-depreciate">9. Advanced use of <code>irv_joint_dist</code>: Cournot duopoly where investments are not always successful and capacity may depreciate</a></li>
+      <li><a href="#separating-static-and-dynamic-actions">10. Separating static and dynamic actions</a></li>
+      <li><a href="#specifying-parameters-inside-the-game">11. Specifying parameters inside the game</a></li>
       </ul>
 </div>
       </div>

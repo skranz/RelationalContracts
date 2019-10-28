@@ -30,7 +30,6 @@ Note that there are no direct gains from attacking since it involves costs for b
 The following code specifies the game:
 ```{r}
 
-
 # Action space for each state
 A.fun = function(x1,x2, x.max,...) {
   restore.point("A.fun")
@@ -48,7 +47,7 @@ A.fun = function(x1,x2, x.max,...) {
 
 
 # State transition function
-trans.fun = function(ax.df,x.max, sp,d_factor=1, d_exp=1,...) {
+trans.fun = function(ax.df,x.max, sp,d.factor=1, d.exp=1,...) {
   restore.point("trans.fun")
 
   # Compute probability to destroy
@@ -95,10 +94,10 @@ x.df = tidyr::expand_grid(x1=0:x.max,x2=0:x.max) %>%
 
 
 g = rel_game("Arms Race") %>%
-  rel_param(delta=0.9, rho=0.4, c.a=0.1,c.i=0.1, cx=0.01,x.max=x.max, sp=0.5, d.factor=0.8, d.exp=1) %>%
+  rel_param(delta=0.9, rho=0.4, c.a=0.1,c.i=0.1, c.x=0.01,x.max=x.max, sp=0.5, d.factor=0.8, d.exp=1) %>%
   rel_states(x.df,A.fun=A.fun, trans.fun=trans.fun,
-    pi1 = ~ -c.a*(a1=="attack")*x1 - (a2=="attack")*x2 - c.i*(i1=="b")-c.x*x1,
-    pi2 = ~ -c.a*(a2=="attack")*x2 - (a1=="attack")*x1 - c.i*(i2=="b")-c.x*x2
+    pi1 = -c.a*(a1=="attack")*x1 - (a2=="attack")*x2 - c.i*(i1=="b")-c.x*x1,
+    pi2 = -c.a*(a2=="attack")*x2 - (a1=="attack")*x1 - c.i*(i2=="b")-c.x*x2
   ) %>%
   rel_compile() %>%
   rel_capped_rne(T=1000)

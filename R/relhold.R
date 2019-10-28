@@ -268,7 +268,7 @@ rel_compile = function(g,..., compute.just.static=FALSE) {
 
       df = as_data_frame(def[setdiff(names(df),"prob")])
       env = as.environment(param)
-      parent.env(env) = parent.frame()
+      parent.env(env) = g$enclos
 
       df$prob = eval.rel.expression(def$prob,g = g,param = df,enclos=env)
     } else {
@@ -367,14 +367,14 @@ compute.payoff.for.state = function(player=1,state, def, g) {
     args = c(as.list(state$a.grid[[1]]),g$param,x=state$x)
   }
 
-  pi.val = eval.rel.expression(pi.expr,param=args)
+  pi.val = eval.rel.expression(pi.expr,g=g,param=args)
 }
 
 
 #' Creates a new relational contracting game
-rel_game = function(name="Game", ...) {
+rel_game = function(name="Game", ..., enclos=parent.frame()) {
 
-  g = list(name=name,param=list(delta=0.9, rho=0, beta1=0.5),defs=list(),is_compiled=FALSE, ...)
+  g = list(name=name,param=list(delta=0.9, rho=0, beta1=0.5),defs=list(),is_compiled=FALSE, enclos=enclos, ...)
   class(g) = c("relgame","list")
   g
 }
@@ -404,14 +404,45 @@ rel_param = function(g,..., delta=non.null(param[["delta"]], 0.9), rho=non.null(
 #' @param A1 The action set of player 1. A named list, like \code{A1=list(e1=1:10)}, where each element is a numeric or character vector.
 #' @param A2 The action set of player 2. See A1.
 #' @param A.fun Alternative to specify A1 and A2, a function that returns action sets.
-#' @param pi1 Player 1's payoff. Value(s) or formula
-#' @param pi2 Player 2's payoff. Values(s) or formula
+#' @param pi1 Player 1's payoff. (Non standard evaluation)
+#' @param pi2 Player 2's payoff. (Non standard evaluation)
 #' @param pi.fun Alternative to specify pi1 and pi2 as formula. A vectorized function that returns payoffs directly for all combinations of states and action profiles.
 #' @param trans.fun A function that specifies state transitions
 #' @param x.T Relevant when solving a capped game. Which terminal state shall be set in period T onwards. By default, we stay in state x.
 #' @return Returns the updated game
-rel_states = function(g, x,A1=NULL, A2=NULL, pi1=NULL, pi2=NULL, A.fun=NULL, pi.fun=NULL, trans.fun=NULL,static.A1=NULL, static.A2=NULL, static.A.fun=NULL,static.pi1=NULL, static.pi2=NULL, static.pi.fun=NULL, x.T=NULL,  ...) {
+rel_states = function(g, x,A1=NULL, A2=NULL, pi1, pi2, A.fun=NULL, pi.fun=NULL, trans.fun=NULL,static.A1=NULL, static.A2=NULL, static.A.fun=NULL,static.pi1, static.pi2, static.pi.fun=NULL, x.T=NULL,  ...) {
   args=list(...)
+  if (missing(pi1)) {
+    pi1 = NULL
+  } else {
+    pi1 = substitute(pi1)
+    if (isTRUE(as.name(pi1[[1]])=="~"))
+      pi1 = pi1[[2]]
+  }
+  if (missing(pi2)) {
+    pi2 = NULL
+  } else {
+    pi2 = substitute(pi2)
+    if (isTRUE(as.name(pi2[[1]])=="~"))
+      pi2 = pi2[[2]]
+  }
+
+  if (missing(static.pi1)) {
+    static.pi1 = NULL
+  } else {
+    static.pi1 = substitute(static.pi1)
+    if (isTRUE(as.name(static.pi1[[1]])=="~"))
+      static.pi1 = static.pi1[[2]]
+  }
+  if (missing(static.pi2)) {
+    static.pi2 = NULL
+  } else {
+    static.pi2 = substitute(static.pi2)
+    if (isTRUE(as.name(static.pi2[[1]])=="~"))
+      static.pi2 = static.pi2[[2]]
+  }
+
+
   restore.point("rel_states")
   if (is.data.frame(x)) {
     x.df = x
@@ -424,6 +455,8 @@ rel_states = function(g, x,A1=NULL, A2=NULL, pi1=NULL, pi2=NULL, A.fun=NULL, pi.
 
   if (!is.null(x.T))
     g = add.to.rel.defs(g, "xT_defs",list(x=x,x.T=x.T))
+
+
 
   if (!is.null(A1) | !is.null(A2)) {
     g = add.to.rel.defs(g, "state_defs",list(x=x, A1=A1,A2=A2))

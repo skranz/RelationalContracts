@@ -636,7 +636,7 @@ compute.after.cap.action.inds = function(g) {
         a.rows = rep(TRUE, NROW(a.li))
         #var = vars[1]
         for (var in vars) {
-          val = try(eval.rel.expression(a.li[[var]],param=a.grid))
+          val = try(eval.rel.expression(a.li[[var]],param=a.grid, g=g))
           if (is(val, "try-error"))
             stop(paste0("Error in evaluating after.cap.action formula for phase ", k.var, " variable ", var, " in state ", sdf$x[row]))
 

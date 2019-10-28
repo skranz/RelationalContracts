@@ -1,5 +1,5 @@
 ---
-title: "Analyzing Relational Contracts with R: Part I"
+title: "Specifying Games"
 output: html_document
 ---
 
@@ -11,11 +11,11 @@ library(repgame)
 library(RSGSolve)
 ```
 
-```{r include=FALSE, eval=FALSE, cache=FALSE}
-rmarkdown::render("D:/libraries/RelationalHoldup/RelationalContracts/inst/guide/RelationalContractsBlog1.Rmd")
-```
+This vignette illustrates how you can specify dynamic games with the `RelationalContracts` package. We start with simple examples and move to more complex use cases.
 
-## Specifying a simple repeated game
+In particular, sections 7-9 give advice on how to effectively specify state transitions for complex game with multidimensional state spaces.
+
+## 1. Specifying a simple repeated game
 
 Consider a simple two player repeated game. Each player $i$ chooses an effort level $e_i$ on a grid between 0 and 1 that directly benefits the other player. Effort involves for player $i$ cost of $\frac 1 2 e_i$ and grants the other player a benefit of $e_i$: 
 ```{r}
@@ -29,8 +29,8 @@ g = rel_game("Mutual Gift Game") %>%
     A2 = list(e2=effort.seq),
 
     # Stage game payoffs
-    pi1 = ~ e2 - 0.5*e1^2,
-    pi2 = ~ e1 - 0.5*e2^2
+    pi1 = e2 - 0.5*e1^2,
+    pi2 = e1 - 0.5*e2^2
   )
 
 # Solve SPE
@@ -40,9 +40,9 @@ The function `rel_game` specifies an empty game object and `rel_state` specifies
 
 The parameters `A1` and `A2` specify the action spaces of each player. You have to provide a named list of actions for each player, here we have the actions `e1` for player 1 and `e2` for player 2. Note that you must choose different names for each player's actions, i.e. you could not call both actions just `e`.
 
-The parameters `pi1` and `pi2` specify payoffs for both players. Payoffs will usually be formula's (starting with `~`), which means that they can depend on the chosen action or parameters specified for the game or state.
+The parameters `pi1` and `pi2` specify payoffs for both players. Payoffs will be lazily evaluated later on the corresponding action space. This means they can depend on the chosen action or parameters specified for the game or state.
 
-## A game with 2 states and transitions
+## 2. A game with 2 states and transitions
 
 Consider now the following game with two states:
 ```{r}
@@ -53,14 +53,14 @@ g = rel_game() %>%
   rel_state("not_vul",
     A1 = list(e1=effort.seq, make_vul = c(FALSE, TRUE)),
     A2 = list(e2=effort.seq),
-    pi1 = ~ e2 - 0.5*e1^2,
-    pi2 = ~ e1 - 0.5*e2^2
+    pi1 = e2 - 0.5*e1^2,
+    pi2 = e1 - 0.5*e2^2
   ) %>%
   rel_state("vul",
     A1 = list(e1=effort.seq),
     A2 = list(e2=c(-vul,effort.seq)),
-    pi1 = ~ e2 - 0.5*e1^2,
-    pi2 = ~ e1 - 0.5*pmax(e2,0)^2
+    pi1 = e2 - 0.5*e1^2,
+    pi2 = e1 - 0.5*pmax(e2,0)^2
   ) %>%
   rel_transition("not_vul","vul", make_vul=TRUE,prob=1) %>%
   rel_transition("vul","not_vul", prob = 0.05) %>%
@@ -79,7 +79,7 @@ The line `rel_transition("vul","not_vul", prob = 0.05)` means that there is a tr
 
 For cases in which no explicit transition probability is specified it is assumed that play remains in the current state. I.e. if player 1 chooses `make_vul = FALSE` in stat "not_vul" the game remains in state "not_vul" even though we have not explicitly specified this.
 
-## Specifying Multiple States at Once
+## 3. Specifying Multiple States at Once
 
 Consider the following game specification that has 6 different states determined by increasing vulnerability of player 1:
 ```{r}
@@ -88,8 +88,8 @@ g = rel_game() %>%
   rel_states(x = 0:5,
     A1 = list(e1=effort.seq, inc_vul = c(FALSE, TRUE)),
     A2 = list(e2=c(-1,effort.seq)),
-    pi1 = ~ ifelse(e2 != -1,e2, -x/5) - 0.5*e1^2,
-    pi2 = ~ e1 - 0.5*pmax(e2,0)^2
+    pi1 = ifelse(e2 != -1,e2, -x/5) - 0.5*e1^2,
+    pi2 = e1 - 0.5*pmax(e2,0)^2
   ) %>%
   rel_transition(xs = 0:4,xd=1:5, inc_vul=TRUE,prob=1)
   
@@ -102,33 +102,31 @@ The function `rel_states` is just a synonym for `rel_state` and can be used to s
 
 Note that the formula for `pi1` refers to the current state `x`.
 
-The function `rel_transition` allows to specify multiple source states `xs` and multiple destination states `xd`. Here choosing `inc_vul` increases the state number as long as we have not reached yet state `x=5`.
+The function `rel_transition` allows to specify multiple source states `xs` and multiple destination states `xd`. Here choosing `inc_vul=TRUE` increases the state number, as long as we have not reached yet state `x=5`.
 
 The specification above specifies the same action space for all states, even though in state `x=5` the action `inc_vul` has no effect.
 
-One way to specify different action spaces for different subsets of states is to add multiple `rel_states` command, as in the example below:
+One way to specify different action spaces for different subsets of states is to add multiple `rel_states` commands as in the example below:
 ```{r}
 effort.seq = seq(0,1,by=0.1)
 g = rel_game() %>%
   rel_states(x = 0:4,
     A1 = list(e1=effort.seq, inc_vul = c(FALSE, TRUE)),
     A2 = list(e2=c(-1,effort.seq)),
-    pi1 = ~ ifelse(e2 != -1,e2, -x/5) - 0.5*e1^2,
-    pi2 = ~ e1 - 0.5*pmax(e2,0)^2
+    pi1 =  ifelse(e2 != -1,e2, -x/5) - 0.5*e1^2,
+    pi2 =  e1 - 0.5*pmax(e2,0)^2
   ) %>%
   # Specify state x=5 separately without inc_vul action
   rel_states(x = 5,
     A1 = list(e1=effort.seq),
     A2 = list(e2=c(-1,effort.seq)),
-    pi1 = ~ ifelse(e2 != -1,e2, -x/5) - 0.5*e1^2,
-    pi2 = ~ e1 - 0.5*pmax(e2,0)^2
+    pi1 = ifelse(e2 != -1,e2, -x/5) - 0.5*e1^2,
+    pi2 = e1 - 0.5*pmax(e2,0)^2
   ) %>%
-  rel_transition(xs = 0:4,xd=1:5, inc_vul=TRUE,prob=1) %>%
-  rel_transition(xs = 1:5,xd=0:4, prob=0.05)
-  
+  rel_transition(xs = 0:4,xd=1:5, inc_vul=TRUE,prob=1)
 ```
 
-## Specify action spaces via A.fun instead of A1 and A2 
+## 4. Specify action spaces via A.fun instead of A1 and A2 
 
 If you want to specify several states with different action spaces in a single call to `rel_states` you should use the argument `A.fun` instead of `A1` and `A2`. Below is an example: 
 ```{r}
@@ -145,8 +143,8 @@ A.fun = function(x,...) {
 g = rel_game() %>%
   rel_states(x = 0:5,
     A.fun = A.fun,
-    pi1 = ~ ifelse(e2 != -1,e2, -x/5) - 0.5*e1^2,
-    pi2 = ~ e1 - 0.5*pmax(e2,0)^2
+    pi1 = ifelse(e2 != -1,e2, -x/5) - 0.5*e1^2,
+    pi2 = e1 - 0.5*pmax(e2,0)^2
   ) %>%
   rel_transition(xs = 0:4,xd=1:5, inc_vul=TRUE,prob=1) %>%
   rel_transition(xs = 1:5,xd=0:4, prob=0.05)
@@ -157,14 +155,13 @@ g %>% rel_spe(delta=0.3) %>% get_eq() %>% select(x, ae.lab)
 ```
 The function `A.fun` will be called separately for each state `x` and should return a list with elements `A1` and `A2` describing the action spaces of both players for the current state.
 
-## Specify payoffs via pi.fun instead of pi1 and pi2
+## 5. Specify payoffs via pi.fun instead of pi1 and pi2
 
-The argument `pi.fun` of `rel_states` allows to specify payoffs via a vectorized functions instead of providing formulas to the arguments `pi1` and `pi2`. Here is an example:
+The argument `pi.fun` of `rel_states` allows to specify payoffs via a function instead of providing formulas to the arguments `pi1` and `pi2`. Here is an example:
 
 ```{r}
 effort.seq = seq(0,1,by=0.1)
 pi.fun = function(ax.df, ...) {
-  restore.point("pi.fun") # for debugging purposes
   mutate(ax.df,
     pi1 = ifelse(e2 != -1,e2, -x/5) - 0.5*e1^2,
     pi2 = e1 - 0.5*pmax(e2,0)^2
@@ -183,7 +180,7 @@ g = rel_game() %>%
 g %>% rel_spe(delta=0.3) %>% get_eq() %>% select(x, ae.lab)
 ```
 
-While `A.fun` will be called separately for each state `x`, the function `pi.fun` will be called only once with an argument `ax.df` (and possible some parameters specified in the game). `ax.df` is a tibble that contains one row for every action profile in every state. n our example, its head and tail looks as follows:
+While `A.fun` will be called separately for each state `x`, the function `pi.fun` will be called only once with an argument `ax.df` (and possible some parameters specified in the game as explained in Section 11). `ax.df` is a tibble that contains one row for every action profile in every state. In our example, its head and tail looks as follows:
 ```
 head(ax.df,3)
 
@@ -204,13 +201,13 @@ tail(ax.df,3)
 3     5   264     1 TRUE      1
 ```
 
-The column `x` specifies a state, the column `.a` will probably not be used, it is just a unique index of the action profile number in the states. The other columns correspond to the action names. (If some action is not present in some state, it is filled with `NA`)
+The column `x` specifies a state, the column `.a` will probably not be used, it is just a unique index of the action profile number. The other columns correspond to the action names. (If some action is not present in some state, it is filled with `NA`)
 
-Your function basically should add the columns `pi1` and `pi2` to each row of this data frame. (You can drop some columns, but should keep `x` and not change the order of rows.)
+Your function basically should add the columns `pi1` and `pi2` to each row of this data frame. You can drop some columns, but should keep `x` and not change the order of rows.
 
-## Specify state transitions via trans.fun
+## 6. Specify state transitions via trans.fun
 
-As an alternative to specifying state transitions with one or several calls to `rel_transition`, one can use the argument `trans.fun` or `rel_states`. Here is an example:
+As an alternative to specifying state transitions with one or several calls to `rel_transition`, one can use the argument `trans.fun` in the call to `rel_states`. Here is an example:
 ```{r}
 trans.fun = function(ax.df, ...) {
   tibble(xs=0:4,xd=1:5, inc_vul=TRUE, prob=1)
@@ -219,13 +216,13 @@ g = rel_game() %>%
   rel_states(x = 0:5,
     A1 = list(e1=effort.seq, inc_vul = c(FALSE, TRUE)),
     A2 = list(e2=c(-1,effort.seq)),
-    pi1 = ~ ifelse(e2 != -1,e2, -x/5) - 0.5*e1^2,
-    pi2 = ~ e1 - 0.5*pmax(e2,0)^2,
+    pi1 =  ifelse(e2 != -1,e2, -x/5) - 0.5*e1^2,
+    pi2 =  e1 - 0.5*pmax(e2,0)^2,
     trans.fun = trans.fun
   )
 ```
 
-`trans.fun` is a function that takes the same arguments as explained in the subsection about `pi.fun` above. It returns a data frame that whose columns are essentially the same as the arguments of `rel_transition`. Each row specifies a transition from the state in column `xs` to the state in column `xd` with probability of column `prob` given that the actions take the values specified in additional columns. 
+`trans.fun` is a function that takes the same arguments as explained in the subsection about `pi.fun` above. It returns a data frame whose columns are essentially the same as the arguments of `rel_transition`. Each row specifies a transition from the state in column `xs` to the state in column `xd` with probability in column `prob` given that the actions take the values specified in additional columns. 
 
 You may add columns for all actions and set a value of `NA` if this action is not relevant in a particular row. So we could also have specified the state transitions as
 ```{r}
@@ -236,9 +233,9 @@ trans.fun = function(ax.df, ...) {
 
 In the current example, there is little value of using the `trans.fun` argument instead of `rel_transition`. Yet, in more complex games with multidimensional state spaces and complex state transitions `trans.fun` can be more tractable. We will provide examples below.
 
-## State Space with multiple dimensions and helper variables: A Cournot Duopoly with Capacity Investments
+## 7. State Space with multiple dimensions and helper variables: A Cournot Duopoly with Capacity Investments
 
-The following examples will be variants of a dynamic Cournot duopoly with capacity investments. A state `x` is characterized by a tuple `(x1,x2)` that describes the production capacities of each player. In each period players simultaneously choose integer outputs `q1` and `q2` between 0 and their capacity and decide whether to invest into new capacity, at least as long as the maximum capacity `x.max` has not been reached.
+The following examples will be variants of a dynamic Cournot duopoly with capacity investments. A state `x` is characterized by a tuple `(x1,x2)` that describes the production capacities of each player. In each period players simultaneously choose integer outputs `q1` and `q2` between 0 and their capacity and decide whether or not to invest into new capacity. A player can invest until a maximum capacity `x.max` has been reached.
 
 Product market prices in a period are given by `a-q1-q2` where `a` is an exogenous parameter.
 
@@ -279,17 +276,17 @@ trans.fun = function(ax.df,...) {
 g = rel_game("Cournot with Investment") %>%
   rel_states(x=x.df,
     A.fun=A.fun,
-    pi1 =~ (a-(q1+q2))*q1 - i.cost*i1,
-    pi2 =~ (a-(q1+q2))*q2 - i.cost*i2,
+    pi1 = (a-(q1+q2))*q1 - i.cost*i1,
+    pi2 = (a-(q1+q2))*q2 - i.cost*i2,
     trans.fun=trans.fun
   )
 
-g %>% rel_spe(delta=0.3) %>% get_eq() %>% select(x, ae.lab,U)
+# g %>% rel_spe(delta=0.3) %>% get_eq() %>% select(x, ae.lab,U)
 ```
 
-First note that in the call to `rel_states`, the argument `x` is not a vector of state names, but instead a data frame specified further above. The data frame has a column `x` but also two additional columns `x1` and `x2` that provide additional information about each state, namely the capacities of each player. The column `x` that uniquely identifies each state is just a label pasting `x1` and `x2` together.
+First note that in the call to `rel_states`, the argument `x` is not a vector of state names, but instead the data frame `x.df` specified further above. The data frame has the columns `x1` and `x2` that provide additional information about each state, namely the capacities of each player. The additional column `x` uniquely identifies each state as a label that just pastes `x1` and `x2` together.
 
-The additional state variables `x1` and `x2`could be used in the formula's for `pi1` and `pi2`, are passed as additional arguments to `A.fun`, and are additional columns in the `ax.df` argument passed to `trans.fun`. You can add as many columns to such a state data frame as you like. The only requirement is that there is a column `x` with unique values in each row. 
+The additional state variables `x1` and `x2`can be used in the formula's for `pi1` and `pi2`, are passed as additional arguments to `A.fun`, and are additional columns in the `ax.df` argument passed to `trans.fun`. You can add as many columns to such a state data frame as you like. The only requirement is that there is a column `x` with unique values in each row. 
 
 The specification of `A.fun` is pretty straightforward. Note how the action space depends on the current capacity of each player.
 
@@ -314,7 +311,7 @@ We start with `ax.df` which contains one row for each action profile in each sta
 10     0     1 0_1       6     0     1     1     0
 # ... with 1,285 more rows
 ```
-Relevant to compute state transitions are only the investment actions and the state variables. We thus select the relevant columns and reduce to unique rows and get:
+Relevant to compute state transitions are only the investment actions and the state variables. We thus select the relevant columns and reduce to unique rows. We get:
 
 ```
 ax.df %>%
@@ -334,7 +331,7 @@ ax.df %>%
 ```
 Starting with this data frame, we can easily compute the new capacities of both players by adding their investments to the current capacities. The new state `xd` is then simply created by pasting the new capacities together. We also have to add the transition probability of `prob=1` since state transitions are deterministic and set the source state column `xs` just to the original state `x`.
 
-## Specifying state transitions using the helper function `independent_transitions`: Cournot duopoly where investments are not always successful
+## 8. Specifying state transitions using the helper function `irv_joint_dist`: Cournot duopoly where investments are not always successful
 
 Consider now a variant of our previous game in which an investment leads to a successful capacity expansion only with an exogenous success probability `sp`.
 
@@ -347,7 +344,7 @@ Relational Contracts has a helper function `irv_joint_dist` that allows to compu
 sp = 0.7
 
 # An example row for which we want
-# to compute transition probabiluties
+# to compute transition probabilities
 df = tibble(x="0_0",x1=0,x2=0,i1=1,i2=1)
 
 # Compute joint distribution of independent
@@ -361,10 +358,10 @@ irv_joint_dist(df,
   )
 )
 ```
-Inside the call to `irv_joint_dist` we specify with `irv_var` two discrete valued random variables `new_x1` and `new_x2` that shall be independently distributed from each other.
-Inside `irv_var` we call `irv_val` to specify values that the variable can take and their realiziation probabilities. These values and probabilities are computed using the columns of the data frame `df` passed to `irv_joint_dist` using lazy evaluation.
+Inside the call to `irv_joint_dist` we specify with `irv` two discrete valued random variables `new_x1` and `new_x2` that shall be independently distributed from each other.
+Inside `irv` we call `irv_val` to specify values that the variable can take and their realiziation probabilities. These values and probabilities are computed using the columns of the data frame `df` passed to `irv_joint_dist` using lazy evaluation.
 
-For convenience, we can also set a default value for each random variables that is realized with probability 1 minus the some of all explicitly specified probabilities via `irv_val`. E.g. without default values, we could have equivalently specified `new_x1` by
+For convenience, we can also set a default value for each random variables that is realized with probability 1 minus the sum of probabilities of all explicitly specified probabilities via `irv_val`. E.g. without default values, we could have equivalently specified `new_x1` by
 ```{r eval=FALSE}
   irv("new_x1",
     irv_val(val=x1+1,prob=i1*sp),
@@ -423,15 +420,12 @@ trans.fun = function(ax.df,...) {
 
 This code may look complicated, but specifying transition probabilities correctly is typically the most difficult task in a game specificiation. And while it requires some time to learn, in my experience, `irv_joint_dist` is often quite a useful tool for this task.
 
-## Advanced use of `irv_joint_dist`: Cournot duopoly where investments are not always successful and capacity may depreciate
+## 9. Advanced use of `irv_joint_dist`: Cournot duopoly where investments are not always successful and capacity may depreciate
 
 Consider now a variant in which existing capacity can also depricate with positive depreciation probability `dp`.
 
+The following code specifies the transition function:
 ```{r}
-sp = 0.7
-dp = 0.2
-ax.df = tibble(x="1_1",x1=1,x2=1,i1=c(0,1),i2=1)
-
 trans.fun = function(ax.df,...) {
   restore.point("trans.fun")
   ax.df %>%
@@ -461,4 +455,147 @@ trans.fun = function(ax.df,...) {
     summarize(prob=sum(prob))
 }
 ```
+We now specify 4 independent random variables. Each new capacity now depends on two random variables describing whether or nor investment successful and whether or not there is depreciation.
 
+To understand why the final  `group_by` and `summarize` is neccessary let us take a look at the computation before for a single intial row:
+```{r}
+sp = 0.7
+dp = 0.1
+
+tibble(x="1_0",x1=1,x2=0,i1=1,i2=0) %>%
+  select(x,x1,x2,i1,i2) %>%
+  unique() %>%
+  irv_joint_dist(
+    irv("add_x1",default=0,
+      irv_val(1,prob=i1*sp)
+    ),
+    irv("add_x2",default=0,
+      irv_val(1,prob=i2*sp)
+    ),
+    irv("rem_x1",default=0,
+      irv_val(1,prob=(x1>0)*dp)
+    ),
+    irv("rem_x2",default=0,
+      irv_val(1,prob=(x2>0)*dp)
+    )
+  ) %>%
+  mutate(
+    new_x1 = x1+add_x1 - rem_x1,
+    new_x2 = x2+add_x2 - rem_x2,
+    xd = paste0(new_x1,"_",new_x2),
+    xs=x
+  ) %>%
+  select(xs,xd,i1,i2,prob,add_x1,rem_x1)
+```
+We see that both the first and last row transist to the same state. In the first row both investment and depreciation for player 1 happens, and in the last row neither one happens. Both yield the same net result: no change of capacity. The final `group_by` and `summarize` command inside `trans.fun` add up the probabilities of such rows with the same outcomes.
+
+## 10. Separating static and dynamic actions 
+
+Consider the following variant of the dynamic Cournot duopoly, where we have splitted the "static" actions `q1` and `q2` which don't affect the state transitions from the "dynamic" actions `i1` and `i2`:
+
+```{r}
+# Exogenous paramaters
+x.max = 5
+a = 8
+i.cost = 1
+
+# State matrix
+x.df = tidyr::expand_grid(x1=0:x.max, x2=0:x.max) %>%
+  mutate(x=paste0(x1,"_",x2))
+
+# static action space
+static.A.fun = function(x1,x2,...) {
+  list(
+    A1=list(q1 = 0:x1),
+    A2=list(q2 = 0:x2)
+  )
+}
+
+# dynamic action space 
+A.fun = function(x1,x2,...) {
+  list(
+    A1=list(i1=c(0, if (x1 < x.max) 1)),
+    A2=list(i2=c(0, if (x2 < x.max) 1))
+  )
+}
+
+# State transitions: deterministic investments
+trans.fun = function(ax.df,...) {
+  restore.point("trans.fun")
+  ax.df %>%
+    select(x,x1,x2,i1,i2) %>%
+    unique() %>%
+    mutate(
+      new_x1 = pmin(x1+i1,x.max),
+      new_x2 = pmin(x2+i2,x.max),
+      xd = paste0(new_x1,"_",new_x2),
+      xs=x,
+      prob = 1
+    )
+}
+
+g = rel_game("Cournot with Investment") %>%
+  rel_states(x=x.df,
+    A.fun=A.fun,
+    static.A.fun = static.A.fun,
+    static.pi1 = (a-(q1+q2))*q1,
+    static.pi2 = (a-(q1+q2))*q2,
+    pi1 = - i.cost*i1,
+    pi2 = - i.cost*i2,
+    trans.fun=trans.fun
+  )
+
+g %>% rel_spe(delta=0.3) %>% get_eq() %>% select(x, ae.lab,U)
+```
+
+If we specify static actions via `static.A.fun`, or`static.A1` and `static.A2` it means that each period consists of two stages in which actions can be chosen (each preceded by a stage in which transfers can be performed). First, the static actions are chosen and then the dynamic actions. Splitting up actions in this fashion can substantially reduce numerical complexity in form of memory requirements and run time of the solution algorithms.
+
+## 11. Specifying parameters inside the game
+
+So far we have specified the parameters `x.max`, `i.cost` and `a` as global variables. Alternatively, you could also specify them in the game using the function `rel_param`. Consider the following variant:
+
+```{r}
+
+# Action space
+A.fun = function(x1,x2,x.max,...) {
+  list(
+    A1=list(q1 = 0:x1, i1=c(0, if (x1 < x.max) 1)),
+    A2=list(q2 = 0:x2, i2=c(0, if (x2 < x.max) 1))
+  )
+}
+
+# State transitions
+trans.fun = function(ax.df,x.max,...) {
+  restore.point("trans.fun")
+  ax.df %>%
+    select(x,x1,x2,i1,i2) %>%
+    unique() %>%
+    mutate(
+      new_x1 = pmin(x1+i1,x.max),
+      new_x2 = pmin(x2+i2,x.max),
+      xd = paste0(new_x1,"_",new_x2),
+      xs=x,
+      prob = 1
+    )
+}
+
+# State matrix
+x.max = 5
+x.df = tidyr::expand_grid(x1=0:x.max, x2=0:x.max) %>%
+  mutate(x=paste0(x1,"_",x2))
+
+g = rel_game("Cournot with Investment") %>%
+  rel_param(a = 10,i.cost = 1.5,x.max=x.max) %>%
+  rel_states(x=x.df,
+    A.fun=A.fun,
+    pi1 = (a-(q1+q2))*q1 - i.cost*i1,
+    pi2 = (a-(q1+q2))*q2 - i.cost*i2,
+    trans.fun=trans.fun
+  )
+
+g %>% rel_spe(delta=0.3) %>% get_eq() %>% select(x, ae.lab,U)
+```
+
+The specified parameters will then be passed as additional arguments to `A.fun`, `trans.fun` etc and will also be used when `pi1` and `pi2` are evaluated.
+
+If you want to create at the same time several game obects with different parameters, it seems advisable to store parameters inside the game and not rely on global variables. Otherwise it is a matter of taste, which style you want to use.
