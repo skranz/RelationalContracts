@@ -92,18 +92,13 @@ x.df = tidyr::expand_grid(x1=0:x.max,x2=0:x.max) %>%
 
 
 g = rel_game("Arms Race") %>%
-  rel_param(delta=0.9, rho=0.5, c.a=0.1,c.i=0.1, c.x=0.01,x.max=x.max, sp=0.5, d.factor=0.8, d.exp=2) %>%
+  rel_param(delta=0.9, rho=0.15, c.a=0.1,c.i=0.1, c.x=0.01,x.max=x.max, sp=0.3, d.factor=0.8, d.exp=2) %>%
   rel_states(x.df,A.fun=A.fun, trans.fun=trans.fun,
     pi1 = -c.a*(a1=="attack")*x1 - (a2=="attack")*x2 - c.i*(i1=="b")-c.x*x1,
     pi2 = -c.a*(a2=="attack")*x2 - (a1=="attack")*x1 - c.i*(i2=="b")-c.x*x2
   ) %>%
   rel_compile()
 
-```
-
-
-
-````{r }
 g = g %>% rel_capped_rne(T=1000)
 
 rne = get_eq(g)
@@ -116,20 +111,19 @@ ndf = left_join(df.li$ndf, rne, by="x")
 ndf = ndf %>% mutate(
   conflict = ae.a1 == "attack" | ae.a2 == "attack",
   shape = ifelse(conflict, "box","circle"),
-  type = ifelse(conflict, "conflict_node", "peace_node")
+  type = ifelse(conflict, "conflict_node", "peace_node"),
+  label = paste0(x1, " ",x2), 
+  font = "28px Arial black"
 )
 graph = create_graph(ndf, edf)
 render_graph(graph, output="visNetwork")
 
-
-edf = edf[integer(),]
-ndf = ndf[1,]
-graph = create_graph(ndf, edf)
-
-render_graph(graph, output="visNetwork")
+```
 
 
-eq_diagram(g, show.own.loop = !TRUE, just.eq.chain = TRUE)
+
+````{r }
+
 
 ```
 
@@ -224,16 +218,16 @@ x.df = bind_rows(x.df1, x.df2) %>%
   )
 
 g = rel_game("Arms Race Turns") %>%
-  rel_param(delta=0.9, rho=0.5, c.a=0.01,c.i=0.01, c.x=0.01,x.max=x.max, sp=0.2, d.factor=0.8, d.exp=2) %>%
+  rel_param(delta=0.9, rho=0.6, c.a=0.012,c.i=0.01, c.x=0.01,x.max=x.max, sp=0.2, d.factor=0.8, d.exp=2) %>%
   rel_states(x.df,A.fun=A.fun, trans.fun=trans.fun,pi.fun=pi.fun) %>%
   rel_compile()
 
-g = g %>% rel_capped_rne(T=1000)
+g = g %>% rel_capped_rne(T=1001)
 
 rne = get_eq(g)
 plot.turns.arms.race(g)
 
-plot.turns.arms.race = function(g, eq=get_eq(g)) {
+plot.turns.arms.race = function(g, eq=get_eq(g), simple.label=TRUE) {
 
   eq_group = eq %>%
     group_by(x1,x2, xgroup) %>%
@@ -256,17 +250,78 @@ plot.turns.arms.race = function(g, eq=get_eq(g)) {
     conflict = attack1 | attack2,
     shape = ifelse(conflict, "box","circle"),
     type = ifelse(conflict, "conflict_node", "peace_node"),
-    label = paste0(xgroup,"\n", 
-      ifelse(attack1,"a",""), ifelse(b1,"b","") , ifelse(d1,"d",""),
-      " ",
-      ifelse(attack2,"a",""),ifelse(b2,"b","") , ifelse(d2,"d",""),
-      "\n",
-      r1, " ",r2
+    title = paste0(xgroup,"<br>", 
+      ifelse(attack1,"a","w"), ifelse(b1,"b","") , ifelse(d1,"d",""),
+      "_",
+      ifelse(attack2,"a","w"),ifelse(b2,"b","") , ifelse(d2,"d",""),
+      "<br>",
+      r1, "_",r2
     )
+
   )
+  if (!simple.label) {
+    ndf = ndf%>% mutate(
+      label = paste0(xgroup,"\n", 
+        ifelse(attack1,"a",""), ifelse(b1,"b","") , ifelse(d1,"d",""),
+        " ",
+        ifelse(attack2,"a",""),ifelse(b2,"b","") , ifelse(d2,"d",""),
+        "\n",
+        r1, " ",r2
+      )
+    )
+  } else {
+    ndf = ndf%>% mutate(
+      label = paste0(x1," ",x2),
+      font = "30px Arial black"
+    )
+  }
+  
   graph = create_graph(ndf, edf)
   render_graph(graph, output="visNetwork")
 }
+
+```
+
+Try to understand why with low attack cost in state "3_1" player 2 does not attack, while he does attack with high attack costs. 
+```{r}
+
+gL = rel_game("Arms Race Turns") %>%
+  rel_param(delta=0.9, rho=0.6, c.a=0.01,c.i=0.01, c.x=0.01,x.max=x.max, sp=0.2, d.factor=0.8, d.exp=2) %>%
+  rel_states(x.df,A.fun=A.fun, trans.fun=trans.fun,pi.fun=pi.fun) %>%
+  rel_capped_rne(T=1000,save.details = TRUE)
+
+
+gH = rel_game("Arms Race Turns") %>%
+  rel_param(delta=0.9, rho=0.6, c.a=0.1,c.i=0.01, c.x=0.01,x.max=x.max, sp=0.2, d.factor=0.8, d.exp=2) %>%
+  rel_states(x.df,A.fun=A.fun, trans.fun=trans.fun,pi.fun=pi.fun) %>%
+  rel_capped_rne(T=1000,save.details = TRUE)
+
+plot.turns.arms.race(gL)
+plot.turns.arms.race(gH)
+
+
+detL = get_rne_details(gL)
+detH = get_rne_details(gH)
+
+
+detL$scen = "L"
+detH$scen = "H"
+
+det = bind_rows(detL, detH) %>%
+  select(scen,x1,x2,a2,i2, IC.holds,can.ae,can.a2,can.a1,U.hat,Er1,Er2,pi1,pi2, everything())
+
+d = det %>%
+  filter(x1==3, x2==1, ap==2)# %>%
+  #arrange(a2,i2,scen)
+
+
+d = det %>%
+  filter(x1==0, x2==2, ap==2) %>%
+  arrange(a2,i2,scen)
+
+
+rne = get_eq(g)
+plot.turns.arms.race(g)
 
 ```
 

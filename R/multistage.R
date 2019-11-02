@@ -437,7 +437,6 @@ rel.capped.rne.multistage.old = function(g,T, save.details=FALSE, tol=1e-10,  de
       na1 = sdf$na1[srow]
       na2 = sdf$na2[srow]
       trans.mat = sdf$trans.mat[[srow]]
-      #rownames(trans.mat) = make.state.lab.a(sdf[srow,])
 
       if (NROW(trans.mat)==0) {
         trans.mat = matrix(1,na1*na2,1)
@@ -582,11 +581,16 @@ rel.capped.rne.multistage.old = function(g,T, save.details=FALSE, tol=1e-10,  de
           x.df[x.df$x==x,],
           sdf$a.grid[[srow]],
           quick_df(
-            d.can.ae = (abs(U.hat-dU)<tol & IC.holds)*1 + (arows==rne.ae[row]),
-            d.can.a1 = (abs(v1.hat-dv1)<tol & IC.holds)*1 + (arows==rne.a1[row]),
-            d.can.a2 = (abs(v2.hat-dv2)<tol & IC.holds)*1 + (arows==rne.a2[row]),
+            r1=r1,
+            r2=r2,
+            U.hat = U.hat,
             IC.holds=IC.holds,
             slack=slack,
+            v1.hat=v1.hat,
+            v2.hat=v2.hat,
+            can.ae = (abs(U.hat-dU)<tol & IC.holds)*1 + (arows==rne.ae[row]),
+            can.a1 = (abs(v1.hat-dv1)<tol & IC.holds)*1 + (arows==rne.a1[row]),
+            can.a2 = (abs(v2.hat-dv2)<tol & IC.holds)*1 + (arows==rne.a2[row]),
 
             pi1 = pi1,
             Er1 = Er1,
@@ -596,12 +600,6 @@ rel.capped.rne.multistage.old = function(g,T, save.details=FALSE, tol=1e-10,  de
             Er2 = Er2,
             u2_neg = u2_neg,
 
-            r1=r1,
-            r2=r2,
-
-            U.hat = U.hat,
-            v1.hat=v1.hat,
-            v2.hat=v2.hat,
             U=U,
             v1=v1,
             v2=v2

@@ -278,7 +278,8 @@ get_rne_details = function(g, x=NULL) {
     return(NULL)
   }
   if (is.null(x)) return(g$eq.details)
-  g$eq.details[g$eq.details$x %in% x,]
+  g$eq.details[g$eq.details$x %in% x,] %>%
+    select(x,a.lab, best.dev, U.hat, IC.holds, can.ae, can.a1, can.a2, everything())
 
 }
 
@@ -602,7 +603,7 @@ r_rne_find_actions = function(U,v1,v2,U.hat,v1.hat,v2.hat, IC.holds, next.r1=NUL
   if (tie.breaking=="equal_r") {
     next_r_diff = -abs(next.r1-next.r2)
     tb = trans.mat.mult(trans.mat,next_r_diff[dest.rows])
-    const = 1+-min(tb) + max(tb)-min(tb)
+    const = 1-min(tb) + max(tb)-min(tb)
   } else if (tie.breaking=="random") {
     tb = runif(NROW(U.hat))
   } else if (tie.breaking=="slack") {
@@ -616,6 +617,10 @@ r_rne_find_actions = function(U,v1,v2,U.hat,v1.hat,v2.hat, IC.holds, next.r1=NUL
     const = 1-min(tb) + max(tb)-min(tb)
   } else if (tie.breaking=="max_r2") {
     tb = trans.mat.mult(trans.mat,next.r2[dest.rows])
+    const = 1-min(tb) + max(tb)-min(tb)
+  } else if (tie.breaking=="unequal_r") {
+    next_r_diff = abs(next.r1-next.r2)
+    tb = trans.mat.mult(trans.mat,next_r_diff[dest.rows])
     const = 1-min(tb) + max(tb)-min(tb)
   } else {
     stop(paste0("Unknown tie.breaking rule ", tie.breaking))

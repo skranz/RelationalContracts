@@ -136,7 +136,7 @@ rel_compile = function(g,..., compute.just.static=FALSE) {
 
 
   g$a.labs.df = bind_rows(lapply(seq_len(NROW(sdf)),function(row) {
-    quick_df(x=sdf$x[row],a = seq_len(NROW(sdf$a.grid[[row]])), lab=make.state.lab.a(sdf[row,]))
+    cbind(quick_df(x=sdf$x[row],a = seq_len(NROW(sdf$a.grid[[row]]))), make.state.lab.a(sdf[row,], action.sep=g$options$lab.action.sep, player.sep=g$options$lab.player.sep))
   }))
 
 
@@ -376,6 +376,16 @@ rel_game = function(name="Game", ..., enclos=parent.frame()) {
 
   g = list(name=name,param=list(delta=0.9, rho=0, beta1=0.5),defs=list(),is_compiled=FALSE, enclos=enclos, ...)
   class(g) = c("relgame","list")
+  g = rel_options(g)
+  g
+}
+
+#' Set some game options
+rel_options = function(g,lab.action.sep = " ", lab.player.sep = " | ") {
+  g$options = list(
+    lab.action.sep=lab.action.sep,
+    lab.player.sep = lab.player.sep
+  )
   g
 }
 
@@ -388,6 +398,8 @@ rel_game = function(name="Game", ..., enclos=parent.frame()) {
 #' @param ... other parameters that can e.g. be used in payoff functions
 #' @return Returns the updated game
 rel_param = function(g,..., delta=non.null(param[["delta"]], 0.9), rho=non.null(param[["rho"]], 0), beta1=non.null(param[["beta1"]],1/2), param=g[["param"]]) {
+  if (isTRUE(g$is_compiled))
+    stop("You cannot set parameters of an already compiled game.")
 
   restore.point("rel_param")
   param = list(delta=delta, rho=rho,beta1=beta1, ...)
@@ -395,6 +407,22 @@ rel_param = function(g,..., delta=non.null(param[["delta"]], 0.9), rho=non.null(
   g
 }
 
+#' Add parameters to a relational contracting game
+#'
+#' @param g a relational contracting game created with rel_game
+#' @param delta The discount factor
+#' @param rho The negotiation probability
+#' @param ... other parameters that can e.g. be used in payoff functions
+#' @return Returns the updated game
+rel_change_param = function(g,...) {
+  if (isTRUE(g$is_compiled))
+    stop("You cannot change parameters of an already compiled game.")
+
+  param = list(...)
+  restore.point("rel_change_param")
+  g$param[names(param)] = param
+  g
+}
 
 
 #' Add one or multiple states. Allows to specify action spaces, payoffs and state transitions via functions

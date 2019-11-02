@@ -204,7 +204,7 @@ arms.race.example = function() {
 #'
 #' @param g The game
 #' @param T The number of periods in which new negotiations can take place.
-rel_T_rne = function(g,T, tol=1e-10,  delta=g$param$delta, rho=g$param$rho, adjusted.delta=NULL, res.field="eq", tie.breaking=c("equal_r", "slack","random","first","last","max_r1","max_r2")[1], use.cpp=TRUE, save.details=FALSE, add.iterations=FALSE, save.history=FALSE, add.stationary=FALSE, T.rne=TRUE, spe=g[["spe"]]) {
+rel_T_rne = function(g,T, tol=1e-10,  delta=g$param$delta, rho=g$param$rho, adjusted.delta=NULL, res.field="eq", tie.breaking=c("equal_r", "slack","random","first","last","max_r1","max_r2","unequal_r")[1], use.cpp=TRUE, save.details=FALSE, add.iterations=FALSE, save.history=FALSE, add.stationary=FALSE, T.rne=TRUE, spe=g[["spe"]]) {
   rel_capped_rne(g,T, tol,  delta, rho, adjusted.delta, res.field, tie.breaking, use.cpp, save.details, add.iterations, save.history, add.stationary, T.rne, spe)
 }
 
@@ -214,7 +214,7 @@ rel_T_rne = function(g,T, tol=1e-10,  delta=g$param$delta, rho=g$param$rho, adju
 #'
 #' @param g The game
 #' @param T The number of periods in which new negotiations can take place.
-rel_capped_rne = function(g,T, tol=1e-10,  delta=g$param$delta, rho=g$param$rho, adjusted.delta=NULL, res.field="eq", tie.breaking=c("equal_r", "slack","random","first","last","max_r1","max_r2")[1], use.cpp=TRUE, save.details=FALSE, add.iterations=FALSE, save.history=FALSE, add.stationary=FALSE, T.rne=FALSE, spe=NULL) {
+rel_capped_rne = function(g,T, tol=1e-10,  delta=g$param$delta, rho=g$param$rho, adjusted.delta=NULL, res.field="eq", tie.breaking=c("equal_r", "slack","random","first","last","max_r1","max_r2","unequal_r")[1], use.cpp=TRUE, save.details=FALSE, add.iterations=FALSE, save.history=FALSE, add.stationary=FALSE, T.rne=FALSE, spe=NULL) {
   restore.point("rel_capped_rne")
   if (!g$is_compiled) g = rel_compile(g)
 
@@ -316,7 +316,7 @@ capped.rne.iterations = function(g,T=1,rne=g[["eq"]], tie.breaking, debug_row=-1
         tie_breaking=tie.breaking, tol=tol, debug_row=debug_row)
     }
     if (save.details) {
-      res = r.capped.rne.iterations(T=1, g=g, rne=rne, tie.breaking=tie.breaking, save.details=save.details, tol=tol)
+      res = r.capped.rne.iterations(T=1, g=g, rne=res_rne, tie.breaking=tie.breaking, save.details=save.details, tol=tol)
     } else {
       res = list(rne=res_rne, details=NULL)
     }
@@ -360,7 +360,8 @@ r.capped.rne.iterations = function(T, g, rne, tie.breaking,delta=g$param$delta, 
       xd = colnames(trans.mat)
       dest.rows = match(xd, sdf$x)
 
-      # Include code to compute U v and r for the current state
+      # Include code to compute U v and r
+      # for the current state
       U.hat = (1-delta)*(sdf[["pi1"]][[row]] + sdf[["pi2"]][[row]]) +
         delta * trans.mat.mult(trans.mat, next_U[dest.rows])
 
@@ -412,48 +413,78 @@ r.capped.rne.iterations = function(T, g, rne, tie.breaking,delta=g$param$delta, 
 
       if (save.details & iter==T) {
         restore.point("capped.iterations.save.details")
+
+        lab.df = g$a.labs.df[g$a.labs.df$x==x,]
+        # We want to compute best deviation actions
+
+        # q1.hat = matrix(q1.hat,na2, na1)
+        # rows = actions of player 2
+        # columns = actions of player 1
+
+        # best deviation for player 1
+        dev.col = max.col(q1.hat)
+        ind.mat = matrix(1:(na1*na2),na2,na1)
+        ind.mat[,] = ind.mat[cbind(1:na2,dev.col)]
+        dev1.lab = lab.df$lab1[as.vector(ind.mat)]
+
+        # best deviation for player 2
+        dev.row = max.col(t(q2.hat))
+        ind.mat = matrix(1:(na1*na2),na2,na1)
+        ind.mat = t(ind.mat)
+        ind.mat[,] = ind.mat[cbind(1:na1, dev.row)]
+        dev2.lab = lab.df$lab2[as.vector(t(ind.mat))]
+
+        dev.lab = paste0(dev1.lab, g$options$lab.player.sep, dev2.lab)
+
+
         pi1 = sdf$pi1[[row]]
         Er1 = trans.mat.mult(trans.mat, next_r1[dest.rows])
         # Continuation payoff if new negotiation in next period
-        u1_neg = (1-delta)*pi1 + delta*Er1
+        pi_Er1 = (1-delta)*pi1 + delta*Er1
 
         pi2 = sdf$pi2[[row]]
         Er2 = trans.mat.mult(trans.mat, next_r2[dest.rows])
         # Continuation payoff if new negotiation in next period
-        u2_neg = (1-delta)*pi2 + delta*Er2
+        pi_Er2 = (1-delta)*pi2 + delta*Er2
 
         slack = U.hat - (v1.hat + v2.hat)
 
+
+        extra.x = g$x.df[g$x.df$x==x,setdiff(colnames(g$x.df),"x")]
         arows = seq_along(IC.holds)
         details.li[[row]] = cbind(
-          x.df[x.df$x==x,],
-          sdf$a.grid[[row]],
+          x=x,
+          a.lab = g$a.labs.df$lab[g$a.labs.df$x==x],
+          best.dev = dev.lab,
           quick_df(
+            U.hat = U.hat,
+            slack=slack,
+            v1.hat=v1.hat,
+            v2.hat=v2.hat,
+
             can.ae = (abs(U.hat-U)<tol & IC.holds)*1 + (arows==rne_actions[row,1]),
             can.a1 = (abs(v1.hat-v1)<tol & IC.holds)*1 + (arows==rne_actions[row,2]),
             can.a2 = (abs(v2.hat-v2)<tol & IC.holds)*1 + (arows==rne_actions[row,3]),
             IC.holds=IC.holds,
-            slack=slack,
 
             pi1 = pi1,
-            Er1 = Er1,
-            u1_neg = u1_neg,
-
             pi2 = pi2,
+            Er1 = Er1,
             Er2 = Er2,
-            u2_neg = u2_neg,
-
+            pi_Er1 = pi_Er1,
+            pi_Er2 = pi_Er2,
             r1=r1,
             r2=r2,
-
-            U.hat = U.hat,
-            v1.hat=v1.hat,
-            v2.hat=v2.hat,
             U=U,
             v1=v1,
             v2=v2
-          )
+          ),
+          sdf$a.grid[[row]],
+          extra.x
+        ) %>% arrange(
+          -U.hat, -slack
         )
+
       }
 
     }
