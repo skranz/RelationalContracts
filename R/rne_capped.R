@@ -204,8 +204,11 @@ arms.race.example = function() {
 #'
 #' @param g The game
 #' @param T The number of periods in which new negotiations can take place.
-rel_T_rne = function(g,T, tol=1e-10,  delta=g$param$delta, rho=g$param$rho, adjusted.delta=NULL, res.field="eq", tie.breaking=c("equal_r", "slack","random","first","last","max_r1","max_r2","unequal_r")[1], use.cpp=TRUE, save.details=FALSE, add.iterations=FALSE, save.history=FALSE, add.stationary=FALSE, T.rne=TRUE, spe=g[["spe"]]) {
-  rel_capped_rne(g,T, tol,  delta, rho, adjusted.delta, res.field, tie.breaking, use.cpp, save.details, add.iterations, save.history, add.stationary, T.rne, spe)
+#' @param delta the discount factor
+#' @param rho the negotiation probability
+#' @param adjusted.delta the adjusted discount factor (1-rho)*delta. Can be specified instead of delta.
+rel_T_rne = function(g,T,  delta=g$param$delta, rho=g$param$rho, adjusted.delta=NULL,  tie.breaking=c("equal_r", "slack","random","first","last","max_r1","max_r2","unequal_r")[1], tol=1e-10,  save.details=FALSE, add.iterations=FALSE, save.history=FALSE, add.stationary=FALSE, use.cpp=TRUE, spe=g[["spe"]], res.field="eq") {
+  rel_capped_rne(g=g,T=T,delta=delta, rho=rho, adjusted.delta=adjusted.delta, tie.breaking=tie.breaking, tol=tol,use.cpp=use.cpp, add.iterations=add.iterations, save.details=save.details,  save.history=save.history, add.stationary=add.stationary, res.field=res.field,T.rne=TRUE,spe=spe)
 }
 
 #' Solve an RNE for a capped version of a game
@@ -214,7 +217,22 @@ rel_T_rne = function(g,T, tol=1e-10,  delta=g$param$delta, rho=g$param$rho, adju
 #'
 #' @param g The game
 #' @param T The number of periods in which new negotiations can take place.
-rel_capped_rne = function(g,T, tol=1e-10,  delta=g$param$delta, rho=g$param$rho, adjusted.delta=NULL, res.field="eq", tie.breaking=c("equal_r", "slack","random","first","last","max_r1","max_r2","unequal_r")[1], use.cpp=TRUE, save.details=FALSE, add.iterations=FALSE, save.history=FALSE, add.stationary=FALSE, T.rne=FALSE, spe=NULL) {
+#' @param delta the discount factor
+#' @param rho the negotiation probability
+#' @param adjusted.delta the adjusted discount factor (1-rho)*delta. Can be specified instead of delta.
+#' @param tie.breaking A tie breaking rule when multiple action profiles could be implemented on the equilibrium path with same joint payoff U. Can take the following values:
+#' \itemize{
+#'   \item "equal_r" (DEFAULT) prefer actions that in expectation move to states with more equal negotiation payoffs.
+#'   \item "slack" prefer the action profile with the highest slack in the incentive constraints
+#'   \item "random" pick randomly from all eligible action profiles
+#'   \item "max_r1" pick action profiles that in moves to states with highest negotiation payoff for player 1.
+#'   \item "max_r2"  pick action profiles that in moves to states with highest negotiation payoff for player 2.
+#' }
+#' @param tol Due to numerical inaccuracies the calculated incentive constraints for some action profiles may be vialoated even though with exact computation they should hold, yielding unexpected results. We therefore also allow action profiles whose numeric incentive constraints is violated by not more than tol. By default we have \code{tol=1e-10}.
+#' @param add.iterations if TRUE just add T iterations to the previously computed capped RNE or T-RNE.
+#' @param save.details if set TRUE details of the equilibrium are saved that can be analysed later by calling \code{get_rne_details}. For an example, see the vignette for the Arms Race game.
+#' @param save.history by
+rel_capped_rne = function(g,T, delta=g$param$delta, rho=g$param$rho, adjusted.delta=NULL,  tie.breaking=c("equal_r", "slack","random","first","last","max_r1","max_r2","unequal_r")[1],tol=1e-10,add.iterations=FALSE,   save.details=FALSE,  save.history=FALSE, add.stationary=FALSE,use.cpp=TRUE, T.rne=FALSE, spe=NULL,res.field="eq") {
   restore.point("rel_capped_rne")
   if (!g$is_compiled) g = rel_compile(g)
 

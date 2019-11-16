@@ -536,8 +536,8 @@ arms.speed.test = function(x.max=3, T=1000) {
 file = "D:/libraries/RelationalHoldup/speed.csv"
 con = file(file, "at")
 
-for (x.max in 1:15) {
-  for (T in c(1000,2000)) {
+for (x.max in 1:20) {
+  for (T in c(1000)) {
     cat("x.max = ",x.max, " T = ", T,"\n")
     res = arms.speed.test(x.max=x.max,T=T)
     writeLines(paste0(unlist(res), collapse=","), con)
@@ -551,13 +551,17 @@ dat = dat %>% mutate(num.x = (x.max+1)^2)
 
 library(tidyr)
 df = dat %>%
-  pivot_longer(comp:capped,names_to = "measure",values_to = "seconds")
+  rename(build_game = comp, solve_T_RNE = T.rne) %>%
+  pivot_longer(build_game:capped,names_to = "measure",values_to = "seconds")
 
+df = filter(df, x.max <= 15, measure != "capped")
 library(ggplot2)
-ggplot(df, aes(y=seconds,x=num.x, color=measure)) + geom_point() + facet_grid(measure ~ T) + geom_smooth(method="lm")
+ggplot(df, aes(y=seconds,x=num.x, color=measure)) + geom_point() + facet_grid(measure ~ .) + geom_smooth(method="lm") + xlab("Number of states") + ylab("Seconds")
+ggsave("D:/libraries/RelationalHoldup/timing.PNG")
 
-summary(lm(T.rne ~ 0+T + num.x, data=dat))
-summary(lm(capped ~ 0+T + num.x, data=dat))
-summary(lm(comp ~ 0+T + num.x, data=dat))
+
+summary(lm(T.rne ~ 0+ num.x, data=dat))
+summary(lm(capped ~ 0 + num.x, data=dat))
+summary(lm(comp ~ 0 + num.x, data=dat))
 
 }

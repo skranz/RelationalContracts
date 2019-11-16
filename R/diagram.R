@@ -37,7 +37,8 @@ examples.eq_diagram = function() {
 #' @param label.fun An optional function that takes the equilibrium object and game and returns a character vector that contains a label for each state.
 #' @param tooltip.fun Similar to \code{label.fun} but for the tooltip shown on a state.
 #' @param return.dfs if TRUE don't show diagram but only return the relevant edge and node data frames that can be used to call \code{DiagrammeR::create_graph}. Useful if you want to manually customize graphs further.
-eq_diagram = function(g,show.own.loop=FALSE, show.terminal.loop=FALSE, use.x=NULL, just.eq.chain=FALSE,x0=g$sdf$x[1], hide.passive.edge=TRUE,  label.fun=NULL, tooltip.fun=NULL, active.edge.color="#000077", passive.edge.color="#dddddd", passive.edge.width=1,  return.dfs=FALSE,eq = g[["eq"]]) {
+#' @param font.size The font size
+eq_diagram = function(g,show.own.loop=FALSE, show.terminal.loop=FALSE, use.x=NULL, just.eq.chain=FALSE,x0=g$sdf$x[1], hide.passive.edge=TRUE,  label.fun=NULL, tooltip.fun=NULL, active.edge.color="#000077", passive.edge.color="#dddddd", passive.edge.width=1,  return.dfs=FALSE,eq = g[["eq"]], font.size = 24, font = paste0(font.size,"px Arial black")) {
   restore.point("eq_diagram")
 
   library(DiagrammeR)
@@ -76,7 +77,7 @@ eq_diagram = function(g,show.own.loop=FALSE, show.terminal.loop=FALSE, use.x=NUL
     tooltip = tooltip.fun(rne,g)
   }
 
-  ndf = tibble(id=1:n, label=lab, type="node", shape="box", title=tooltip, x=rne$x)
+  ndf = tibble(id=1:n, label=lab, type="node", shape="box", title=tooltip, x=rne$x, font=font)
 
   # Create edges
   tr = lapply(seq_len(NROW(sdf)), function(row) {
@@ -129,7 +130,7 @@ eq_diagram = function(g,show.own.loop=FALSE, show.terminal.loop=FALSE, use.x=NUL
 #' @param label.fun An optional function that takes the equilibrium object and game and returns a character vector that contains a label for each state.
 #' @param tooltip.fun Similar to \code{label.fun} but for the tooltip shown on a state.
 #' @param return.dfs if TRUE don't show diagram but only return the relevant edge and node data frames that can be used to call \code{DiagrammeR::create_graph}. Useful if you want to manually customize graphs further.
-eq_diagram_xgroup = function(g,show.own.loop=FALSE, show.terminal.loop=FALSE, use.x=NULL, just.eq.chain=FALSE,x0=g$sdf$x[1], hide.passive.edge=TRUE,  label.fun=NULL, tooltip.fun=NULL, active.edge.color="#000077", passive.edge.color="#dddddd", passive.edge.width=1,  return.dfs=FALSE,eq = g[["eq"]]) {
+eq_diagram_xgroup = function(g,show.own.loop=FALSE, show.terminal.loop=FALSE, use.x=NULL, just.eq.chain=FALSE,x0=g$sdf$x[1], hide.passive.edge=TRUE,  label.fun=NULL, tooltip.fun=NULL, active.edge.color="#000077", passive.edge.color="#dddddd", passive.edge.width=1,  return.dfs=FALSE,eq = g[["eq"]], ap.col = if (has.col(eq,"ap")) "ap" else NA, font.size = 24, font = paste0(font.size,"px Arial black")) {
   restore.point("eq_diagram_xgroup")
 
   library(DiagrammeR)
@@ -159,7 +160,44 @@ eq_diagram_xgroup = function(g,show.own.loop=FALSE, show.terminal.loop=FALSE, us
   gsdf = sdf[!dupl,]
 
   n = NROW(gsdf)
-  ndf = tibble(id=1:n, label=gsdf$xgroup, type="node", shape="box", title=gsdf$xgroup, xgroup=gsdf$xgroup)
+
+  geq = eq_combine_xgroup(g,eq, ap.col=ap.col) %>%
+    right_join(select(gsdf,xgroup), by="xgroup")
+
+  use.stationary.prob = !all(is.na(geq$stationary.prob))
+
+  if (is.null(label.fun)) {
+    if (use.stationary.prob) {
+      lab = paste0(geq$xgroup," \n", round(geq$stationary.prob*100,2), "%")
+    } else {
+      lab = paste0(geq$xgroup, " \n", round(geq$r1,2), " ", round(geq$r2,2))
+    }
+  } else {
+    lab = label.fun(geq=geq,gsdf=gsdf, g)
+  }
+  if (is.null(tooltip.fun)) {
+    if (!is.na(ap.col)) {
+      tooltip = paste0(geq$xgroup,
+      if (use.stationary.prob) paste0("<br>",round(geq$stationary.prob*100,2),"%"),
+      "<br>r1=",round(geq$r1,2)," r2=",round(geq$r2,2),
+      "<br>move.av: ",round(geq$move.adv1,2),"  ",round(geq$move.adv2,2),
+      "<br>ae: ",geq$ae.lab,
+      "<br>a1: ", geq$a1.lab, "<br>a2: ", geq$a2.lab
+      )
+    } else {
+      tooltip = paste0(
+        geq$xgroup,
+        "<br>r1=",round(geq$r1,2)," r2=",round(geq$r2,2),
+        "<br>v1=",round(geq$v1,2)," v2=",round(geq$v2,2),
+        "<br>U=", round(geq$U,2)
+      )
+    }
+  } else {
+    tooltip = tooltip.fun(geq,g)
+  }
+
+
+  ndf = tibble(id=1:n, label=lab, type="node", shape="box", title=tooltip, xgroup=gsdf$xgroup, font=font)
 
   x_to_xgroup = sdf$xgroup
   names(x_to_xgroup) = sdf$x

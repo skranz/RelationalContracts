@@ -136,7 +136,11 @@ rel_compile = function(g,..., compute.just.static=FALSE) {
 
 
   g$a.labs.df = bind_rows(lapply(seq_len(NROW(sdf)),function(row) {
-    cbind(quick_df(x=sdf$x[row],a = seq_len(NROW(sdf$a.grid[[row]]))), make.state.lab.a(sdf[row,], action.sep=g$options$lab.action.sep, player.sep=g$options$lab.player.sep))
+    restore.point("fdfjdl")
+    bind_cols(
+      quick_df(x=sdf$x[row],a = seq_len(NROW(sdf$a.grid[[row]]))),
+      as_tibble(make.state.lab.a(sdf[row,], action.sep=g$options$lab.action.sep, player.sep=g$options$lab.player.sep))
+    )
   }))
 
 

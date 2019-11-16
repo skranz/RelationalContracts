@@ -14,74 +14,64 @@ library(repgame)
 rmarkdown::render("D:/libraries/RelationalHoldup/RelationalContracts/inst/guide/RelationalContractsBlog2.Rmd")
 ```
 
-In the third part of the blog series on relational contracting, we study a more complex game, a game of conflict.
+In the third part of the blog series on relational contracting, we study more complex arms race games.
 
-Consider two parties that can invest into weapons. The state is described by `x=(x1,x2)` where `x1` and `x2` are integer numbers between `0` and `x.max` that describe the weapon arsenal of each party.
+Consider two parties that can invest into weapons. The state is described by `x=(x1,x2)` where `x1` and `x2` are integer numbers between `0` and `x.max=3` that describe the weapon arsenal of each party.
 
-Each period a party can try increase its weapon arsenal by one unit for an investment cost `c.i`. The investment is successful only with an exogenously given success probability. A party can also reduce its arsenal by one unit for free.
+Each period each party can try increase its weapon arsenal by one unit for an investment cost `c.I`. The investment is successful only with an exogenously given success probability `pi.I=0.08`. A party can also reduce its arsenal by one unit for free. 
 
-Players can decide each period whether or not they want to attack the other player. If player 1 attacks, he inflicts harm of size `x1` on the other player but has attack costs `c.a * x1`. In addition player 1's attack destroys one unit in player 2's weapon arsenal with probability `d_factor*(x1 / x.max)^d_exp`. The parameters `d_factor` and `d_exp` are exogenously given, like all the cost factors. An attack by player 2 has symmetric effects.
+Players can decide each period whether or not they want to attack the other player. If player 1 attacks, he inflicts harm of size `x1` on the other player but has attack costs `c.a * x1`.
 
-Finally each unit in a player's arsenal has an upkeep cost of `c.x` irrespectively of whether it is used for an attack or not.
-
-Note that there are no direct gains from attacking since it involves costs for both sides. Therefore in a Pareto-optimal subgame perfect equilibrium weapons will never be build nor aquired. Yet, the possibility to harm the other player can increase a player's bargaining position. If we assume that relational contracts are newly negotiated over time, i.e. we consider a repeated negotiation equilibrium, players can thus have incentives to aquire weapons.
-
+Each unit in a player's arsenal has maintance cost of `c.m` irrespectively of whether it is used for an attack or not. All cost parameters `c.m`, `c.a`, `c.i` shall be strictly positive.
 
 The following code specifies the game:
 ```{r}
+libarary(RelationalContracts)
 # Action space for each state
+# a1, a2: (w)ait or (a)ttack
+# i1, i2: (b)uild new weapons, (d)estroy own weapons
 A.fun = function(x1,x2, x.max,...) {
   restore.point("A.fun")
   list(
     A1=list(
-      a1=c("wait", if (x1>0) "attack"),
+      a1=c("w", if (x1>0) "a"),
       i1=c(if (x1>0) "d","",if (x1<x.max) "b")
     ),
     A2=list(
-      a2=c("wait", if (x2>0) "attack"),
+      a2=c("w", if (x2>0) "a"),
       i2=c(if (x2>0) "d","",if (x2<x.max) "b")
     )
   )
 }
 
 # State transition function
-trans.fun = function(ax.df,x.max, sp,d.factor=1, d.exp=1,...) {
+trans.fun = function(ax.df,x.max, sp,...) {
   restore.point("trans.fun")
 
-  # Compute probability to destroy
-  # a weapon unit of other player
-  # if one attacks
-  ax.df = mutate(ax.df,
-    dp1 = d.factor*(x1 / x.max)^d.exp,
-    dp2 = d.factor*(x2 / x.max)^d.exp
-  )
-  
-
-  tr = irv_joint_dist(ax.df,
-    irv("b1",default=0,
+  # The changes in x1 and x2 are
+  # independent random variables.
+  tr = ax.df %>% 
+    select(x,x1,x2,i1,i2) %>%
+    distinct() %>%
+    irv_joint_dist(
+    irv("change_1",default=0,
       irv_val(1, (i1=="b")*sp),
       irv_val(-1, (i1=="d")*1)
     ),
-    irv("b2",default=0,
+    irv("change_2",default=0,
       irv_val(1, (i2=="b")*sp),
       irv_val(-1, (i2=="d")*1)
-    ),
-    irv("d1",default=0,
-      irv_val(1, (a2=="attack")*dp2)
-    ),
-    irv("d2",default=0,
-      irv_val(1, (a1=="attack")*dp1)
     )
   )
 
   tr %>%
     mutate(
-      new_x1 = pmax(x1+b1-d1,0),
-      new_x2 = pmax(x2+b2-d2,0),
+      new_x1 = x1+change_1,
+      new_x2 = x2+change_2,
       xd = paste0(new_x1,"_",new_x2),
       xs=x
     ) %>%
-    group_by(xs,xd,i1,i2,a1,a2) %>%
+    group_by(xs,xd,i1,i2) %>%
     summarize(prob = sum(prob))
 }
 
@@ -91,17 +81,35 @@ x.df = tidyr::expand_grid(x1=0:x.max,x2=0:x.max) %>%
   mutate(x = paste0(x1,"_", x2))
 
 
+# Specify game
 g = rel_game("Arms Race") %>%
-  rel_param(delta=0.9, rho=0.15, c.a=0.1,c.i=0.1, c.x=0.01,x.max=x.max, sp=0.3, d.factor=0.8, d.exp=2) %>%
+  rel_param(delta=0.99, rho=0.65, c.a=0.05,c.i=0.01, c.x=0.2,x.max=x.max, sp=0.08) %>%
   rel_states(x.df,A.fun=A.fun, trans.fun=trans.fun,
-    pi1 = -c.a*(a1=="attack")*x1 - (a2=="attack")*x2 - c.i*(i1=="b")-c.x*x1,
-    pi2 = -c.a*(a2=="attack")*x2 - (a1=="attack")*x1 - c.i*(i2=="b")-c.x*x2
-  ) %>%
-  rel_compile()
+    pi1 = -c.a*(a1=="a")*x1 - (a2=="a")*x2 - c.i*(i1=="b")-c.x*x1,
+    pi2 = -c.a*(a2=="a")*x2 - (a1=="a")*x1 - c.i*(i2=="b")-c.x*x2
+  )
+```
 
-g = g %>% rel_capped_rne(T=1000)
+Note that we specify the action sets such that player 1 (and equivalently player 2) can only build new weapons (`i1="b"`) if `x1 < x.max`. Similarly, she can only destroy weapons (`i1="d"`) and attack (`a1="a"`) if `x1 > 0`. The most difficult part in a game specification is  the transition function `trans.fun`. Take a look at the vignette on [Specifying Games](Link Here) for an introduction how to facilitate this definition with  the function `irv_joint_dist`.
 
-rne = get_eq(g)
+The following code solves for a Pareto-optimal SPE of this arms race game.
+```{r}
+g.spe = g %>% rel_spe(delta=0.99)
+get_eq(g.spe) %>%
+  select(x, ae.lab)
+```
+We see that on the equilibrium path weapons will never be build and there are no attacks. Moreover, existing weapons will always be destroyed.
+
+This is the case in every Pareto-optimal SPE. There is simply no direct benefit from aquiring, maintaining and using weapons: it only involves costs. The only reason to aquire weapons would be that the threat of using them increases a player's bargaining position and allows him to extort payments from the other player. However, in a Pareto-optimal SPE, players can perfectly coordinate to ignore such threats.
+
+We now solve a repeated negotiation equilibrium (RNE) in which we assume that with probability `rho=0.65` players newly negotiate their relational contract at the beginning of a period. For numerical tractability we also assume that only in the first `T=1000` periods new negotiations can take place, i.e. we compute a so called T-RNE (see the previous blog post for background.)
+
+
+```{r}
+g.rne = g %>% rel_compile() %>% rel_T_rne(g, T=1000, delta=0.99, rho=0.65,use.cpp = FALSE)
+
+eq_diagram(g.rne)
+
 
 df.li = eq_diagram(g, show.own.loop = !TRUE, just.eq.chain = !TRUE, return.dfs = TRUE, passive.edge.width = 0)
 
@@ -121,11 +129,18 @@ render_graph(graph, output="visNetwork")
 ```
 
 
+Note that there are no direct gains from attacking since it involves costs for both sides. Therefore in a Pareto-optimal subgame perfect equilibrium weapons will never be build nor aquired. Yet, the possibility to harm the other player can increase a player's bargaining position. If we assume that relational contracts are newly negotiated over time, i.e. we consider a repeated negotiation equilibrium, players can thus have incentives to aquire weapons.
+
 
 ````{r }
 
 
 ```
+
+##
+
+In addition player 1's attack destroys one unit in player 2's weapon arsenal with probability `d_factor*(x1 / x.max)^d_exp`. The parameters `d_factor` and `d_exp` are exogenously given, like all the cost factors. An attack by player 2 has symmetric effects.
+
 
 
 ## Consider only one active player

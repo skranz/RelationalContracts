@@ -79,8 +79,16 @@ make.state.lab.a = function(state, action.sep = " ", player.sep=" | ", empty.sep
   cols1 = names(state$A1[[1]])
   cols2 = names(state$A2[[1]])
 
-  p1 = trimws(paste.df.cols(a.grid[,cols1], sep=action.sep, empty.sep=empty.sep))
-  p2 = trimws(paste.df.cols(a.grid[,cols2], sep=action.sep, empty.sep=empty.sep))
+  if (length(cols1)>0) {
+    p1 = trimws(paste.df.cols(a.grid[,cols1,drop=FALSE], sep=action.sep, empty.sep=empty.sep))
+  } else {
+    p1 = rep("",NROW(a.grid))
+  }
+  if (length(cols2)>0) {
+    p2 = trimws(paste.df.cols(a.grid[,cols2,drop=FALSE], sep=action.sep, empty.sep=empty.sep))
+  } else {
+    p2 = rep("",NROW(a.grid))
+  }
   cbind(
     lab = paste0(p1, player.sep, p2),
     lab1 = p1,

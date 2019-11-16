@@ -1,0 +1,435 @@
+---
+title: "Arms Race Game: Advanced Modelling and Equilibrium Exploration"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, dev="svg", error=TRUE, warning=FALSE, fig.width=5, fig.height=4)
+library(dplyr)
+library(RelationalContracts)
+```
+
+In this vignette we will explore in more detail the arms race game described in our [paper](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2210603). We use it to showcase some features of the `RelationContracts` package and other issues like equilibrium diagrams, detailed exploration of equilibria, finding multiple T-RNE, conducting comparative statics, and the benefits of changing games such that players don't move simultaneously.
+
+
+## 1. The Arms Race Game
+
+Consider two parties that can invest into weapons. The state is described by `x=(x1,x2)` where `x1` and `x2` are integer numbers between `0` and `x.max=3` that describe the weapon arsenal of each party.
+
+Each period each party can try to increase its weapon arsenal by one unit for an investment cost `c.i`. The investment is successful only with an exogenously given success probability `sp=0.08`. A party can also reduce its arsenal by one unit for free. 
+
+Players can decide each period whether or not they want to attack the other player. If player 1 attacks, he inflicts harm of size `x1` on the other player but has attack costs `c.a * x1`.
+
+Each unit in a player's arsenal has maintance cost of `c.x` irrespectively of whether it is used for an attack or not. All cost parameters `c.x`, `c.a`, `c.i` shall be strictly positive.
+
+The following code generates the game:
+```{r}
+library(RelationalContracts)
+# Action space for each state
+# a1, a2: (w)ait or (a)ttack
+# i1, i2: (b)uild new weapons, (d)estroy own weapons
+A.fun = function(x1,x2, x.max,...) {
+  restore.point("A.fun")
+  list(
+    A1=list(
+      a1=c("w", if (x1>0) "a"),
+      i1=c(if (x1>0) "d","",if (x1<x.max) "b")
+    ),
+    A2=list(
+      a2=c("w", if (x2>0) "a"),
+      i2=c(if (x2>0) "d","",if (x2<x.max) "b")
+    )
+  )
+}
+
+# State transition function
+trans.fun = function(ax.df,x.max, sp,...) {
+  restore.point("trans.fun")
+
+  # Transitions only depend on the state
+  # and investments, so we only consider
+  # unique combinations of these variables.
+  tr = ax.df %>% 
+    select(x,x1,x2,i1,i2) %>%
+    distinct()
+  
+  # The changes in x1 and x2 are
+  # independent random variables.
+  # irv_joint_dist helps here.
+  tr = tr %>% irv_joint_dist(
+    irv("change_1",default=0,
+      irv_val(1, (i1=="b")*sp),
+      irv_val(-1, (i1=="d")*1)
+    ),
+    irv("change_2",default=0,
+      irv_val(1, (i2=="b")*sp),
+      irv_val(-1, (i2=="d")*1)
+    )
+  )
+
+  # We now simply specify the new values
+  # of x1 and x2 by adding the changes.
+  tr %>% mutate(
+    new_x1 = x1+change_1,
+    new_x2 = x2+change_2,
+    xd = paste0(new_x1,"_",new_x2),
+    xs=x
+  )
+}
+
+# Maximum size of weapons arsenal
+x.max = 3
+# State data frame
+x.df = tidyr::expand_grid(x1=0:x.max,x2=0:x.max) %>%
+  mutate(x = paste0(x1,"_", x2))
+
+
+# Specify game
+g = rel_game("Arms Race") %>%
+  rel_options(lab.action.sep = "") %>%  
+  rel_param(delta=0.99, rho=0.65, c.a=0.05,c.i=0.01, c.x=0.3,x.max=x.max, sp=0.08, d.factor=0, d.exp=1, can.destroy=TRUE) %>%
+  rel_states(x.df,A.fun=A.fun, trans.fun=trans.fun,
+    pi1 = -c.a*(a1=="a")*x1 - (a2=="a")*x2 - c.i*(i1=="b")-c.x*x1,
+    pi2 = -c.a*(a2=="a")*x2 - (a1=="a")*x1 - c.i*(i2=="b")-c.x*x2
+  )
+```
+
+Note that we specify the action sets such that player 1 (and equivalently player 2) can only build new weapons (`i1="b"`) if `x1 < x.max`. Similarly, she can only destroy weapons (`i1="d"`) and attack (`a1="a"`) if `x1 > 0`. The most complex part in the game specification is the transition function `trans.fun`. Here we use the helper function `irv_joint_dist`. Take a look at the vignette on [Specifying Games](Link Here) for a detailed explanation of this function.
+
+## 2. Pareto-optimal SPE
+
+The following code solves for a Pareto-optimal SPE of this arms race game.
+```{r}
+g.spe = g %>% rel_spe()
+get_eq(g.spe) %>%
+  select(x, ae.lab)
+```
+We see that on the equilibrium path weapons will never be build and there are no attacks. Moreover, existing weapons will always be destroyed.
+
+This is the case in every Pareto-optimal SPE. There is simply no direct benefit from aquiring, maintaining and using weapons: it only involves costs. The only reason to aquire weapons would be that the threat of using them increases a player's bargaining position and allows him to extort payments from the other player. However, in a Pareto-optimal SPE, players can perfectly coordinate to ignore such threats.
+
+## 3. Repeated Negotiation Equilibrium
+
+We now solve a repeated negotiation equilibrium (RNE) in which we assume that with probability `rho=0.65` players newly negotiate their relational contract at the beginning of a period. For numerical tractability we also assume that only in the first `T=1000` periods new negotiations can take place. We call this an T-RNE (see our [paper](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2210603) for details).
+
+```{r}
+g.rne = g %>% rel_T_rne(rho=0.65, T=1000)
+get_eq(g.rne) %>%
+  select(x, ae.lab)
+```
+
+Attacks still don't take place on the equilibrium path. Yet, weapons are never destroyed and in some states new weapons are build. 
+
+
+## 4. Equilibrium diagram with state transitions
+
+The function `eq_diagram` is useful to visualize the equilibrium:
+```{r fig.width=7, fig.height=7}
+eq_diagram(g.rne, font.size=20)
+```
+
+Each blue box corresponds to a state `x`. Below the state label each box shows the negotiation payoffs `r1` and `r2` of both players in that state. We see how symmetric high weapon arsenals are bad for both players, due to costly weapon maintenance. In states with asymmetric arsenals, the player with fewer weapons has a lower negotiation payoff. The reason is that the player with more weapons has a higher threat potential and can thus extort higher payments in negotiations.
+
+You can hover with the mouse over a state and see additional equilibrium information. First you see compact labels for the equilibrium path action profile `ae` and the profiles `a1` and `a2`, used to punish player 1 or 2, respectively, if they fail to make a required payment in the transfer stage. We explain further below how you can explore the candidates for these action profiles in more detail in order to understand why these particular action profiles have been chosen.
+
+You further see the joint continuation payoff `U` and the lowest implementable continuation payoffs taking into account future negotiations `v1` and `v2` for both players.
+
+In our example, you can see from the punishment profiles that players  are punished by an attack if the other player has weapons and typically the punishing player also attempts to build new weapons.
+
+The diagramm further shows a directed arrow from one box to another if there is a positive transition probability on the equilbrium path. We see from the outgoing arrows that in the initial state "0_0" without weapons both players try to increase their arsenal. Recall that the success probability `sp` is only 8%. If both investments have been successful, play moves to state "1_1" and then no more investments take place. Players can then use the aquired weapons to deter any further investment attempts and thereby effectively prevent a continuation of the arms race.
+
+If only one player successfully aquired weapons (state "0_1" or state "1_0") then only the other player continues investing until state "1_1" is reached. This result may seem surprising: one might have suspected that e.g. in the state "1_0" player 1 can use the threat of an attack to prevent player 2 from investing, while player 1 continues investing himself.
+
+## 5. More equilibrium details: Joint payoffs and incentive constraints of all possible action profiles in a state.
+
+To understand better what is going on in state "1_0" run the following code.
+```{r}
+# Solve again for RNE and store equilibrium details
+g.rne = rel_T_rne(g,rho=0.65,T=1000,save.details = TRUE)
+
+# Show equilibrium details for state "1_0"
+g.rne %>%
+  get_rne_details(x="1_0") %>%
+  filter(i1!="d", i2!="d") %>%
+  select(x:can.ae)
+```
+
+After we call `rel_T_rne` with the option `save.details=TRUE`, we can use the call `get_rne_details(x="1_0")` to get a data frame with more detailed information about all possible action profiles that could have been chosen in a state "1_0". (To have a smaller data frame, we removed the rows corresponding to action profiles in which some player would destroy one of her weapons.)
+
+The action profiles are ordered decreasingly in `U.hat`, the sum of both players' continuation payoffs that would be achieved if this action profile were chosen once and then play continued on the equilibrium path. This means the jointly best action profile would be that both players wait, since the column `a.lab` of the first row is "w | w".
+
+You may note that the `U.hat` don't differ by much. One reason is that we assumed a large discount factor of `delta=0.99`, i.e. current period payoffs only account for 1% of the average discounted continuation payoffs. To compute `U.hat` for "w | w" we assume that in just one period the profile "w | w" would be chosen while afterwards again the actual equilibrium profile "w | wb" were chosen. This one time deviation does not matter much in terms of continuation payoff. Yet, the fact that "w | w" ranks above "w | wb" means that we would also get increases in joint payoffs (and larger ones) if we could implement "w | w" in every period on the equilibrium path in state "1_0".
+
+Assume the profile in column `a.lab` should be played in an equilibrium. The profile in the column `best.dev` then shows for both players the actions to which they would deviate if they would know for sure that in the next period new negotiations take place. In our example, both players would always want to choose "wb", i.e. build new weapons (b) and don't attack (w). However, given that the actual negotiation probability `rho=0.65` is below 100%, players can use transfers and punishment threats to implement more efficient profiles than "wb | wb" on the equilibrium path.
+
+The column `IC.holds` shows whether holding all future negotiation payoffs fixed, one could implement the corresponding action profile in the current state. The equilibrium path profile in an RNE always corresponds to the profile with the largest `U.hat` among all profiles for which `IC.holds` is true. In our example, the most efficient profile "w | w" cannot be implemented: the incentives to build weapons are simply too strong.
+
+However, we see that both profiles in which only one player builds, i.e. "w | wb" and "wb | w", can be implemented. Both yield the same joint payoff `U.hat`. The column `can.ae` is a 2 for the profile that is actually chosen on the equilibrium path and a 1 for a profile that could be equivalently chosen on the equilibrium path.
+
+The profile "w | wb" in state "1_0" can be implemented in the following way. Player 2 makes on the equilibrium path in each period relatively large payments to player 1 for the right to invest into weapons and the willigness of player 1 not to invest herself. Should player 2 deviate from those payments, he will be punished by an attack by player 1. Should player 1 deviate and invest herself, she would be "punished" by a refusal of player 2 to continue those payments (at least until new negotiations take place).
+
+In this equilibrium player 1 makes relatively high payoffs as long as player 2's investments are not successful and play remains in state "1_0". However, once state "1_1" is reached, players are in a symmetric situation and no more payments will be extorted on the equilibrium path.
+
+## 6. Finding alternative T-RNE
+
+Even though T-RNE negotiation payoffs are unique for a fixed T, there can be multiple T-RNE that differ by the chosen action profiles in one or several states. Run the following code to find an alternative T-RNE in which in state "1_0" the action profile "wb | w" would be chosen in which player 1 instead of player 2 invests.
+
+```{r}
+# Solve again for RNE and store equilibrium details
+g.rne = rel_T_rne(g,rho=0.65,T=1000,save.details = TRUE,tie.breaking = "max_r1")
+
+eq_diagram(g.rne)
+
+# Show equilibrium details for state "1_0"
+g.rne %>%
+  get_rne_details(x="1_0") %>%
+  filter(i1!="d", i2!="d") %>%
+  select(x:can.ae)
+```
+
+The argument `tie.breaking` determines which action profile is chosen on the equilibrium path in some state if there are several incentive compatible profiles with the same joint payoff. The tie breaking rule "max_r1" prefers action profiles that more likely reaches future states in which player 1 has high negotiation payoffs.
+
+We now see that in state "1_0" player 1 build new weapons instead of player 2. The negotiation payoffs are the same as in the previous case, however. Unique negotiation payoffs is a theoretical result that always holds for T-RNE.
+
+## 7. Exploring punishment actions
+
+All equilibria have the form of *simple equilibria*, which we explain in detail in our [2017 article](https://www.uni-ulm.de/fileadmin/website_uni_ulm/mawi.inst.160/pdf_dokumente/mitarbeiter/kranz/dyngame.pdf). That article also explains how this class of equilibria can implement every SPE payoff simply by adjusting transfers on the equilibrium path.
+
+The key idea is that on the equilibrium path the same action profile $a^e(x)$ is played in state $x$. Should a player deviate, he is asked to pay a fine to the other player at the beginning of the next period. Should player $i$ fail to pay a fine, or some other required transfer on the equilibrium path, he is punished by playing for one period a punishment profile $a^i(x)$. Punishment will be stopped once a player redeems himself by paying the fine.
+
+The following code uses `get_rne_details` to explore the candidate punishment action profiles $a^2$ against player 2 in state "1_0".
+
+```{r}
+# Show details for punishment actions against
+# player 2 in state "1_0"
+g.rne %>%
+  get_rne_details(x="1_0") %>%
+  filter(i1!="d", i2!="d") %>%
+  arrange(v2.hat) %>%
+  select(x:IC.holds, v2.hat, can.a2)
+```
+
+The variable `v2.hat` denotes the lowest continuation payoff that player 2 could guarantee himself if in the current period the profile in `a.lab` is supposed to be played and in all future the punishment profiles $a^2(x)$ are supposed to be played. I say "supposed to be played" because when computing `v2.hat`, we assume that the punished player 2 is allowed to optimally deviate from any of those action profiles. The best punishment profile in a given state is the one with the lowest value of `v2.hat` among all incentive compatible profiles, i.e. `IC.holds` must be true. Here we see that an optimal punishment against player 2 is that player 1 attacks (a) and builds (b) new weapons. Whether during the punishment player 2 just waits "w"  or also builds weapons "wb", does not matter. The value of `v2.hat` is only determined by player 2's best reply which is always "wb".
+
+
+Similarly, we can explore the candidate punishment profiles $a^1$ against player 1 in state "1_0" with the following code:
+
+```{r}
+# Show details for punishment actions against
+# player 2 in state "1_0"
+g.rne %>%
+  get_rne_details(x="1_0") %>%
+  filter(i1!="d", i2!="d") %>%
+  arrange(v1.hat) %>%
+  select(x:IC.holds, v1.hat, can.a1)
+```
+
+Since player 2 has no weapons, he cannot attack to punish player 1. The only punishment in state "1_0" is that player 2 builds new weapons.
+
+## 8. Comparative Statics
+
+### 8.1 Increasing the success probability of investments
+So far we have assumed that the success probability `sp` of investments is only 8%. We now want to study how the T-RNE changes if instead weapon investments are always successful, i.e. `sp=1`, keeping all other parameters the same:
+
+```{r}
+g1 = g %>% 
+  rel_change_param(sp=1) %>%
+  rel_T_rne(T=1000)
+```
+Note that you can call `rel_change_param` only for game objects that have not been compiled (i.e. no equilibrium should yet have been solved). That is why I, originaly stored the game in the variable `g` but use different variable names for solved games, like `g1` here.
+
+Given that the costs of weapon investments stayed constant but the success probability has dramatically gone up, investments have effectively become cheaper. One may thus suspect that in equilibrium larger weapon arsenals are aquired.
+
+Let us take a look at the result:
+```{r}
+eq_diagram(g1)
+```
+
+We have quite an opposite result. Now in no state weapon investments are conducted. Moreover, if players start with strictly positive weapon arsenals, they reduce their weapon arsenals step by step until the weapon-free state "0_0" is reached. To understand the result, note that players invest as punishment (and attack if the current arsenal of the punisher is positive). Since investments are always successful, the threat of a quick aquisition of weapons, which will be used if the punished player refues to pay a fine, is sufficient to prevent any weapon aquisition on the equilibrium path. Moreover, this threat is so effective that it can even incentivize players to reduce their weapon arsenal. 
+
+This outcome is facilitated by the fact that a high weapon arsenal generally gives less scope for extortion if the other player can quickly and cheaply build his own arsenal. You see that the differences in negotiation payoffs in asymmetric states like "3_0" or "0_3" are much smaller than in the previous specification in which weapon investments only were successful with a probability of 8%.
+
+### Changing some other parameters
+
+In the following example we change some parameters again a bit. 
+```{r}
+g2 = g %>% 
+  rel_change_param(delta=0.95,rho=0.6,sp=0.1,c.x=0.1) %>%
+  rel_T_rne(T=1000, save.details = TRUE)
+
+eq_diagram(g2)
+```
+
+Interestingly, we find that in state "3_2" player 1 destroys (d) her weapons while at the same time player 2 tries to build (b) new weapons (the reverse holds in state "2_3). To understand what is going on let us explore the equilibrium details for state "3_2".
+
+```{r}
+g2 %>%
+  get_rne_details(x="3_2") %>%
+  select(x:can.ae) %>%
+  head(5)
+```
+
+The best profile would be that both players destroy their weapons "wd | wd". Yet, this profile cannot be implemented (`IC.holds == FALSE`). Player 2's prefered deviation is to build weapons ("wb") and player 1's to just wait ("w"), since she already has the maximum weapon arsenal. 
+The next best profiles would be that just a single player destroys her weapons and the other waits ("w | wd" or "wd | w"). But they are not incentive compatible either. While "w | w" could be implemented, the profile "wd | wb" where player 1 destroys a weapon and player 2 tries to build one is also incentive compatible and yields a higher expected joint payoff `U.hat`. The reason that "wd | wb" is better than "w | w" is that investments are only successful with 8% probability, i. e. with 92% probability play transist to the state "2_2". Note that in state "3_2" player 2 will make considerable transfers to player 1 in order for player 1 to agree to destroy her weapons and allowing player 2 to attempt new weapon investments. 
+
+## 9. Variant: Attacks can destroy weapons
+
+Trying out different parametrizations for the game above, you will find that attacks are only used as a threat in the punishment profiles, e.g. to credible extort payments, but never on the equilibrium path. If you think about it there is simply no reason to attack on the equilibrium path.
+
+We now want to a variant of the game in which an attack has a positive probability to destroy weapons of the other player. More precisely, if player 1 attack player 2 there shall be a probability of `d.factor * x1 / x.max` that player 2's arsenal is reduced by one unit, where `d.factor` is an exogenous parameter between 0 and 1.
+
+
+```{r}
+
+# State transition function
+trans.fun = function(ax.df,x.max, sp,...) {
+  restore.point("trans.fun")
+
+  # Compute probability to destroy
+  # a weapon unit of other player
+  # if one attacks
+  ax.df = mutate(ax.df,
+    dp1 = d.factor*(x1 / x.max),
+    dp2 = d.factor*(x2 / x.max)
+  )
+
+
+  tr = irv_joint_dist(ax.df,
+    irv("i_change_1",default=0,
+      irv_val(1, (i1=="b")*sp),
+      irv_val(-1, (i1=="d")*1)
+    ),
+    irv("i_change_2",default=0,
+      irv_val(1, (i2=="b")*sp),
+      irv_val(-1, (i2=="d")*1)
+    ),
+    irv("a_change_1",default=0,
+      irv_val(-1, (a2=="a")*dp2)
+    ),
+    irv("a_change_2",default=0,
+      irv_val(-1, (a1=="a")*dp1)
+    )
+  )
+
+  tr %>%
+    mutate(
+      new_x1 = pmax(x1+i_change_1+a_change_1,0),
+      new_x2 = pmax(x2+i_change_2+a_change_2,0),
+      xd = paste0(new_x1,"_",new_x2),
+      xs=x
+    ) %>%
+    group_by(xs,xd,i1,i2,a1,a2) %>%
+    summarize(prob = sum(prob))
+}
+
+
+# Article version Attempt
+g = rel_game("Arms Race with destruction") %>%
+  rel_param(delta=0.99, rho=0.65, c.a=0.05,c.i=0.01, c.x=0.2,x.max=x.max, sp=0.08, d.factor=0, d.exp=1, can.destroy=TRUE) %>%
+  rel_states(x.df,A.fun=A.fun, trans.fun=trans.fun,
+    pi1 = -c.a*(a1=="a")*x1 - (a2=="a")*x2 - c.i*(i1=="b")-c.x*x1,
+    pi2 = -c.a*(a2=="a")*x2 - (a1=="a")*x1 - c.i*(i2=="b")-c.x*x2
+  )
+
+```
+
+
+## 10. An arms race game without simultaneous moves
+
+```{r}
+# Action space for each state
+A.fun = function(x1,x2,ap, x.max,...) {
+  restore.point("A.fun")
+  list(
+    A1=if (ap==1) list(
+      a1=c("wait", if (x1>0) "attack"),
+      i1=c(if (x1>0) "d","",if (x1<x.max) "b")
+    ),
+    A2= if (ap==2) list(
+      a2=c("wait", if (x2>0) "attack"),
+      i2=c(if (x2>0) "d","",if (x2<x.max) "b")
+    )
+  )
+}
+
+pi.fun = function(ax.df,c.a,c.x,c.i, ...) {
+  restore.point("pi.fun")
+  ax1 = filter(ax.df, ap==1) %>%
+    mutate(
+      pi1 = -c.a*(a1=="attack")*x1  - c.i*(i1=="b")-c.x*x1,
+      pi2 = - (a1=="attack")*x1 -c.x*x2
+    )
+  ax2 = filter(ax.df, ap==2) %>%
+    mutate(
+      pi1 = - (a2=="attack")*x2 -c.x*x1,
+      pi2 = -c.a*(a2=="attack")*x2 - c.i*(i2=="b")-c.x*x2
+    )
+  bind_rows(ax1,ax2)
+}
+
+# State transition function
+trans.fun = function(ax.df,x.max, sp,d.factor=1, d.exp=1,...) {
+  restore.point("trans.fun")
+
+  # Compute probability to destroy
+  # a weapon unit of other player
+  # if one attacks
+  ax.df = mutate(ax.df,
+    i = ifelse(ap==1,i1,i2),
+    a = ifelse(ap==1,a1,a2),
+    xi = ifelse(ap==1,x1,x2),
+    xj = ifelse(ap==1,x2,x1),
+    dp = d.factor*(xi / x.max)^d.exp
+  )
+  
+  tr = ax.df %>% 
+    distinct(ap,xi,xj,i,a) %>%
+    left_join(ax.df, by = c("ap", "xi", "xj", "i", "a"))
+  
+
+  tr = irv_joint_dist(tr,
+    irv("bi",default=0,
+      irv_val(1, (i=="b")*sp),
+      irv_val(-1, (i=="d")*1)
+    ),
+    irv("dj",default=0,
+      irv_val(1, (a=="attack")*dp)
+    ),
+    irv("new_ap",irv_val(1, 0.5), irv_val(2, 0.5))
+  )
+
+  tr = tr %>%
+    mutate(
+      new_xi = pmax(xi+bi,0),
+      new_xj = pmax(xj-dj,0),
+      new_x1 = ifelse(ap==1, new_xi,new_xj),
+      new_x2 = ifelse(ap==1, new_xj,new_xi),
+      xd = paste0("p",new_ap,"_",new_x1,"_",new_x2),
+      xs=x
+    )
+  tr
+  
+  test = tr %>%
+    select(xs,xd,ap,i1,i2,a1,a2, prob)
+}
+
+# Maximum size of weapons arsenal
+x.max = 3
+x.df1 = tidyr::expand_grid(ap=1,x1=0:x.max,x2=0:x.max)  
+x.df2 = x.df1 %>% mutate(ap=2)
+x.df = bind_rows(x.df1, x.df2) %>%
+  mutate(
+    x = paste0("p",ap,"_" ,x1,"_", x2),
+    xgroup = paste0(x1,"_",x2)
+  )
+
+g = rel_game("Arms Race Turns") %>%
+  rel_param(delta=0.9, rho=0.6, c.a=0.012,c.i=0.01, c.x=0.01,x.max=x.max, sp=0.2, d.factor=0.8, d.exp=2) %>%
+  rel_states(x.df,A.fun=A.fun, trans.fun=trans.fun,pi.fun=pi.fun) %>%
+  rel_compile()
+
+g = g %>% rel_capped_rne(T=1001)
+
+
+```
+

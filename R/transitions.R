@@ -1,4 +1,6 @@
-sum.same.transitions = function(trans.df, action.cols=colnames())
+sum.same.transitions = function(trans.df, action.cols=colnames()) {
+
+}
 
 
 compute.eq.trans.mat = function(g, ae = eq$ae, eq=g[["eq"]]) {
