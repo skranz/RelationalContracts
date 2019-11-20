@@ -5,7 +5,7 @@
 \title{Tries to find a MPE by computing iteratively best replies}
 \usage{
 rel_mpe(g, delta = g$param$delta, static.eq = NULL, max.iter = 100,
-  tol = 1e-08, ax = NULL, add.stationary = TRUE)
+  tol = 1e-08, ax = NULL)
 }
 \arguments{
 \item{g}{the game}

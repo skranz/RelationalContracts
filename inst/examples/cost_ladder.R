@@ -36,7 +36,7 @@ examples.cost.ladder.cournot.staggered = function() {
 
   trans.fun = function(ax.df,x.max,dep.prob=0,i.prob=1,alpha=1,x.min=0, ...) {
     restore.point("trans.fun")
-    #if (x=="0_0") stop()
+
     tr = ax.df %>% irv_joint_dist(
       irv("new_ap",irv_val(1, 0.5), irv_val(2, 0.5)),
       irv("suc_1",default=0,
@@ -85,7 +85,9 @@ examples.cost.ladder.cournot.staggered = function() {
 
   diagnose_transitions(g)
 
-  g = g %>%  rel_T_rne(T=1000, delta=0.9, rho=0.4, save.details = !TRUE,add.stationary = TRUE)
+  g = g %>%  rel_T_rne(T=1000, delta=0.9, rho=0.4, save.details = !TRUE) %>%
+    rel_state_probs(x0="equal")
+
   eq = get_eq(g)
 
   geq = eq_combine_xgroup(g)

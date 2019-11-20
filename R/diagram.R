@@ -164,11 +164,11 @@ eq_diagram_xgroup = function(g,show.own.loop=FALSE, show.terminal.loop=FALSE, us
   geq = eq_combine_xgroup(g,eq, ap.col=ap.col) %>%
     right_join(select(gsdf,xgroup), by="xgroup")
 
-  use.stationary.prob = !all(is.na(geq$stationary.prob))
+  use.state.prob = !all(is.na(geq$state.prob))
 
   if (is.null(label.fun)) {
-    if (use.stationary.prob) {
-      lab = paste0(geq$xgroup," \n", round(geq$stationary.prob*100,2), "%")
+    if (use.state.prob) {
+      lab = paste0(geq$xgroup," \n", round(geq$state.prob*100,2), "%")
     } else {
       lab = paste0(geq$xgroup, " \n", round(geq$r1,2), " ", round(geq$r2,2))
     }
@@ -178,7 +178,7 @@ eq_diagram_xgroup = function(g,show.own.loop=FALSE, show.terminal.loop=FALSE, us
   if (is.null(tooltip.fun)) {
     if (!is.na(ap.col)) {
       tooltip = paste0(geq$xgroup,
-      if (use.stationary.prob) paste0("<br>",round(geq$stationary.prob*100,2),"%"),
+      if (use.state.prob) paste0("<br>",round(geq$state.prob*100,2),"%"),
       "<br>r1=",round(geq$r1,2)," r2=",round(geq$r2,2),
       "<br>move.av: ",round(geq$move.adv1,2),"  ",round(geq$move.adv2,2),
       "<br>ae: ",geq$ae.lab,

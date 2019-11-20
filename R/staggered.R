@@ -1,3 +1,6 @@
+
+
+
 #' Aggregate equilibrium behavior in games with random active player
 #'
 #' Often it is useful to specify games such that players don't
@@ -26,8 +29,8 @@ eq_combine_xgroup = function(g, eq=g[["eq"]], ap.col=ifelse(has.col(eq,"ap"), "a
   xgroups = unique(eq$xgroup)
 
 
-  if (!has.col(eq,"stationary.prob"))
-    eq$stationary.prob=NA
+  if (!has.col(eq,"state.prob"))
+    eq$state.prob=NA
   if (is.na(ap.col)) {
     res = eq %>%
       group_by(xgroup) %>%
@@ -37,7 +40,7 @@ eq_combine_xgroup = function(g, eq=g[["eq"]], ap.col=ifelse(has.col(eq,"ap"), "a
         v1 = mean(v1),
         v2 = mean(v2),
         U = mean(U),
-        stationary.prob = sum(stationary.prob)
+        state.prob = sum(state.prob)
       ) %>%
       right_join(tibble(xgroup=xgroups), by="xgroup")
     return(res)
@@ -64,7 +67,7 @@ eq_combine_xgroup = function(g, eq=g[["eq"]], ap.col=ifelse(has.col(eq,"ap"), "a
       v1 = mean(v1),
       v2 = mean(v2),
       U = mean(U),
-      stationary.prob = sum(stationary.prob)
+      state.prob = sum(state.prob)
     )  %>%
     right_join(tibble(xgroup=xgroups), by="xgroup")
 }

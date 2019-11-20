@@ -207,8 +207,8 @@ arms.race.example = function() {
 #' @param delta the discount factor
 #' @param rho the negotiation probability
 #' @param adjusted.delta the adjusted discount factor (1-rho)*delta. Can be specified instead of delta.
-rel_T_rne = function(g,T,  delta=g$param$delta, rho=g$param$rho, adjusted.delta=NULL,  tie.breaking=c("equal_r", "slack","random","first","last","max_r1","max_r2","unequal_r")[1], tol=1e-10,  save.details=FALSE, add.iterations=FALSE, save.history=FALSE, add.stationary=FALSE, use.cpp=TRUE, spe=g[["spe"]], res.field="eq") {
-  rel_capped_rne(g=g,T=T,delta=delta, rho=rho, adjusted.delta=adjusted.delta, tie.breaking=tie.breaking, tol=tol,use.cpp=use.cpp, add.iterations=add.iterations, save.details=save.details,  save.history=save.history, add.stationary=add.stationary, res.field=res.field,T.rne=TRUE,spe=spe)
+rel_T_rne = function(g,T,  delta=g$param$delta, rho=g$param$rho, adjusted.delta=NULL,  tie.breaking=c("equal_r", "slack","random","first","last","max_r1","max_r2","unequal_r")[1], tol=1e-10,  save.details=FALSE, add.iterations=FALSE, save.history=FALSE, use.cpp=TRUE, spe=g[["spe"]], res.field="eq") {
+  rel_capped_rne(g=g,T=T,delta=delta, rho=rho, adjusted.delta=adjusted.delta, tie.breaking=tie.breaking, tol=tol,use.cpp=use.cpp, add.iterations=add.iterations, save.details=save.details,  save.history=save.history, res.field=res.field,T.rne=TRUE,spe=spe)
 }
 
 #' Solve an RNE for a capped version of a game
@@ -232,7 +232,7 @@ rel_T_rne = function(g,T,  delta=g$param$delta, rho=g$param$rho, adjusted.delta=
 #' @param add.iterations if TRUE just add T iterations to the previously computed capped RNE or T-RNE.
 #' @param save.details if set TRUE details of the equilibrium are saved that can be analysed later by calling \code{get_rne_details}. For an example, see the vignette for the Arms Race game.
 #' @param save.history by
-rel_capped_rne = function(g,T, delta=g$param$delta, rho=g$param$rho, adjusted.delta=NULL,  tie.breaking=c("equal_r", "slack","random","first","last","max_r1","max_r2","unequal_r")[1],tol=1e-10,add.iterations=FALSE,   save.details=FALSE,  save.history=FALSE, add.stationary=FALSE,use.cpp=TRUE, T.rne=FALSE, spe=NULL,res.field="eq") {
+rel_capped_rne = function(g,T, delta=g$param$delta, rho=g$param$rho, adjusted.delta=NULL,  tie.breaking=c("equal_r", "slack","random","first","last","max_r1","max_r2","unequal_r")[1],tol=1e-10,add.iterations=FALSE,   save.details=FALSE,  save.history=FALSE,use.cpp=TRUE, T.rne=FALSE, spe=NULL,res.field="eq") {
   restore.point("rel_capped_rne")
   if (!g$is_compiled) g = rel_compile(g)
 
@@ -289,10 +289,6 @@ rel_capped_rne = function(g,T, delta=g$param$delta, rho=g$param$rho, adjusted.de
   rne = add.rne.action.labels(g,rne)
   if (!is.null(g$x.df))
     rne = left_join(rne, g$x.df, by="x")
-
-  if (add.stationary) {
-    rne$stationary.prob = stationary.eq.distribution(g,rne)
-  }
 
   g[[res.field]] = g$capped_rne = rne
   g[[paste0(res.field,".details")]] = details

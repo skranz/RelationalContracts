@@ -80,10 +80,9 @@ examples.multistage.spe.trunc = function() {
   eq = get_eq(g)
   spe = solve.trunc.spe(g)
 
-  g = g %>%  rel_capped_rne(T=20, delta=0.9, rho=0.4, save.history = FALSE, use.cpp = TRUE, add.stationary = TRUE, save.details = TRUE)
+  g = g %>%  rel_capped_rne(T=20, delta=0.9, rho=0.4, save.history = FALSE, use.cpp = TRUE, save.details = TRUE)
   eq = g$eq
   eq$r_lab = paste0(round(eq$r1)," ", round(eq$r2),"\n", eq$ae.lab)
-  ggplot(eq, aes(x=x1,y=x2, fill=stationary)) + geom_raster(interpolate=FALSE) + geom_label(aes(label=r_lab), fill="white", alpha=0.5, size=3, label.padding=unit(0.1,"lines"))
   eq_diagram(g, just.eq.chain = !TRUE)
 
   det = get_rne_details(g, x="100_0")

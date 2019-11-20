@@ -97,6 +97,34 @@ make.state.lab.a = function(state, action.sep = " ", player.sep=" | ", empty.sep
 }
 
 
+
+make.ax.labels = function(ax.grid, actions1, actions2, action.sep = " ", player.sep=" | ", empty.sep=TRUE) {
+  restore.point("make.ax.labels")
+  ax = as.matrix(ax.grid[,-c(1:2)])
+
+  ax[is.na(ax)] = ""
+  ax[ax=="-"] = ""
+
+  if (length(actions1)>0) {
+    p1 = trimws(paste.df.cols(ax[,actions1,drop=FALSE], sep=action.sep, empty.sep=empty.sep))
+  } else {
+    p1 = rep("",NROW(ax))
+  }
+  if (length(actions2)>0) {
+    p2 = trimws(paste.df.cols(ax[,actions2,drop=FALSE], sep=action.sep, empty.sep=empty.sep))
+  } else {
+    p2 = rep("",NROW(ax))
+  }
+  quick_df(
+    x = ax.grid$x,
+    a = ax.grid$.a,
+    lab = paste0(p1, player.sep, p2),
+    lab1 = p1,
+    lab2 = p2
+  )
+}
+
+
 old.make.state.lab.a = function(state, sep=" ", empty.sep=TRUE) {
   restore.point("make.state.lab.a")
   a.grid = state$a.grid[[1]]

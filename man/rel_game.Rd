@@ -4,7 +4,7 @@
 \alias{rel_game}
 \title{Creates a new relational contracting game}
 \usage{
-rel_game(name = "Game", ...)
+rel_game(name = "Game", ..., enclos = parent.frame())
 }
 \description{
 Creates a new relational contracting game

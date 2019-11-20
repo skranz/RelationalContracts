@@ -7,43 +7,51 @@ examples.capacity.cournot.staggered = function() {
   A.fun = function(x1,x2,ap, x.max,...) {
     restore.point("A.fun")
     list(
-      A1 = list(i1=c(0,if (ap==1) 1)),
-      A2 = list(i2=c(0,if (ap==2) 1))
+      A1 = list(i1=c(0,if (ap==1) c(-1,1))),
+      A2 = list(i2=c(0,if (ap==2) c(-1,1)))
     )
   }
 
-  # A cournot duopoly
-  # with endogenous marginal cost
-  pi.fun = function(ax.df, i.cost=10,...) {
-    restore.point("pi.fun")
-    mutate(ax.df,
-      pi1 = -i.cost*i1,
-      pi2 = -i.cost*i2
+  static.A.fun = function(x1,x2,q.step=1, x.max,...) {
+    restore.point("A.fun")
+    list(
+      A1 = list(q1=seq(0,x1, by=q.step)),
+      A2 = list(q2=seq(0,x2, by=q.step))
     )
   }
-  static.pi.fun = function(ax.df,x.max,a=x.max, b=1,...) {
+
+  pi.fun = function(ax.df, c.i=10,c.x=0,...) {
+    restore.point("pi.fun")
+    mutate(ax.df,
+      pi1 = -c.i*(i1==1)-c.x*x1,
+      pi2 = -c.i*(i2==1)-c.x*x2
+    )
+  }
+  static.pi.fun = function(ax.df,x.max,a=x.max, b=1,c1=0,c2=0,...) {
     restore.point("static.pi.fun")
     res = mutate(ax.df,
       Q = q1+q2,
       p = a-b*Q,
-      pi1 = (p-x1)*q1,
-      pi2 = (p-x2)*q2
+      pi1 = (p-c1)*q1,
+      pi2 = (p-c2)*q2
     )
     attr(res,"extra.col") = TRUE
     # dat = res %>% filter(x1==5, x2==5)
     res
   }
 
-  trans.fun = function(ax.df,x.max,dep.prob=0,i.prob=1,alpha=1,x.min=0, ...) {
+  trans.fun = function(ax.df,x.max,dep.prob=0,i.prob=1,x.min=0, ...) {
     restore.point("trans.fun")
     #if (x=="0_0") stop()
     tr = ax.df %>% irv_joint_dist(
       irv("new_ap",irv_val(1, 0.5), irv_val(2, 0.5)),
       irv("suc_1",default=0,
-        irv_val(1, i1*i.prob)
+        irv_val(-1, (i1==-1)),
+        irv_val(1, (i1==1)*i.prob)
       ),
       irv("suc_2",default=0,
-        irv_val(1, i2*i.prob)
+        irv_val(-1, (i2==-1)),
+        irv_val(1, (i2==1)*i.prob)
       ),
       irv("dep_1",default=0,
         irv_val(1, dep.prob)
@@ -57,8 +65,8 @@ examples.capacity.cournot.staggered = function() {
 
     tr = tr %>%
       mutate(
-        nx1 = pbounded(0,x1-suc_1+dep_1,x.max),
-        nx2 = pbounded(0,x2-suc_2+dep_2,x.max),
+        nx1 = pbounded(0,x1+suc_1-dep_1,x.max),
+        nx2 = pbounded(0,x2+suc_2-dep_2,x.max),
         xd = paste0(new_ap,"_",nx1,"_",nx2),
         xs=x
       ) %>%
@@ -68,9 +76,8 @@ examples.capacity.cournot.staggered = function() {
   }
 
 
-  x.min=0; x.max = 5; a = x.max
-  q.seq=seq(0,a, length=21)
-  x.seq = seq(x.max,x.min, by=-1)
+  x.min=0; x.max = 5; a = x.max; q.step = 0.1
+  x.seq = seq(x.min,x.max, by=1)
   library(tidyr)
   x.df = expand_grid(ap=c(1:2),x1=x.seq,x2=x.seq) %>%
     mutate(
@@ -78,14 +85,16 @@ examples.capacity.cournot.staggered = function() {
       xgroup = paste0(x1,"_",x2)
     )
 
-  g = rel_game("Cournot with Cost Ladder") %>%
-    rel_param(x.min=x.min,x.max=x.max,dep.prob=0,a=x.max,b=1, i.cost=4,i.prob = 1, alpha=1) %>%
-    rel_states(x.df, A.fun = A.fun,static.A1 = list(q1=q.seq), static.A2 = list(q2=q.seq),pi.fun=pi.fun, trans.fun=trans.fun, static.pi.fun = static.pi.fun) %>%
+  g = rel_game("Cournot with Capacity Constraint") %>%
+    rel_param(x.min=x.min,x.max=x.max,dep.prob=0,a=x.max,b=1, c.i=1,c.x=0, i.prob = 0.1, q.step=q.step) %>%
+    rel_states(x.df, A.fun = A.fun,static.A.fun=static.A.fun,pi.fun=pi.fun,static.pi.fun = static.pi.fun, trans.fun=trans.fun) %>%
     rel_compile()
 
   diagnose_transitions(g)
 
-  g = g %>%  rel_T_rne(T=1000, delta=0.9, rho=0.4, save.details = !TRUE,add.stationary = TRUE)
+  g = g %>%  rel_T_rne(T=1000, delta=0.9, rho=1, save.details = !TRUE) %>%
+    rel_state_probs(x0="first.group")
+
   eq = get_eq(g)
 
   geq = eq_combine_xgroup(g)
@@ -407,165 +416,4 @@ examples.capacity.differentiated.bertrand = function() {
   eq_diagram(g, just.eq.chain = !TRUE)
 
   det = get_rne_details(g, x="5_5")
-}
-
-examples.capacity.cournot = function() {
-  # A Cournot Game with Capacity Building
-
-  A.fun = function(i.seq=c(0,1),...) {
-    restore.point("A.fun")
-    list(
-      A1=list(i1=i.seq),
-      A2=list(i2=i.seq)
-    )
-  }
-  static.A.fun = function(x1,x2,q.step=1,...) {
-    restore.point("A.fun")
-    list(
-      A1=list(q1=seq(0,x1,by=q.step)),
-      A2=list(q2=seq(0,x2,by=q.step))
-    )
-  }
-
-
-  pi.fun = function(ax.df, i.cost=10*x.step, x.step=1,...) {
-    restore.point("pi.fun")
-    mutate(ax.df,
-      pi1 = -i.cost*i1,
-      pi2 = -i.cost*i2
-    )
-  }
-  static.pi.fun = function(ax.df, c1=0, c2=0,a=10,b=1,...) {
-    restore.point("pi.fun")
-    mutate(ax.df,
-      pi1 = (a-b*(q1+q2)-c1)*q1,
-      pi2 = (a-b*(q1+q2)-c2)*q2
-    )
-  }
-
-  trans.fun = function(ax.df,x.step,x.max,dep.prob=0,...) {
-    restore.point("trans.fun")
-    #if (x=="0_0") stop()
-    ax.df = mutate(ax.df,
-      i1.prob = i1 / (1+i1),
-      i2.prob = i2 / (1+i2)
-    )
-    dp = dep.prob
-    trans = independent_transitions(ax.df,
-      trans_var("nx1",default=x1,lower=0, upper=x.max,
-        trans_val(x1+x.step, (1-dp)*i1.prob),
-        trans_val(x1, (1-dp)*(1-i1.prob)),
-        trans_val(x.step, dp*i1.prob),
-        trans_val(0, dp*(1-i1.prob))
-      ),
-      trans_var("nx2",default=x2,lower=0, upper=x.max,
-        trans_val(x2+x.step, (1-dp)*i2.prob),
-        trans_val(x2, (1-dp)*(1-i2.prob)),
-        trans_val(x.step, dp*i2.prob),
-        trans_val(0, dp*(1-i2.prob))
-      )
-    )
-    trans = mutate(trans,
-        xd = paste0(nx1,"_",nx2),
-        xs=x
-      ) %>%
-      select(xs,xd,i1,i2,prob)
-    trans
-  }
-
-
-  x.max = 100; x.step = 20
-  x.seq = seq(0,x.max, by=x.step)
-  x.df = as_tibble(expand.grid(x1=x.seq,x2=x.seq))
-  x.df$x = paste0(x.df$x1,"_", x.df$x2)
-
-  g = rel_game("Cournot with Investment") %>%
-    rel_param(c1=0,c2=0,x.step=x.step, x.max=x.max,dep.prob=0.05,a=100, i.cost=50, i.seq=c(0,1,2,5)) %>%
-    rel_states(x.df,A.fun=A.fun, pi.fun=pi.fun, trans.fun=trans.fun, static.pi.fun = static.pi.fun, static.A.fun = static.A.fun) %>%
-    rel_compile()
-
-  g = g %>%  rel_capped_rne(T=1000, delta=0.9, rho=1, add.stationary = TRUE)
-
-
-  eq = g$eq
-  eq$r_lab = paste0(round(eq$r1)," ", round(eq$r2),"\n", eq$ae.lab)
-  library(ggplot2)
-  ggplot(eq, aes(x=x1,y=x2, fill=stationary.prob)) + geom_raster(interpolate=FALSE) + geom_label(aes(label=r_lab), fill="white", alpha=0.5, size=3, label.padding=unit(0.1,"lines"))
-  eq_diagram(g, just.eq.chain = TRUE)
-
-  det = get_rne_details(g, x="100_0")
-}
-
-examples.capacity.cournot.det = function() {
-  # A Cournot Game with Capacity Building
-
-  A.fun = function(...) {
-    restore.point("A.fun")
-    list(
-      A1=list(i1=c(0,1)),
-      A2=list(i2=c(0,1))
-    )
-  }
-  static.A.fun = function(x1,x2,q.step=1,...) {
-    restore.point("static.A.fun")
-    list(
-      A1=list(q1=seq(0,x1,by=q.step)),
-      A2=list(q2=seq(0,x2,by=q.step))
-    )
-  }
-
-
-  pi.fun = function(ax.df, i.cost=10*x.step, x.step=1,...) {
-    restore.point("pi.fun")
-    mutate(ax.df,
-      pi1 = -i.cost*i1,
-      pi2 = -i.cost*i2
-    )
-  }
-  static.pi.fun = function(ax.df, c1=0, c2=0,a=10,b=1,...) {
-    restore.point("pi.fun")
-    mutate(ax.df,
-      pi1 = (a-b*(q1+q2)-c1)*q1,
-      pi2 = (a-b*(q1+q2)-c2)*q2
-    )
-  }
-
-  trans.fun = function(ax.df,x.step,x.max,dep.prob=0,...) {
-    restore.point("trans.fun")
-    #if (x=="0_0") stop()
-
-
-    trans = ax.df %>%
-      mutate(
-        nx1 = pmin(x1+i1*x.step,x.max),
-        nx2 = pmin(x2+i2*x.step,x.max),
-        xd = paste0(nx1,"_",nx2),
-        xs=x,
-        prob = 1
-      ) %>%
-      select(xs,xd,i1,i2,prob) %>%
-      unique()
-    trans
-  }
-
-  x.max = 100; x.step = 20
-  x.seq = seq(0,x.max, by=x.step)
-  x.df = as_tibble(expand.grid(x1=x.seq,x2=x.seq))
-  x.df$x = paste0(x.df$x1,"_", x.df$x2)
-
-  g = rel_game("Cournot with Investment") %>%
-    rel_param(c1=0,c2=0,x.step=x.step, x.max=x.max,dep.prob=0.05,a=100, i.cost=50, i.seq=c(0,1,2,5)) %>%
-    rel_states(x.df,A.fun=A.fun, pi.fun=pi.fun, trans.fun=trans.fun, static.pi.fun = static.pi.fun, static.A.fun = static.A.fun) %>%
-    rel_compile()
-
-  g = g %>%  rel_capped_rne(T=1000, delta=0.9, rho=1, add.stationary = TRUE)
-
-
-  eq = g$eq
-  eq$r_lab = paste0(round(eq$r1)," ", round(eq$r2),"\n", eq$ae.lab)
-  library(ggplot2)
-  ggplot(eq, aes(x=x1,y=x2, fill=stationary.prob)) + geom_raster(interpolate=FALSE) + geom_label(aes(label=r_lab), fill="white", alpha=0.5, size=3, label.padding=unit(0.1,"lines"))
-  eq_diagram(g, just.eq.chain = TRUE)
-
-  det = get_rne_details(g, x="100_0")
 }

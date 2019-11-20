@@ -38,7 +38,7 @@ get_mpe = function(g, extra.cols="ae", eq=g$mpe) {
 #' @param max.iter maximum number of iterations
 #' @param tol we finish if payoffs in a subsequent iteration don't change by more than tol
 #' @param ax optionaly an initially guess of the action profiles. A vector of size nx describing action profiles as ax indices
-rel_mpe = function(g, delta=g$param$delta, static.eq=NULL, max.iter = 100, tol=1e-8, ax=NULL, add.stationary = TRUE) {
+rel_mpe = function(g, delta=g$param$delta, static.eq=NULL, max.iter = 100, tol=1e-8, ax=NULL) {
   restore.point("rel_mpe")
 
   g$param$delta = delta
@@ -99,9 +99,6 @@ rel_mpe = function(g, delta=g$param$delta, static.eq=NULL, max.iter = 100, tol=1
     mpe = bind_cols(g$x.df,quick_df(u1=u[,1],u2=u[,2],ae=ax-g$sdf$lag.cumsum.na))
   } else {
     mpe = bind_cols(g$x.df,quick_df(u1=u[,1],u2=u[,2],s.ae = static.eq$s.ae, ae=ax-g$sdf$lag.cumsum.na))
-  }
-  if (add.stationary) {
-    mpe$stationary.prob = stationary.eq.distribution(g,mpe, ae = mpe$ae)
   }
   g$mpe = mpe
   g

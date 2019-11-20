@@ -4,17 +4,39 @@
 \alias{rel_capped_rne}
 \title{Solve an RNE for a capped version of a game}
 \usage{
-rel_capped_rne(g, T, tol = 1e-10, delta = g$param$delta,
-  rho = g$param$rho, adjusted.delta = NULL, res.field = "eq",
-  tie.breaking = c("equal_r", "slack", "random", "first", "last", "max_r1",
-  "max_r2")[1], use.cpp = TRUE, save.details = FALSE,
-  add.iterations = FALSE, save.history = FALSE, add.stationary = FALSE,
-  T.rne = FALSE, spe = NULL)
+rel_capped_rne(g, T, delta = g$param$delta, rho = g$param$rho,
+  adjusted.delta = NULL, tie.breaking = c("equal_r", "slack", "random",
+  "first", "last", "max_r1", "max_r2", "unequal_r")[1], tol = 1e-10,
+  add.iterations = FALSE, save.details = FALSE, save.history = FALSE,
+  use.cpp = TRUE, T.rne = FALSE, spe = NULL, res.field = "eq")
 }
 \arguments{
 \item{g}{The game}
 
 \item{T}{The number of periods in which new negotiations can take place.}
+
+\item{delta}{the discount factor}
+
+\item{rho}{the negotiation probability}
+
+\item{adjusted.delta}{the adjusted discount factor (1-rho)*delta. Can be specified instead of delta.}
+
+\item{tie.breaking}{A tie breaking rule when multiple action profiles could be implemented on the equilibrium path with same joint payoff U. Can take the following values:
+\itemize{
+  \item "equal_r" (DEFAULT) prefer actions that in expectation move to states with more equal negotiation payoffs.
+  \item "slack" prefer the action profile with the highest slack in the incentive constraints
+  \item "random" pick randomly from all eligible action profiles
+  \item "max_r1" pick action profiles that in moves to states with highest negotiation payoff for player 1.
+  \item "max_r2"  pick action profiles that in moves to states with highest negotiation payoff for player 2.
+}}
+
+\item{tol}{Due to numerical inaccuracies the calculated incentive constraints for some action profiles may be vialoated even though with exact computation they should hold, yielding unexpected results. We therefore also allow action profiles whose numeric incentive constraints is violated by not more than tol. By default we have \code{tol=1e-10}.}
+
+\item{add.iterations}{if TRUE just add T iterations to the previously computed capped RNE or T-RNE.}
+
+\item{save.details}{if set TRUE details of the equilibrium are saved that can be analysed later by calling \code{get_rne_details}. For an example, see the vignette for the Arms Race game.}
+
+\item{save.history}{by}
 }
 \description{
 In a capped version of the game we assume that after period T the state cannot change anymore and always stays the same. I.e. after T periods players play a repeated game. For a given T a capped game has a unique RNE payoff. Also see \code{\link{rel_T_rne}}.

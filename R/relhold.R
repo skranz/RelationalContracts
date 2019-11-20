@@ -3,15 +3,6 @@ example.relhold = function() {
 
 }
 
-get.x.df = function(x,g, as.list=FALSE) {
-  if (is.null(g$x.df)) {
-    if (as.list) return(list(x=x))
-    return(quick_df(x=x))
-  }
-  res = left_join(quick_df(x=x), g$x.df, by="x")
-  if (as.list) return(as.list(res))
-  res
-}
 
 get.def.x = function(x,g,x.df=g$x.df, sdf=g$sdf) {
   if (!is.null(x)) return(x)
@@ -52,6 +43,9 @@ rel_compile = function(g,..., compute.just.static=FALSE) {
   }
   g$x.df = x.df
 
+  actions1 = actions2 = NULL
+
+  res = quick.compile.actions(g)
 
   #def = g_defs$state_defs[[1]]
   li = lapply(g_defs$state_defs, function(def) {
@@ -59,6 +53,10 @@ rel_compile = function(g,..., compute.just.static=FALSE) {
     na1 = compute.na(A1)
     A2 = eval.rel.expression(def$A2,g, null.value = "")
     na2 = compute.na(A2)
+
+    actions1 <<- union(actions1, names(A1))
+    actions2 <<- union(actions2, names(A2))
+
 
     # Change order of A1 and A2 for compatibility
     # with repgame and dyngame
@@ -86,8 +84,9 @@ rel_compile = function(g,..., compute.just.static=FALSE) {
     A1 = vector("list", length(def$x))
     A2 = vector("list", length(def$x))
     na1 = na2 = rep(NA, length(def$x))
+    xrows = match(def$x, g$x.df$x)
     for (row in seq_along(def$x)) {
-      args = c(get.x.df(def$x[row],g, TRUE), param,def$args)
+      args = c(as.list(g$x.df[xrows[row],]), param,def$args)
       check.rel(length(args$x)==1,"There is some error in your state definitions. Make sure that each state x has a unique name.")
 
       res = try(do.call(def$A.fun, args))
@@ -107,13 +106,15 @@ rel_compile = function(g,..., compute.just.static=FALSE) {
 
       assert.action.names(names(res$A1), names(res$A2))
 
+      actions1 <<- union(actions1, names(res$A1))
+      actions2 <<- union(actions2, names(res$A2))
+
       A1[row] = list(res$A1)
       A2[row] = list(res$A2)
       na1[row] = compute.na(res$A1)
       na2[row] = compute.na(res$A2)
-
-      state = quick_df(x=def$x,na1=na1,na2=na2,A1=A1,A2=A2)
     }
+    state = quick_df(x=def$x,na1=na1,na2=na2,A1=A1,A2=A2)
     # Change order of A1 and A2 for compatibility
     # with repgame and dyngame
 
@@ -134,23 +135,31 @@ rel_compile = function(g,..., compute.just.static=FALSE) {
   sdf$na.vec = sdf$na1*sdf$na2
   sdf$lag.cumsum.na = c(0,cumsum(sdf$na.vec[-nx]))
 
-
-  g$a.labs.df = bind_rows(lapply(seq_len(NROW(sdf)),function(row) {
-    restore.point("fdfjdl")
-    bind_cols(
-      quick_df(x=sdf$x[row],a = seq_len(NROW(sdf$a.grid[[row]]))),
-      as_tibble(make.state.lab.a(sdf[row,], action.sep=g$options$lab.action.sep, player.sep=g$options$lab.player.sep))
-    )
-  }))
-
-
   ax.grid = bind_rows(lapply(seq_len(NROW(sdf)), function(row) {
     cbind(quick_df(x=sdf$x[row],.a=seq_len(NROW(sdf$a.grid[[row]]))), sdf$a.grid[[row]])
   }))
+
+
   empty.action = sapply(ax.grid[3:NCOL(ax.grid)], function(vals) {
     all(vals == "" | is.na(vals))
   })
   g$ax.grid = ax.grid[c("x",".a", names(empty.action)[!empty.action])]
+
+  # Make labels
+  if (length(intersect(actions1, actions2)) >0) {
+    # Actions of player 1 and 2 may swap
+    # so we have to compute labels
+    # separately for each state
+    labs.li = lapply(seq_len(NROW(sdf)),function(row) {
+      make.state.lab.a(sdf[row,], action.sep=g$options$lab.action.sep, player.sep=g$options$lab.player.sep)
+    })
+    labs.df = cbind(g$ax.grid[,1:2],as_tibble(do.call(rbind, labs.li)))
+    colnames(labs.df)[2] = "a"
+  } else {
+    labs.df = make.ax.labels(g$ax.grid, actions1, actions2,  action.sep=g$options$lab.action.sep, player.sep=g$options$lab.player.sep)
+  }
+  g$a.labs.df = labs.df
+
 
   ax.df = g$ax.grid
   if (!is.null(x.df)) {
@@ -352,6 +361,118 @@ rel_compile = function(g,..., compute.just.static=FALSE) {
   g
 }
 
+quick.compile.actions = function(g) {
+  g_defs = g$defs
+  x.df = g$x.df
+
+  actions1 = NULL
+  actions2 = NULL
+  def = g_defs$state_defs[[1]]
+  li1 = lapply(g_defs$state_defs, function(def) {
+    A1 = eval.rel.expression(def$A1,g, null.value = "")
+    na1 = compute.na(A1)
+    A2 = eval.rel.expression(def$A2,g, null.value = "")
+    na2 = compute.na(A2)
+
+    actions1 <<- union(actions1, names(A1))
+    actions2 <<- union(actions2, names(A2))
+
+    quick_df(x=list(def$x),na1=na1,na2=na2, A1=list(A1),A2=list(A2))
+  })
+
+
+  # Compute states defined by A.fun
+  #def = g_defs$state_fun_defs[[1]]
+  li2 = lapply(g_defs$state_fun_defs, function(def) {
+    restore.point("hdhfkdhfk")
+    def$x = get.def.x(def$x,g)
+    A.fun = def$A.fun
+    args = formalArgs(A.fun)
+    used.xvars = intersect(args, names(x.df))
+
+    if (length(def$x) < NROW(x.df)) {
+      xrows = match(def$x, g$x.df$x)
+      cx.df = x.df[xrows,,drop=FALSE]
+    } else {
+      xrows = 1:NROW(x.df)
+      cx.df = x.df
+    }
+
+    if (!"x" %in% used.xvar) {
+      # Match all x to the combinations
+      cx.df = cx.df[,union("x",used.xvar)] %>%
+        nest(x=x)
+    }
+
+    A1 = vector("list", NROW(cx.df))
+    A2 = vector("list", NROW(cx.df))
+    na1 = na2 = rep(NA, NROW(cx.df))
+
+    for (row in seq_len(NROW(cx.df))) {
+      args = c(as.list(cx.df[row,used.xvar]), param,def$args)
+
+      res = try(do.call(def$A.fun, args))
+      if (is(res,"try-error")) {
+        stop(paste("Error when evaluation A.fun: ", as.character(res),"\nYou can try debugging your A.fun using restore.point."))
+      }
+      if (!identical(names(res),c("A1","A2"))) {
+        stop("Your A.fun must return a list only with the elements A1 and A2, which are themselves named lists.")
+      }
+
+
+      res$A1 = lapply(res$A1, unique)
+      res$A2 = lapply(res$A2, unique)
+
+      if (length(res$A1)==0) res$A1 = list(a1="")
+      if (length(res$A2)==0) res$A2 = list(a2="")
+
+      actions1 <<- union(actions1, names(res$A1))
+      actions2 <<- union(actions2, names(res$A2))
+
+      A1[row] = list(res$A1)
+      A2[row] = list(res$A2)
+      na1[row] = compute.na(res$A1)
+      na2[row] = compute.na(res$A2)
+
+    }
+    quick_df(x=cx.df$x,na1=na1,na2=na2,A1=A1,A2=A2)
+
+    state
+  })
+
+  # Change order of A1 and A2 for compatibility
+  # with repgame and dyngame
+  state$a.grid = lapply(seq_len(NROW(state)), function(row) {
+    A1 = state$A1[[row]]
+    A2 = state$A2[[row]]
+    # Change order of A1 and A2 for compatibility
+    # with repgame and dyngame
+    a.grid = factor.cols.as.strings(expand.grid2(A2,A1))
+    cols = c(names(A1),names(A2))
+    assert.action.names(cols)
+    a.grid = a.grid[,cols, drop=FALSE]
+    a.grid
+  })
+
+
+  sdf = bind_rows(li,li2)
+  nx = NROW(sdf)
+  sdf$row = seq_len(NROW(sdf))
+  sdf$na.vec = sdf$na1*sdf$na2
+  sdf$lag.cumsum.na = c(0,cumsum(sdf$na.vec[-nx]))
+
+  ax.grid = bind_rows(lapply(seq_len(NROW(sdf)), function(row) {
+    cbind(quick_df(x=sdf$x[row],.a=seq_len(NROW(sdf$a.grid[[row]]))), sdf$a.grid[[row]])
+  }))
+
+
+  empty.action = sapply(ax.grid[3:NCOL(ax.grid)], function(vals) {
+    all(vals == "" | is.na(vals))
+  })
+  ax.grid = ax.grid[c("x",".a", names(empty.action)[!empty.action])]
+
+}
+
 compute.na = function(A) {
   if (is.data.frame(A)) return(NROW(A))
   prod(sapply(A, length))
@@ -488,7 +609,10 @@ rel_states = function(g, x,A1=NULL, A2=NULL, pi1, pi2, A.fun=NULL, pi.fun=NULL, 
   if (!is.null(x.T))
     g = add.to.rel.defs(g, "xT_defs",list(x=x,x.T=x.T))
 
-
+  # Empty action profiles
+  if (is.null(A.fun) & is.null(A1) & is.null(A2)) {
+    g = add.to.rel.defs(g, "state_defs",list(x=x, A1=list(a1="-"),A2=list(a2="-")))
+  }
 
   if (!is.null(A1) | !is.null(A2)) {
     g = add.to.rel.defs(g, "state_defs",list(x=x, A1=A1,A2=A2))
@@ -507,6 +631,8 @@ rel_states = function(g, x,A1=NULL, A2=NULL, pi1, pi2, A.fun=NULL, pi.fun=NULL, 
     obj = list(x=x,pi.fun=pi.fun, args=args)
     g = add.to.rel.defs(g, "payoff_fun_defs",obj)
   } else {
+    #obj = list(x=x,pi1=0,pi2=0)
+    #g = add.to.rel.defs(g, "payoff_defs",obj)
     stop("You must specify either pi1 and pi2 or pi.fun.")
   }
 

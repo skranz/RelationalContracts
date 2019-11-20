@@ -4,16 +4,22 @@
 \alias{rel_T_rne}
 \title{Compute a T-RNE}
 \usage{
-rel_T_rne(g, T, tol = 1e-10, delta = g$param$delta, rho = g$param$rho,
-  adjusted.delta = NULL, res.field = "eq", tie.breaking = c("equal_r",
-  "slack", "random", "first", "last", "max_r1", "max_r2")[1], use.cpp = TRUE,
+rel_T_rne(g, T, delta = g$param$delta, rho = g$param$rho,
+  adjusted.delta = NULL, tie.breaking = c("equal_r", "slack", "random",
+  "first", "last", "max_r1", "max_r2", "unequal_r")[1], tol = 1e-10,
   save.details = FALSE, add.iterations = FALSE, save.history = FALSE,
-  add.stationary = FALSE, T.rne = TRUE, spe = g[["spe"]])
+  use.cpp = TRUE, spe = g[["spe"]], res.field = "eq")
 }
 \arguments{
 \item{g}{The game}
 
 \item{T}{The number of periods in which new negotiations can take place.}
+
+\item{delta}{the discount factor}
+
+\item{rho}{the negotiation probability}
+
+\item{adjusted.delta}{the adjusted discount factor (1-rho)*delta. Can be specified instead of delta.}
 }
 \description{
 The idea of a T-RNE is that only for a finite number of T periods relational contracts will be newly negoatiated. After T periods no new negotiations take place, i.e. every SPE continuation payoff can be implemented. For fixed T there is a unique RNE payoff.

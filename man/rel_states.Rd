@@ -5,15 +5,15 @@
 \alias{rel_state}
 \title{Add one or multiple states. Allows to specify action spaces, payoffs and state transitions via functions}
 \usage{
-rel_states(g, x, A1 = NULL, A2 = NULL, pi1 = NULL, pi2 = NULL,
-  A.fun = NULL, pi.fun = NULL, trans.fun = NULL, static.A1 = NULL,
-  static.A2 = NULL, static.A.fun = NULL, static.pi1 = NULL,
-  static.pi2 = NULL, static.pi.fun = NULL, x.T = NULL, ...)
+rel_states(g, x, A1 = NULL, A2 = NULL, pi1, pi2, A.fun = NULL,
+  pi.fun = NULL, trans.fun = NULL, static.A1 = NULL, static.A2 = NULL,
+  static.A.fun = NULL, static.pi1, static.pi2, static.pi.fun = NULL,
+  x.T = NULL, ...)
 
-rel_state(g, x, A1 = NULL, A2 = NULL, pi1 = NULL, pi2 = NULL,
-  A.fun = NULL, pi.fun = NULL, trans.fun = NULL, static.A1 = NULL,
-  static.A2 = NULL, static.A.fun = NULL, static.pi1 = NULL,
-  static.pi2 = NULL, static.pi.fun = NULL, x.T = NULL, ...)
+rel_state(g, x, A1 = NULL, A2 = NULL, pi1, pi2, A.fun = NULL,
+  pi.fun = NULL, trans.fun = NULL, static.A1 = NULL, static.A2 = NULL,
+  static.A.fun = NULL, static.pi1, static.pi2, static.pi.fun = NULL,
+  x.T = NULL, ...)
 }
 \arguments{
 \item{g}{a relational contracting game created with rel_game}
@@ -24,9 +24,9 @@ rel_state(g, x, A1 = NULL, A2 = NULL, pi1 = NULL, pi2 = NULL,
 
 \item{A2}{The action set of player 2. See A1.}
 
-\item{pi1}{Player 1's payoff. Value(s) or formula}
+\item{pi1}{Player 1's payoff. (Non standard evaluation)}
 
-\item{pi2}{Player 2's payoff. Values(s) or formula}
+\item{pi2}{Player 2's payoff. (Non standard evaluation)}
 
 \item{A.fun}{Alternative to specify A1 and A2, a function that returns action sets.}
 

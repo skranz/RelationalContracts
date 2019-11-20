@@ -39,11 +39,8 @@ eq.li.compare = function(g,eq.li, split.col = "t") {
   }
   if (length(li)<=1) return(NULL)
   prev.eq = li[[1]]
-  stationary.eq.distribution(g, prev.eq)
   for (row in 2:length(li)) {
     eq = li[[row]]
-
-
   }
 
 }
