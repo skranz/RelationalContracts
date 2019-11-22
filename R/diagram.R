@@ -130,7 +130,7 @@ eq_diagram = function(g,show.own.loop=FALSE, show.terminal.loop=FALSE, use.x=NUL
 #' @param label.fun An optional function that takes the equilibrium object and game and returns a character vector that contains a label for each state.
 #' @param tooltip.fun Similar to \code{label.fun} but for the tooltip shown on a state.
 #' @param return.dfs if TRUE don't show diagram but only return the relevant edge and node data frames that can be used to call \code{DiagrammeR::create_graph}. Useful if you want to manually customize graphs further.
-eq_diagram_xgroup = function(g,show.own.loop=FALSE, show.terminal.loop=FALSE, use.x=NULL, just.eq.chain=FALSE,x0=g$sdf$x[1], hide.passive.edge=TRUE,  label.fun=NULL, tooltip.fun=NULL, active.edge.color="#000077", passive.edge.color="#dddddd", passive.edge.width=1,  return.dfs=FALSE,eq = g[["eq"]], ap.col = if (has.col(eq,"ap")) "ap" else NA, font.size = 24, font = paste0(font.size,"px Arial black")) {
+eq_diagram_xgroup = function(g,show.own.loop=FALSE, show.terminal.loop=FALSE, use.x=NULL, just.eq.chain=FALSE,x0=g$sdf$x[1], hide.passive.edge=TRUE, add.passive.edge=TRUE, label.fun=NULL, tooltip.fun=NULL, active.edge.color="#000077", passive.edge.color="#dddddd", passive.edge.width=1,  return.dfs=FALSE,eq = g[["eq"]], ap.col = if (has.col(eq,"ap")) "ap" else NA, font.size = 24, font = paste0(font.size,"px Arial black")) {
   restore.point("eq_diagram_xgroup")
 
   library(DiagrammeR)
@@ -232,6 +232,10 @@ eq_diagram_xgroup = function(g,show.own.loop=FALSE, show.terminal.loop=FALSE, us
     edges
   })
   edf = bind_rows(tr)
+  if (!add.passive.edge) {
+    edf = edf[!edf$hidden,,drop=FALSE]
+  }
+
 
   edf = edf %>%
     group_by(from, to) %>%

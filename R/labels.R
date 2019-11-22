@@ -106,12 +106,12 @@ make.ax.labels = function(ax.grid, actions1, actions2, action.sep = " ", player.
   #ax[ax=="-"] = ""
 
   if (length(actions1)>0) {
-    p1 = trimws(advanced.paste.matrix.cols(ax[,actions1,drop=FALSE], sep=action.sep, empty.sep=empty.sep))
+    p1 = trimws(advanced.paste.matrix.cols(ax, cols=actions1, sep=action.sep, empty.sep=empty.sep))
   } else {
     p1 = rep("",NROW(ax))
   }
   if (length(actions2)>0) {
-    p2 = trimws(advanced.paste.matrix.cols(ax[,actions2,drop=FALSE], sep=action.sep, empty.sep=empty.sep))
+    p2 = trimws(advanced.paste.matrix.cols(ax,cols=actions2, sep=action.sep, empty.sep=empty.sep))
   } else {
     p2 = rep("",NROW(ax))
   }
