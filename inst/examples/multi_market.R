@@ -73,7 +73,7 @@ examples.multimarket.cost.ladder.cournot = function() {
   }
 
 
-  x.min=0; x.max = 1; a = x.max
+  x.min=0; x.max = 2; a = x.max
   q.seq=seq(0,a, length=21)
   x.seq = seq(x.max,x.min, by=-1)
   library(tidyr)

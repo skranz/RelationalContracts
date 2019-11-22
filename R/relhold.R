@@ -45,105 +45,12 @@ rel_compile = function(g,..., compute.just.static=FALSE) {
 
   actions1 = actions2 = NULL
 
-  res = quick.compile.actions(g)
+  #g = compile.sdf.classic(g)
+  g = compile.sdf(g)
+  sdf = g$sdf
+  actions1 = g$actions1
+  actions2 = g$actions2
 
-  #def = g_defs$state_defs[[1]]
-  li = lapply(g_defs$state_defs, function(def) {
-    A1 = eval.rel.expression(def$A1,g, null.value = "")
-    na1 = compute.na(A1)
-    A2 = eval.rel.expression(def$A2,g, null.value = "")
-    na2 = compute.na(A2)
-
-    actions1 <<- union(actions1, names(A1))
-    actions2 <<- union(actions2, names(A2))
-
-
-    # Change order of A1 and A2 for compatibility
-    # with repgame and dyngame
-    a.grid = factor.cols.as.strings(expand.grid2(A2,A1))
-    a.grid.cols = c(names(A1),names(A2))
-    assert.action.names(a.grid.cols)
-    a.grid = a.grid[,a.grid.cols,drop=FALSE]
-
-    if (length(def[["x"]])==1) {
-      state = quick_df(x=def$x,na1=na1,na2=na2, A1=list(A1),A2=list(A2),a.grid=list(a.grid))
-    } else {
-      restore.point("multiple.state.A")
-      x = def[["x"]]
-      n = length(x)
-      if (n == 0)
-        stop("rel_state called without specifiying x.")
-      state = quick_df(x=x,na1=na1,na2=na2,A1=replicate(n,A1,simplify = FALSE),A2=replicate(n,A2,simplify = FALSE),a.grid=replicate(n,a.grid,simplify = FALSE))
-    }
-  })
-
-  # Compute states defined by A.fun
-  #def = g_defs$state_fun_defs[[1]]
-  li2 = lapply(g_defs$state_fun_defs, function(def) {
-    def$x = get.def.x(def$x,g)
-    A1 = vector("list", length(def$x))
-    A2 = vector("list", length(def$x))
-    na1 = na2 = rep(NA, length(def$x))
-    xrows = match(def$x, g$x.df$x)
-    for (row in seq_along(def$x)) {
-      args = c(as.list(g$x.df[xrows[row],]), param,def$args)
-      check.rel(length(args$x)==1,"There is some error in your state definitions. Make sure that each state x has a unique name.")
-
-      res = try(do.call(def$A.fun, args))
-      if (is(res,"try-error")) {
-        stop(paste("Error when evaluation A.fun: ", as.character(res),"\nYou can try debugging your A.fun using restore.point."))
-      }
-      if (!identical(names(res),c("A1","A2"))) {
-        stop("Your A.fun must return a list only with the elements A1 and A2, which are themselves named lists.")
-      }
-
-
-      res$A1 = lapply(res$A1, unique)
-      res$A2 = lapply(res$A2, unique)
-
-      if (length(res$A1)==0) res$A1 = list(a1="")
-      if (length(res$A2)==0) res$A2 = list(a2="")
-
-      assert.action.names(names(res$A1), names(res$A2))
-
-      actions1 <<- union(actions1, names(res$A1))
-      actions2 <<- union(actions2, names(res$A2))
-
-      A1[row] = list(res$A1)
-      A2[row] = list(res$A2)
-      na1[row] = compute.na(res$A1)
-      na2[row] = compute.na(res$A2)
-    }
-    state = quick_df(x=def$x,na1=na1,na2=na2,A1=A1,A2=A2)
-    # Change order of A1 and A2 for compatibility
-    # with repgame and dyngame
-
-    state$a.grid = lapply(seq_len(NROW(state)), function(row) {
-      A1 = state$A1[[row]]
-      A2 = state$A2[[row]]
-      a.grid = factor.cols.as.strings(expand.grid2(A2,A1))
-      cols = c(names(A1),names(A2))
-      a.grid = a.grid[,cols]
-      a.grid
-    })
-    state
-  })
-
-  sdf = bind_rows(li,li2)
-  nx = NROW(sdf)
-  sdf$row = seq_len(NROW(sdf))
-  sdf$na.vec = sdf$na1*sdf$na2
-  sdf$lag.cumsum.na = c(0,cumsum(sdf$na.vec[-nx]))
-
-  ax.grid = bind_rows(lapply(seq_len(NROW(sdf)), function(row) {
-    cbind(quick_df(x=sdf$x[row],.a=seq_len(NROW(sdf$a.grid[[row]]))), sdf$a.grid[[row]])
-  }))
-
-
-  empty.action = sapply(ax.grid[3:NCOL(ax.grid)], function(vals) {
-    all(vals == "" | is.na(vals))
-  })
-  g$ax.grid = ax.grid[c("x",".a", names(empty.action)[!empty.action])]
 
   # Make labels
   if (length(intersect(actions1, actions2)) >0) {
@@ -170,6 +77,7 @@ rel_compile = function(g,..., compute.just.static=FALSE) {
     x.df = quick_df(x=sdf$x)
   }
   g$x.df = x.df
+  nx = NROW(x.df)
 
   # 1b. Add x.T states for capped games
   x.T = rep(NA_character_, NROW(sdf))
@@ -361,55 +269,96 @@ rel_compile = function(g,..., compute.just.static=FALSE) {
   g
 }
 
-quick.compile.actions = function(g) {
-  g_defs = g$defs
+A1A2.to.a.grid = function(A1,A2) {
+  # Change order of A1 and A2 for compatibility
+  # with repgame and dyngame
+  a.grid = factor.cols.as.strings(expand.grid2(A2,A1))
+  cols = c(names(A1),names(A2))
+  assert.action.names(cols)
+  a.grid = a.grid[,cols, drop=FALSE]
+  a.grid
+}
+
+compile.sdf = function(g) {
+  restore.point("compile.sdf.quick")
+
+  # Note: x.df can still be NULL
   x.df = g$x.df
+  param = g$param
 
   actions1 = NULL
   actions2 = NULL
-  def = g_defs$state_defs[[1]]
-  li1 = lapply(g_defs$state_defs, function(def) {
+
+  n = length(g$def$state_defs) + length(g$defs$state_fun_defs)
+
+  sdf.li = vector("list",n)
+  ax.li = vector("list",n)
+
+  xg = 0
+  i.def = 0
+
+  for (def in g$defs$state_defs) {
+    xg = xg+1
+    i.def = i.def+1
+
     A1 = eval.rel.expression(def$A1,g, null.value = "")
     na1 = compute.na(A1)
     A2 = eval.rel.expression(def$A2,g, null.value = "")
     na2 = compute.na(A2)
 
-    actions1 <<- union(actions1, names(A1))
-    actions2 <<- union(actions2, names(A2))
+    actions1 = union(actions1, names(A1))
+    actions2 = union(actions2, names(A2))
 
-    quick_df(x=list(def$x),na1=na1,na2=na2, A1=list(A1),A2=list(A2))
-  })
+    a.grid = A1A2.to.a.grid(A1,A2)
+    ax.grid = a.grid
+    ax.grid$.a = 1:NROW(a.grid)
+    ax.grid$.xg = xg
+
+    ax.li[[i.def]] = ax.grid
+
+    sdf.li[[i.def]] = quick_df(x=list(def$x),na1=na1,na2=na2, A1=list(A1),A2=list(A2), a.grid = list(a.grid),.xg = xg) %>% unnest(x)
+
+  }
+
 
 
   # Compute states defined by A.fun
-  #def = g_defs$state_fun_defs[[1]]
-  li2 = lapply(g_defs$state_fun_defs, function(def) {
-    restore.point("hdhfkdhfk")
+  def = g$defs$state_fun_defs[[1]]
+  for (def in g$defs$state_fun_defs) {
+    i.def = i.def+1
+
     def$x = get.def.x(def$x,g)
     A.fun = def$A.fun
     args = formalArgs(A.fun)
-    used.xvars = intersect(args, names(x.df))
 
     if (length(def$x) < NROW(x.df)) {
       xrows = match(def$x, g$x.df$x)
       cx.df = x.df[xrows,,drop=FALSE]
-    } else {
-      xrows = 1:NROW(x.df)
+    } else if (!is.null(x.df)) {
       cx.df = x.df
+    } else {
+      cx.df = quick_df(x=def$x)
     }
 
-    if (!"x" %in% used.xvar) {
+    used.xvars = intersect(args, names(x.df))
+    if (!"x" %in% used.xvars) {
       # Match all x to the combinations
-      cx.df = cx.df[,union("x",used.xvar)] %>%
+      cx.df = cx.df[,union("x",used.xvars)] %>%
         nest(x=x)
     }
+    cx.df$.xg = (xg+1):(xg+NROW(cx.df))
 
     A1 = vector("list", NROW(cx.df))
     A2 = vector("list", NROW(cx.df))
     na1 = na2 = rep(NA, NROW(cx.df))
+    a.grid = vector("list",NROW(cx.df))
+    ax.grid = vector("list",NROW(cx.df))
+
 
     for (row in seq_len(NROW(cx.df))) {
-      args = c(as.list(cx.df[row,used.xvar]), param,def$args)
+      xg = xg+1
+
+      args = c(as.list(cx.df[row,used.xvars]), param,def$args)
 
       res = try(do.call(def$A.fun, args))
       if (is(res,"try-error")) {
@@ -426,6 +375,124 @@ quick.compile.actions = function(g) {
       if (length(res$A1)==0) res$A1 = list(a1="")
       if (length(res$A2)==0) res$A2 = list(a2="")
 
+      actions1 = union(actions1, names(res$A1))
+      actions2 = union(actions2, names(res$A2))
+
+      A1[row] = list(res$A1)
+      A2[row] = list(res$A2)
+      na1[row] = compute.na(res$A1)
+      na2[row] = compute.na(res$A2)
+
+      ca.grid = A1A2.to.a.grid(res$A1,res$A2)
+      cax.grid = ca.grid
+      cax.grid$.a = 1:NROW(ca.grid)
+      cax.grid$.xg = xg
+
+      a.grid[row] = list(ca.grid)
+      ax.grid[row] = list(cax.grid)
+    }
+    ax.li[[i.def]] = bind_rows(ax.grid)
+    sdf.li[[i.def]] = quick_df(x=cx.df$x,na1=na1,na2=na2,A1=A1,A2=A2, a.grid=a.grid, .xg = cx.df$.xg) %>%
+      unnest(x)
+  }
+
+
+  sdf = bind_rows(sdf.li)
+
+  if (!is.null(x.df$x)) {
+    ord = match(x.df$x, sdf$x)
+    sdf = sdf[ord,]
+  }
+
+  nx = NROW(sdf)
+  sdf$row = seq_len(NROW(sdf))
+  sdf$na.vec = sdf$na1*sdf$na2
+  sdf$lag.cumsum.na = c(0,cumsum(sdf$na.vec[-nx]))
+
+  gax = bind_rows(ax.li)
+  ax.grid = left_join(sdf[,c("x",".xg")], gax, by=".xg")
+
+  cols = setdiff(union(c("x",".a"), colnames(ax.grid)), ".xg")
+  cols = cols[!startsWith(cols, ".empty.")]
+  ax.grid = ax.grid[,cols]
+
+
+  g$sdf = sdf
+  g$actions1 = actions1
+  g$actions2 = actions2
+  g$ax.grid = ax.grid
+
+  g
+}
+
+compile.sdf.classic = function(g) {
+  restore.point("compile.sdf.classic")
+
+  g_defs = g$defs
+  x.df = g$x.df
+  param = g$param
+
+  actions1 = NULL
+  actions2 = NULL
+  #def = g_defs$state_defs[[1]]
+  li1 = lapply(g_defs$state_defs, function(def) {
+    A1 = eval.rel.expression(def$A1,g, null.value = "")
+    na1 = compute.na(A1)
+    A2 = eval.rel.expression(def$A2,g, null.value = "")
+    na2 = compute.na(A2)
+
+    actions1 <<- union(actions1, names(A1))
+    actions2 <<- union(actions2, names(A2))
+
+
+    # Change order of A1 and A2 for compatibility
+    # with repgame and dyngame
+    a.grid = factor.cols.as.strings(expand.grid2(A2,A1))
+    a.grid.cols = c(names(A1),names(A2))
+    assert.action.names(a.grid.cols)
+    a.grid = a.grid[,a.grid.cols,drop=FALSE]
+
+    if (length(def[["x"]])==1) {
+      state = quick_df(x=def$x,na1=na1,na2=na2, A1=list(A1),A2=list(A2),a.grid=list(a.grid))
+    } else {
+      restore.point("multiple.state.A")
+      x = def[["x"]]
+      n = length(x)
+      if (n == 0)
+        stop("rel_state called without specifiying x.")
+      state = quick_df(x=x,na1=na1,na2=na2,A1=replicate(n,A1,simplify = FALSE),A2=replicate(n,A2,simplify = FALSE),a.grid=replicate(n,a.grid,simplify = FALSE))
+    }
+  })
+
+  # Compute states defined by A.fun
+  #def = g_defs$state_fun_defs[[1]]
+  li2 = lapply(g_defs$state_fun_defs, function(def) {
+    def$x = get.def.x(def$x,g)
+    A1 = vector("list", length(def$x))
+    A2 = vector("list", length(def$x))
+    na1 = na2 = rep(NA, length(def$x))
+    xrows = match(def$x, g$x.df$x)
+    for (row in seq_along(def$x)) {
+      args = c(as.list(g$x.df[xrows[row],]), param,def$args)
+      check.rel(length(args$x)==1,"There is some error in your state definitions. Make sure that each state x has a unique name.")
+
+      res = try(do.call(def$A.fun, args))
+      if (is(res,"try-error")) {
+        stop(paste("Error when evaluation A.fun: ", as.character(res),"\nYou can try debugging your A.fun using restore.point."))
+      }
+      if (!identical(names(res),c("A1","A2"))) {
+        stop("Your A.fun must return a list only with the elements A1 and A2, which are themselves named lists.")
+      }
+
+
+      res$A1 = lapply(res$A1, unique)
+      res$A2 = lapply(res$A2, unique)
+
+      if (length(res$A1)==0) res$A1 = list(a1="")
+      if (length(res$A2)==0) res$A2 = list(a2="")
+
+      assert.action.names(names(res$A1), names(res$A2))
+
       actions1 <<- union(actions1, names(res$A1))
       actions2 <<- union(actions2, names(res$A2))
 
@@ -433,45 +500,52 @@ quick.compile.actions = function(g) {
       A2[row] = list(res$A2)
       na1[row] = compute.na(res$A1)
       na2[row] = compute.na(res$A2)
-
     }
-    quick_df(x=cx.df$x,na1=na1,na2=na2,A1=A1,A2=A2)
+    state = quick_df(x=def$x,na1=na1,na2=na2,A1=A1,A2=A2)
+    # Change order of A1 and A2 for compatibility
+    # with repgame and dyngame
 
+    state$a.grid = lapply(seq_len(NROW(state)), function(row) {
+      A1 = state$A1[[row]]
+      A2 = state$A2[[row]]
+      a.grid = factor.cols.as.strings(expand.grid2(A2,A1))
+      cols = c(names(A1),names(A2))
+      a.grid = a.grid[,cols]
+      a.grid
+    })
     state
   })
 
-  # Change order of A1 and A2 for compatibility
-  # with repgame and dyngame
-  state$a.grid = lapply(seq_len(NROW(state)), function(row) {
-    A1 = state$A1[[row]]
-    A2 = state$A2[[row]]
-    # Change order of A1 and A2 for compatibility
-    # with repgame and dyngame
-    a.grid = factor.cols.as.strings(expand.grid2(A2,A1))
-    cols = c(names(A1),names(A2))
-    assert.action.names(cols)
-    a.grid = a.grid[,cols, drop=FALSE]
-    a.grid
-  })
-
-
-  sdf = bind_rows(li,li2)
+  sdf = bind_rows(li1,li2)
   nx = NROW(sdf)
   sdf$row = seq_len(NROW(sdf))
   sdf$na.vec = sdf$na1*sdf$na2
   sdf$lag.cumsum.na = c(0,cumsum(sdf$na.vec[-nx]))
+
+  g$sdf = sdf
+  g$actions1 = actions1
+  g$actions2 = actions2
+
 
   ax.grid = bind_rows(lapply(seq_len(NROW(sdf)), function(row) {
     cbind(quick_df(x=sdf$x[row],.a=seq_len(NROW(sdf$a.grid[[row]]))), sdf$a.grid[[row]])
   }))
 
 
-  empty.action = sapply(ax.grid[3:NCOL(ax.grid)], function(vals) {
-    all(vals == "" | is.na(vals))
-  })
-  ax.grid = ax.grid[c("x",".a", names(empty.action)[!empty.action])]
+#  empty.action = sapply(ax.grid[3:NCOL(ax.grid)], function(vals) {
+#    all(vals == "" | is.na(vals))
+#  })
 
+  # Remove columns for empty actions
+  cols = !startsWith(colnames(ax.grid), ".empty.")
+  if (sum(cols) < NCOL(ax.grid))
+    ax.grid = ax.grid[,cols, drop=FALSE]
+
+  g$ax.grid = ax.grid
+
+  g
 }
+
 
 compute.na = function(A) {
   if (is.data.frame(A)) return(NROW(A))
@@ -611,7 +685,7 @@ rel_states = function(g, x,A1=NULL, A2=NULL, pi1, pi2, A.fun=NULL, pi.fun=NULL, 
 
   # Empty action profiles
   if (is.null(A.fun) & is.null(A1) & is.null(A2)) {
-    g = add.to.rel.defs(g, "state_defs",list(x=x, A1=list(a1="-"),A2=list(a2="-")))
+    g = add.to.rel.defs(g, "state_defs",list(x=x, A1=list(.empty.a1=""),A2=list(.empty.a2="")))
   }
 
   if (!is.null(A1) | !is.null(A2)) {
@@ -775,7 +849,7 @@ eval.rel.expression = function(e,g=NULL, param=g$param, vectorized=FALSE, null.v
 
 
 compute.x.trans.mat = function(x,g, add.own=TRUE, tdf=g$tdf, row= which(g$sdf$x == x)) {
-  restore.point("compute.x.trans.mat")
+  #restore.point("compute.x.trans.mat")
   #if (x=="x0") stop()
   if (NROW(tdf)==0) {
     empty = matrix(0,0,1)

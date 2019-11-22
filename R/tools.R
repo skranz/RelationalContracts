@@ -121,6 +121,34 @@ paste.df.cols = function (mat, cols = 1:NCOL(mat),sep="", empty.sep=FALSE, ...) 
   }
 }
 
+advanced.paste.matrix.cols = function (mat, cols = 1:NCOL(mat),sep="", empty.sep=FALSE, ...) {
+  restore.point("paste.df.cols")
+  if (NROW(cols) == 2) {
+    if (empty.sep) {
+      sep1 = ifelse(!empty.sep | nchar(mat[,cols[1]])>0 | nchar(mat[,cols[2]])>0, sep,"")
+      return(paste0(mat[,cols[1]],sep1, mat[,cols[2]], ...))
+    } else {
+      return(paste0(mat[,cols[1]],mat[,cols[2]],sep=sep, ...))
+    }
+  } else if (NROW(cols) == 3) {
+    if (empty.sep) {
+      sep1 = ifelse(!empty.sep | nchar(mat[,cols[1]])>0 | nchar(mat[,cols[2]])>0, sep,"")
+      sep2 = ifelse(!empty.sep | nchar(mat[,cols[2]])>0 | nchar(,mat[cols[3]])>0, sep,"")
+      return(paste0(mat[,cols[1]],sep1, mat[,cols[2]],sep2, mat[,cols[3]],
+          ...))
+    } else {
+      return(paste0(mat[,cols[1]],mat[,cols[2]],mat[,cols[3]],sep=sep, ...))
+    }
+  } else {
+      if (is.character(cols))
+        cols = match(cols, colnames(mat))
+      code = paste("mat[,", cols, "]", collapse = ",sep,")
+      code = paste("paste0(", code, ",sep=sep,...)", sep = "")
+      return(eval(parse(text = code)))
+  }
+}
+
+
 paste.matrix.cols = function (mat, cols = 1:NCOL(mat), ...) {
     if (NROW(cols) == 2) {
         return(paste(mat[, cols[1]], mat[, cols[2]], ...))
