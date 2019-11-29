@@ -5,10 +5,11 @@
 \title{Solve an RNE for a capped version of a game}
 \usage{
 rel_capped_rne(g, T, delta = g$param$delta, rho = g$param$rho,
-  adjusted.delta = NULL, tie.breaking = c("equal_r", "slack", "random",
-  "first", "last", "max_r1", "max_r2", "unequal_r")[1], tol = 1e-10,
-  add.iterations = FALSE, save.details = FALSE, save.history = FALSE,
-  use.cpp = TRUE, T.rne = FALSE, spe = NULL, res.field = "eq")
+  adjusted.delta = NULL, beta1 = g$param$beta1,
+  tie.breaking = c("equal_r", "slack", "random", "first", "last", "max_r1",
+  "max_r2", "unequal_r")[1], tol = 1e-12, add.iterations = FALSE,
+  save.details = FALSE, save.history = FALSE, use.cpp = TRUE,
+  T.rne = FALSE, spe = NULL, res.field = "eq")
 }
 \arguments{
 \item{g}{The game}
@@ -20,6 +21,8 @@ rel_capped_rne(g, T, delta = g$param$delta, rho = g$param$rho,
 \item{rho}{the negotiation probability}
 
 \item{adjusted.delta}{the adjusted discount factor (1-rho)*delta. Can be specified instead of delta.}
+
+\item{beta1}{the bargaining weight of player 1. By default equal to 0.5. Can also be initially specified with \code{rel_param}.}
 
 \item{tie.breaking}{A tie breaking rule when multiple action profiles could be implemented on the equilibrium path with same joint payoff U. Can take the following values:
 \itemize{
@@ -36,7 +39,7 @@ rel_capped_rne(g, T, delta = g$param$delta, rho = g$param$rho,
 
 \item{save.details}{if set TRUE details of the equilibrium are saved that can be analysed later by calling \code{get_rne_details}. For an example, see the vignette for the Arms Race game.}
 
-\item{save.history}{by}
+\item{save.history}{saves the values for intermediate T.}
 }
 \description{
 In a capped version of the game we assume that after period T the state cannot change anymore and always stays the same. I.e. after T periods players play a repeated game. For a given T a capped game has a unique RNE payoff. Also see \code{\link{rel_T_rne}}.

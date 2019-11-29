@@ -73,7 +73,7 @@ examples.multimarket.cost.ladder.cournot = function() {
   }
 
 
-  x.min=0; x.max = 3; a = x.max
+  x.min=0; x.max = 2; a = x.max
   q.seq=seq(0,a, length=21)
   x.seq = seq(x.max,x.min, by=-1)
   library(tidyr)
@@ -89,9 +89,12 @@ examples.multimarket.cost.ladder.cournot = function() {
 
   g = g %>%  rel_compile()
 
+  g = g %>% rel_first_best()
+
   g = g %>%  rel_T_rne(T=1000, delta=0.9, rho=0.1, save.details = !TRUE) %>%
     rel_state_probs(x0="equal")
 
+  eq = get_eq(g)
   geq = eq_combine_xgroup(g) %>%
     left_join(select(x.df, xgroup,market, x1A,x2A,x1B,x2B) %>% unique(), by="xgroup")
 

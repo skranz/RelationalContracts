@@ -83,7 +83,10 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/Specifying Games.html">Analyzing Relational Contracts with R: Part I</a>
+      <a href="../articles/1_Specifying_Games.html">Specifying Games</a>
+    </li>
+    <li>
+      <a href="../articles/2_Arms_Race_Example.html">Arms Race Game: Advanced Modelling and Equilibrium Exploration</a>
     </li>
   </ul>
 </li>
@@ -122,15 +125,15 @@
     
     </div>
 
-    <pre class="usage"><span class='fu'>rel_states</span>(<span class='no'>g</span>, <span class='no'>x</span>, <span class='kw'>A1</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>A2</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>pi1</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>pi2</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>A.fun</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>pi.fun</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>trans.fun</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>static.A1</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>static.A2</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>static.A.fun</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>static.pi1</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>static.pi2</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>static.pi.fun</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>x.T</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>...</span>)
+    <pre class="usage"><span class='fu'>rel_states</span>(<span class='no'>g</span>, <span class='no'>x</span>, <span class='kw'>A1</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>A2</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>pi1</span>, <span class='no'>pi2</span>, <span class='kw'>A.fun</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>pi.fun</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>trans.fun</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>static.A1</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>static.A2</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>static.A.fun</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>static.pi1</span>, <span class='no'>static.pi2</span>, <span class='kw'>static.pi.fun</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>x.T</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>...</span>)
 
-<span class='fu'>rel_state</span>(<span class='no'>g</span>, <span class='no'>x</span>, <span class='kw'>A1</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>A2</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>pi1</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>pi2</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>A.fun</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>pi.fun</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>trans.fun</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>static.A1</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>static.A2</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>static.A.fun</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>static.pi1</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>static.pi2</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>static.pi.fun</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>x.T</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>...</span>)</pre>
+<span class='fu'>rel_state</span>(<span class='no'>g</span>, <span class='no'>x</span>, <span class='kw'>A1</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>A2</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>pi1</span>, <span class='no'>pi2</span>, <span class='kw'>A.fun</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>pi.fun</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>trans.fun</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>static.A1</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>static.A2</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>static.A.fun</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>static.pi1</span>, <span class='no'>static.pi2</span>, <span class='kw'>static.pi.fun</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>x.T</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -153,11 +156,11 @@
     </tr>
     <tr>
       <th>pi1</th>
-      <td><p>Player 1's payoff. Value(s) or formula</p></td>
+      <td><p>Player 1's payoff. (Non standard evaluation)</p></td>
     </tr>
     <tr>
       <th>pi2</th>
-      <td><p>Player 2's payoff. Values(s) or formula</p></td>
+      <td><p>Player 2's payoff. (Non standard evaluation)</p></td>
     </tr>
     <tr>
       <th>A.fun</th>

@@ -75,7 +75,21 @@
      
   </a>
 </li>
-<li class="dropdown-header">Manuals</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Manuals
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="../articles/1_Specifying_Games.html">Specifying Games</a>
+    </li>
+    <li>
+      <a href="../articles/2_Arms_Race_Example.html">Arms Race Game: Advanced Modelling and Equilibrium Exploration</a>
+    </li>
+  </ul>
+</li>
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
@@ -111,11 +125,12 @@
     
     </div>
 
-    <pre class="usage"><span class='fu'>rel_T_rne</span>(<span class='no'>g</span>, <span class='no'>T</span>, <span class='kw'>tol</span> <span class='kw'>=</span> <span class='fl'>1e-10</span>, <span class='kw'>delta</span> <span class='kw'>=</span> <span class='no'>g</span>$<span class='no'>param</span>$<span class='no'>delta</span>, <span class='kw'>rho</span> <span class='kw'>=</span> <span class='no'>g</span>$<span class='no'>param</span>$<span class='no'>rho</span>,
-  <span class='kw'>adjusted.delta</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>res.field</span> <span class='kw'>=</span> <span class='st'>"eq"</span>, <span class='kw'>tie.breaking</span> <span class='kw'>=</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/c'>c</a></span>(<span class='st'>"equal_r"</span>,
-  <span class='st'>"slack"</span>, <span class='st'>"random"</span>, <span class='st'>"first"</span>, <span class='st'>"last"</span>, <span class='st'>"max_r1"</span>, <span class='st'>"max_r2"</span>)[<span class='fl'>1</span>], <span class='kw'>use.cpp</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
-  <span class='kw'>save.details</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>add.iterations</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>save.history</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>add.stationary</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>T.rne</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>spe</span> <span class='kw'>=</span> <span class='no'>g</span><span class='kw'>[[</span><span class='st'>"spe"</span>]])</pre>
+    <pre class="usage"><span class='fu'>rel_T_rne</span>(<span class='no'>g</span>, <span class='no'>T</span>, <span class='kw'>delta</span> <span class='kw'>=</span> <span class='no'>g</span>$<span class='no'>param</span>$<span class='no'>delta</span>, <span class='kw'>rho</span> <span class='kw'>=</span> <span class='no'>g</span>$<span class='no'>param</span>$<span class='no'>rho</span>,
+  <span class='kw'>adjusted.delta</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>beta1</span> <span class='kw'>=</span> <span class='no'>g</span>$<span class='no'>param</span>$<span class='no'>beta1</span>,
+  <span class='kw'>tie.breaking</span> <span class='kw'>=</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/c'>c</a></span>(<span class='st'>"equal_r"</span>, <span class='st'>"slack"</span>, <span class='st'>"random"</span>, <span class='st'>"first"</span>, <span class='st'>"last"</span>, <span class='st'>"max_r1"</span>,
+  <span class='st'>"max_r2"</span>, <span class='st'>"unequal_r"</span>)[<span class='fl'>1</span>], <span class='kw'>tol</span> <span class='kw'>=</span> <span class='fl'>1e-12</span>, <span class='kw'>save.details</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+  <span class='kw'>add.iterations</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>save.history</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>use.cpp</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+  <span class='kw'>spe</span> <span class='kw'>=</span> <span class='no'>g</span><span class='kw'>[[</span><span class='st'>"spe"</span>]], <span class='kw'>res.field</span> <span class='kw'>=</span> <span class='st'>"eq"</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -127,6 +142,48 @@
     <tr>
       <th>T</th>
       <td><p>The number of periods in which new negotiations can take place.</p></td>
+    </tr>
+    <tr>
+      <th>delta</th>
+      <td><p>the discount factor</p></td>
+    </tr>
+    <tr>
+      <th>rho</th>
+      <td><p>the negotiation probability</p></td>
+    </tr>
+    <tr>
+      <th>adjusted.delta</th>
+      <td><p>the adjusted discount factor (1-rho)*delta. Can be specified instead of delta.</p></td>
+    </tr>
+    <tr>
+      <th>beta1</th>
+      <td><p>the bargaining weight of player 1. By default equal to 0.5. Can also be initially specified with <code>rel_param</code>.</p></td>
+    </tr>
+    <tr>
+      <th>tie.breaking</th>
+      <td><p>A tie breaking rule when multiple action profiles could be implemented on the equilibrium path with same joint payoff U. Can take the following values:</p><ul>
+<li><p>"equal_r" (DEFAULT) prefer actions that in expectation move to states with more equal negotiation payoffs.</p></li>
+<li><p>"slack" prefer the action profile with the highest slack in the incentive constraints</p></li>
+<li><p>"random" pick randomly from all eligible action profiles</p></li>
+<li><p>"max_r1" pick action profiles that in moves to states with highest negotiation payoff for player 1.</p></li>
+<li><p>"max_r2"  pick action profiles that in moves to states with highest negotiation payoff for player 2.</p></li>
+</ul></td>
+    </tr>
+    <tr>
+      <th>tol</th>
+      <td><p>Due to numerical inaccuracies the calculated incentive constraints for some action profiles may be vialoated even though with exact computation they should hold, yielding unexpected results. We therefore also allow action profiles whose numeric incentive constraints is violated by not more than tol. By default we have <code>tol=1e-10</code>.</p></td>
+    </tr>
+    <tr>
+      <th>save.details</th>
+      <td><p>if set TRUE details of the equilibrium are saved that can be analysed later by calling <code>get_rne_details</code>. For an example, see the vignette for the Arms Race game.</p></td>
+    </tr>
+    <tr>
+      <th>add.iterations</th>
+      <td><p>if TRUE just add T iterations to the previously computed capped RNE or T-RNE.</p></td>
+    </tr>
+    <tr>
+      <th>save.history</th>
+      <td><p>saves the values for intermediate T.</p></td>
     </tr>
     </table>
     

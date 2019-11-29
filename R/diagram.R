@@ -38,7 +38,7 @@ examples.eq_diagram = function() {
 #' @param tooltip.fun Similar to \code{label.fun} but for the tooltip shown on a state.
 #' @param return.dfs if TRUE don't show diagram but only return the relevant edge and node data frames that can be used to call \code{DiagrammeR::create_graph}. Useful if you want to manually customize graphs further.
 #' @param font.size The font size
-eq_diagram = function(g,show.own.loop=FALSE, show.terminal.loop=FALSE, use.x=NULL, just.eq.chain=FALSE,x0=g$sdf$x[1], hide.passive.edge=TRUE,  label.fun=NULL, tooltip.fun=NULL, active.edge.color="#000077", passive.edge.color="#dddddd", passive.edge.width=1,  return.dfs=FALSE,eq = g[["eq"]], font.size = 24, font = paste0(font.size,"px Arial black")) {
+eq_diagram = function(g,show.own.loop=FALSE, show.terminal.loop=FALSE, use.x=NULL, just.eq.chain=FALSE,x0=g$sdf$x[1], hide.passive.edge=TRUE,  label.fun=NULL, tooltip.fun=NULL, active.edge.color="#000077", passive.edge.color="#dddddd", add.passive.edge=TRUE, passive.edge.width=1,  return.dfs=FALSE,eq = g[["eq"]], font.size = 24, font = paste0(font.size,"px Arial black")) {
   restore.point("eq_diagram")
 
   library(DiagrammeR)
@@ -106,6 +106,9 @@ eq_diagram = function(g,show.own.loop=FALSE, show.terminal.loop=FALSE, use.x=NUL
   edf = bind_rows(tr)
   if (!show.own.loop)
     edf = filter(edf, from != to)
+  if (!add.passive.edge) {
+    edf = edf[!edf$hidden,,drop=FALSE]
+  }
 
   if (return.dfs) return(list(ndf=ndf, edf=edf, sdf=sdf, rne=rne))
 

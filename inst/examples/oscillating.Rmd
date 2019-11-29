@@ -1,5 +1,5 @@
 ---
-title: "Fixed Point Failure"
+title: "Oscilating Capped RNE"
 output: html_document
 ---
 
@@ -38,9 +38,9 @@ g = rel_game("Principal-Agent") %>%
   # Initial State
   rel_state("x0",A2=list(e=c(0,1)),pi1=~e, pi2=~ -0.5*e) %>%
   rel_after_cap_payoffs(U=0.5,v1=0,v2=0) %>%
-  rel_capped_rne(T=20,adjusted.delta = 0.48, rho=0.4, save.history = TRUE)
+  rel_capped_rne(T=30,adjusted.delta = 0.48, rho=0.4, save.history = TRUE)
 
-g$rne.history
+g$eq.history
 ```
 
 You see how the payoff set shrinks towards 0 with each iteration set. We can illustrate, the dynamics of the payoff set via an animation. Press the play button below the following plot.
@@ -53,19 +53,21 @@ animate_capped_rne_history(g)
 
 In many examples, we have nice convergence of that payoff set. Unfortunately, that is not the case in all examples. A counter-example is below.
 
-## A game without convergence
+## A game where capped RNE oscilate
 
 Below is a variant of the principal agent game with a second state "x1". If in state "x0", the agent chooses effort e=1, we move for one period to state "x1", where both players get a payoff of 0.3. Next period, we are back to state "x0". This can provide additional incentives to choose effort.
 
 ```{r}
-g = rel_game("Principal-Agent Variation") %>%
-  rel_state("x0",A2=list(e=c(0,1)),pi1=~ e, pi2=~ -0.5*e) %>%
+g = rel_game("Principal-Agent Oscilation") %>%
+  # Initial State
+  rel_state("x0",A2=list(e=c(0,1)),pi1=~e, pi2=~ -0.5*e) %>%
   rel_state("x1",pi1=0.3, pi2=0.3) %>%
   rel_transition("x0","x1", e=1) %>%
   rel_transition("x1","x0") %>%
   rel_after_cap_payoffs("x0", U=1,v1=0,v2=0) %>%
   rel_after_cap_payoffs("x1", U=1,v1=0,v2=0) %>%
-  rel_capped_rne(T=30,adjusted.delta = 0.48, rho=0, save.history = TRUE)
+  rel_compile() %>%
+  rel_capped_rne(T=30,adjusted.delta = 0.48, rho=0.4, save.history = TRUE)
 
 ```
 
@@ -75,13 +77,12 @@ Now take a look at the dynamics of the SPE payoff sets...
 animate_capped_rne_history(g,x=NULL)
 ```
 
-Unfortunately, we get no convergence but an oscialation where the payoff sets in states "x0", "x1" grow and shrink.
+Here, we get no convergence but an oscialation where the payoff sets in states "x0", "x1" grow and shrink.
 
 The following code allows you to study in more detail what happens in the first 10 steps. Note that starting from period 25 (5 before cap), the agent osciliates between effort and no effort in state "x0".
 ```{r}
-hist = filter(g$rne.history, t > max(t)-10)
+hist = filter(g$eq.history, t > max(t)-10)
 hist
-animate_capped_rne_history(g,x=NULL,hist = hist)
 ```
 
-Thus it seems that with positive negotiation probabilities, we no longer have general convergence. That is a bit a pity...
+From looking at several examples, in most cases T-RNE or capped RNE seem to converge instead of oscillating, however.

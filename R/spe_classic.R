@@ -41,10 +41,6 @@ examples.rel.spe = function() {
   g = rel_rne(g)
   (rne = g$eq)
 
-
-  g = rel_capped_spe(g,T=10)
-  (spe = g$eq)
-
   # solve game with transfers
 }
 
@@ -102,18 +98,6 @@ rep.games.to.rne.df = function(g, delta=g$param$delta, rho=g$param$rho, rows=whi
   res
 }
 
-#' Solve for the set of SPE payoffs in every state and for optimal simple equilibria
-#'
-#' This function is just an interface to the dyngame package
-rel_capped_spe = function(g,T, delta=g$param$delta,res.field="eq", ...) {
-  restore.point("rel_capped_spe")
-  g$param$delta = delta
-  old_rho = g$param$rho
-
-  g = rel_capped_rne(g,T=T, delta=delta,rho = 0, res.field=res.field)
-  g$rho = old_rho
-  g
-}
 
 
 dyngame.sol.to.rel.sol = function(g,sol=g$dyngame.sol, m=g$dyngame, add.labels=TRUE) {

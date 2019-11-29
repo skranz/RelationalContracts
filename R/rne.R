@@ -295,6 +295,11 @@ get_rne_details = function(g, x=NULL) {
 #' You can call rel_capped_rne to solve a capped version of the game that allows state changes only up to some period T. Such a capped version always has a unique RNE payoff.
 #'
 #' @param g The game object
+#' @param delta the discount factor
+#' @param rho the negotiation probability
+#' @param adjusted.delta the adjusted discount factor (1-rho)*delta. Can be specified instead of delta.
+#' @param beta1 the bargaining weight of player 1. By default equal to 0.5. Can also be initially specified with \code{rel_param}.
+#' @param verbose if \code{TRUE} give more detailed information over the solution process.
 #' @export
 rel_rne = function(g, delta=g$param$delta, rho=g$param$rho, adjusted.delta=NULL, beta1=g$param$beta1,verbose=TRUE,...) {
   restore.point("rel_rne")
@@ -376,7 +381,7 @@ rel_rne = function(g, delta=g$param$delta, rho=g$param$rho, adjusted.delta=NULL,
       if (res$ok) {
         rne[row, names(res$rne.row)] = res$rne.row
         rne$solved[row] = TRUE
-        cat(" ok")
+        if (verbose) cat(" ok")
         next
       } else {
         stop("Cannot find an RNE when trying to solve the weakly directional state ", x)

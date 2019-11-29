@@ -5,10 +5,11 @@
 \title{Compute a T-RNE}
 \usage{
 rel_T_rne(g, T, delta = g$param$delta, rho = g$param$rho,
-  adjusted.delta = NULL, tie.breaking = c("equal_r", "slack", "random",
-  "first", "last", "max_r1", "max_r2", "unequal_r")[1], tol = 1e-10,
-  save.details = FALSE, add.iterations = FALSE, save.history = FALSE,
-  use.cpp = TRUE, spe = g[["spe"]], res.field = "eq")
+  adjusted.delta = NULL, beta1 = g$param$beta1,
+  tie.breaking = c("equal_r", "slack", "random", "first", "last", "max_r1",
+  "max_r2", "unequal_r")[1], tol = 1e-12, save.details = FALSE,
+  add.iterations = FALSE, save.history = FALSE, use.cpp = TRUE,
+  spe = g[["spe"]], res.field = "eq")
 }
 \arguments{
 \item{g}{The game}
@@ -20,6 +21,25 @@ rel_T_rne(g, T, delta = g$param$delta, rho = g$param$rho,
 \item{rho}{the negotiation probability}
 
 \item{adjusted.delta}{the adjusted discount factor (1-rho)*delta. Can be specified instead of delta.}
+
+\item{beta1}{the bargaining weight of player 1. By default equal to 0.5. Can also be initially specified with \code{rel_param}.}
+
+\item{tie.breaking}{A tie breaking rule when multiple action profiles could be implemented on the equilibrium path with same joint payoff U. Can take the following values:
+\itemize{
+  \item "equal_r" (DEFAULT) prefer actions that in expectation move to states with more equal negotiation payoffs.
+  \item "slack" prefer the action profile with the highest slack in the incentive constraints
+  \item "random" pick randomly from all eligible action profiles
+  \item "max_r1" pick action profiles that in moves to states with highest negotiation payoff for player 1.
+  \item "max_r2"  pick action profiles that in moves to states with highest negotiation payoff for player 2.
+}}
+
+\item{tol}{Due to numerical inaccuracies the calculated incentive constraints for some action profiles may be vialoated even though with exact computation they should hold, yielding unexpected results. We therefore also allow action profiles whose numeric incentive constraints is violated by not more than tol. By default we have \code{tol=1e-10}.}
+
+\item{save.details}{if set TRUE details of the equilibrium are saved that can be analysed later by calling \code{get_rne_details}. For an example, see the vignette for the Arms Race game.}
+
+\item{add.iterations}{if TRUE just add T iterations to the previously computed capped RNE or T-RNE.}
+
+\item{save.history}{saves the values for intermediate T.}
 }
 \description{
 The idea of a T-RNE is that only for a finite number of T periods relational contracts will be newly negoatiated. After T periods no new negotiations take place, i.e. every SPE continuation payoff can be implemented. For fixed T there is a unique RNE payoff.

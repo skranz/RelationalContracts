@@ -107,9 +107,14 @@ examples.spe.trunc = function() {
 
 #' Finds an optimal simple subgame perfect equilibrium of g. From this the whole SPE payoff set can be deduced.
 #'
-#' @param g the considered game
+#' @param g the game object
+#' @param delta The discount factor. By default the discount factor specified in \code{g}.
+#' @param tol.feasible Due to numerical inaccuracies, sometimes incentive constraints which theoretically should exactly hold, seem to be violated. To avoid this problem, we will consider all action profiles feasible whose incentive constraint is not violated by more then \code{tol.feasible}. This means we compute epsilon equilibria in which \code{tol.feasible} is the epsilon.
+#' @param no.exist.action What shall be done if no pure SPE exists? Default is \code{no.exist.action = "warning"}, alternatives are \code{no.exist.action = "error"} or \code{no.exist.action = "nothing"}.
+#' @param verbose if \code{TRUE} give more detailed information over the solution process.
 #' @param r1 (or \code{r2}) if not NULL we want to find a SPE in a truncated game. Then r1 and r2 need to specify for each state the exogenously fixed negotiation payoffs.
-rel_spe = function(g,delta=g$param$delta, rho=g$param$rho,tol.feasible = 1e-10, verbose=FALSE,r1 = NULL, r2 = NULL, add.action.labels=TRUE, max.iter = 10000, no.exist.action = c("warn","stop","nothing")) {
+#' @param rho Only relevant if r1 and r2 are not null. In that case the negotiation probability.
+rel_spe = function(g,delta=g$param$delta, tol.feasible = 1e-10, no.exist.action = c("warn","stop","nothing"), verbose=FALSE,r1 = NULL, r2 = NULL,rho=g$param$rho, add.action.labels=TRUE, max.iter = 10000,first.best = FALSE) {
   restore.point("rel_spe")
   g$param$delta = delta
   g$param$rho = old_rho = rho
@@ -211,6 +216,10 @@ rel_spe = function(g,delta=g$param$delta, rho=g$param$rho,tol.feasible = 1e-10, 
     U.hat = (1-delta)*ax.pi$Pi[admiss] +
       delta * as.vector(g$ax.trans[admiss,,drop=FALSE] %*% ((1-rho)* U + rho*R))
 
+    # In first best we can implement every action profile
+    # Hence we stop after the first round.
+    if (first.best) break;
+
     feas.admiss = which(U.hat-q1.hat-q2.hat >= -tol.feasible)
     feas.ax = admiss[feas.admiss]
 
@@ -311,9 +320,35 @@ rel_spe = function(g,delta=g$param$delta, rho=g$param$rho,tol.feasible = 1e-10, 
   if (add.action.labels)
     spe = add.rne.action.labels(g, spe)
 
+  if (!is.null(g$x.df))
+    spe = left_join(spe, g$x.df, by="x")
+
+
   g$param$rho = old_rho
-  g$eq = g$spe = spe
+  if (!first.best) {
+    g$eq = g$spe = spe
+  } else {
+    g$eq = g$first.best = spe
+  }
   return(g)
+}
+
+#' Compute first-best.
+#'
+#' We compute the "equilibrium" play that would maximize
+#' joint payoffs if incentive constraints could be
+#' completely ignored.
+#'
+#' Note that we create the same columns as for a spe, e.g.
+#' punishment payoffs v1 and v2 that would arise if every
+#' action profile could be implemented as punishment.
+#' This allows to use the same functions, like \code{eq_diagram} as for equilibria.
+#'
+#' @param g the game object
+#' @param delta The discount factor
+#' @param ... additional parameters of \code{\link{rel_spe}}
+rel_first_best = function(g,delta=g$param$delta, ...) {
+  rel_spe(g, delta=delta, first.best = TRUE,...)
 }
 
 

@@ -91,6 +91,7 @@ add.rel.multistage.compile = function(g,...) {
   gs = g$defs$gs
   gs$x.df = g$x.df
   gs$param = g$param
+  gs$options = g$options
   gs = rel_compile(gs, compute.just.static = TRUE)
 
   g$gs = gs

@@ -550,7 +550,11 @@ g %>% rel_spe(delta=0.3) %>% get_eq() %>% select(x, ae.lab,U)
 
 If we specify static actions via `static.A.fun`, or`static.A1` and `static.A2` it means that each period consists of two stages in which actions can be chosen (each preceded by a stage in which transfers can be performed). First, the static actions are chosen and then the dynamic actions. Splitting up actions in this fashion can substantially reduce numerical complexity in form of memory requirements and run time of the solution algorithms.
 
-## 11. Specifying parameters inside the game
+## 11. Make players move in turns
+
+There are some advantages to specify the game such that each period only a randomly selected player is able to make investment. For example, with simultaneous investment choices sometimes no pure strategy equilibria may exist. See the 2nd vignette how to implement and analyse such games with staggered moves. 
+
+## 12. Specifying parameters inside the game
 
 So far we have specified the parameters `x.max`, `i.cost` and `a` as global variables. Alternatively, you could also specify them in the game using the function `rel_param`. Consider the following variant:
 

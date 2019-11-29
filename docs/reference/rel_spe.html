@@ -75,7 +75,21 @@
      
   </a>
 </li>
-<li class="dropdown-header">Manuals</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Manuals
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="../articles/1_Specifying_Games.html">Specifying Games</a>
+    </li>
+    <li>
+      <a href="../articles/2_Arms_Race_Example.html">Arms Race Game: Advanced Modelling and Equilibrium Exploration</a>
+    </li>
+  </ul>
+</li>
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
@@ -111,20 +125,41 @@
     
     </div>
 
-    <pre class="usage"><span class='fu'>rel_spe</span>(<span class='no'>g</span>, <span class='kw'>delta</span> <span class='kw'>=</span> <span class='no'>g</span>$<span class='no'>param</span>$<span class='no'>delta</span>, <span class='kw'>rho</span> <span class='kw'>=</span> <span class='no'>g</span>$<span class='no'>param</span>$<span class='no'>rho</span>, <span class='kw'>tol.feasible</span> <span class='kw'>=</span> <span class='fl'>1e-10</span>,
-  <span class='kw'>verbose</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>r1</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>r2</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>add.action.labels</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
-  <span class='kw'>max.iter</span> <span class='kw'>=</span> <span class='fl'>10000</span>, <span class='kw'>no.exist.action</span> <span class='kw'>=</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/c'>c</a></span>(<span class='st'>"warn"</span>, <span class='st'>"stop"</span>, <span class='st'>"nothing"</span>))</pre>
+    <pre class="usage"><span class='fu'>rel_spe</span>(<span class='no'>g</span>, <span class='kw'>delta</span> <span class='kw'>=</span> <span class='no'>g</span>$<span class='no'>param</span>$<span class='no'>delta</span>, <span class='kw'>tol.feasible</span> <span class='kw'>=</span> <span class='fl'>1e-10</span>,
+  <span class='kw'>no.exist.action</span> <span class='kw'>=</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/c'>c</a></span>(<span class='st'>"warn"</span>, <span class='st'>"stop"</span>, <span class='st'>"nothing"</span>), <span class='kw'>verbose</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+  <span class='kw'>r1</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>r2</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>rho</span> <span class='kw'>=</span> <span class='no'>g</span>$<span class='no'>param</span>$<span class='no'>rho</span>, <span class='kw'>add.action.labels</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+  <span class='kw'>max.iter</span> <span class='kw'>=</span> <span class='fl'>10000</span>, <span class='kw'>first.best</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>g</th>
-      <td><p>the considered game</p></td>
+      <td><p>the game object</p></td>
+    </tr>
+    <tr>
+      <th>delta</th>
+      <td><p>The discount factor. By default the discount factor specified in <code>g</code>.</p></td>
+    </tr>
+    <tr>
+      <th>tol.feasible</th>
+      <td><p>Due to numerical inaccuracies, sometimes incentive constraints which theoretically should exactly hold, seem to be violated. To avoid this problem, we will consider all action profiles feasible whose incentive constraint is not violated by more then <code>tol.feasible</code>. This means we compute epsilon equilibria in which <code>tol.feasible</code> is the epsilon.</p></td>
+    </tr>
+    <tr>
+      <th>no.exist.action</th>
+      <td><p>What shall be done if no pure SPE exists? Default is <code>no.exist.action = "warning"</code>, alternatives are <code>no.exist.action = "error"</code> or <code>no.exist.action = "nothing"</code>.</p></td>
+    </tr>
+    <tr>
+      <th>verbose</th>
+      <td><p>if <code>TRUE</code> give more detailed information over the solution process.</p></td>
     </tr>
     <tr>
       <th>r1</th>
       <td><p>(or <code>r2</code>) if not NULL we want to find a SPE in a truncated game. Then r1 and r2 need to specify for each state the exogenously fixed negotiation payoffs.</p></td>
+    </tr>
+    <tr>
+      <th>rho</th>
+      <td><p>Only relevant if r1 and r2 are not null. In that case the negotiation probability.</p></td>
     </tr>
     </table>
     

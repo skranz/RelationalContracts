@@ -33,10 +33,10 @@ x.accept2.df = tibble(x=paste0("accept2_",offers), offered = offers)
 g = rel_game("Rubinstein Bargaining") %>%
   # Offer states
   rel_state("offer1",
-    A1 = list(offer=offers)
+    A1 = list(offer=offers),pi1=0, pi2=0
   ) %>%
   rel_state("offer2",
-    A2 = list(offer=offers)
+    A2 = list(offer=offers),pi1=0, pi2=0
   ) %>%
   # Acceptance states
   rel_states(x.accept1.df,
@@ -50,7 +50,7 @@ g = rel_game("Rubinstein Bargaining") %>%
     pi2 = ~ offered*(accept=="accept")
   ) %>%
   # Terminal state
-  rel_state("x_end") %>%
+  rel_state("x_end", pi1=0, pi2=0) %>%
   # State transitions
   rel_transition("offer1",x.accept2.df$x,offer=offers,prob = 1) %>%
   rel_transition("offer2",x.accept1.df$x,offer=offers,prob = 1) %>%

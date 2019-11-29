@@ -1,5 +1,7 @@
 pandoc: 2.7.2
 pkgdown: 1.3.0
 pkgdown_sha: ~
-articles: []
+articles:
+  1_Specifying_Games: 1_Specifying_Games.html
+  2_Arms_Race_Example: 2_Arms_Race_Example.html
 

@@ -122,10 +122,11 @@ paste.df.cols = function (mat, cols = 1:NCOL(mat),sep="", empty.sep=FALSE, ...) 
 }
 
 advanced.paste.matrix.cols = function (mat, cols = 1:NCOL(mat),sep="", empty.sep=FALSE, ...) {
-  restore.point("paste.df.cols")
-  if (NROW(cols) == 2) {
+  restore.point("advanced.paste.matrix.cols")
+  if (identical(sep,"")) empty.sep = FALSE
+  if (length(cols) == 2) {
     if (empty.sep) {
-      sep1 = ifelse(!empty.sep | nchar(mat[,cols[1]])>0 | nchar(mat[,cols[2]])>0, sep,"")
+      sep1 = ifelse(nchar(mat[,cols[1]])>0 | nchar(mat[,cols[2]])>0, sep,"")
       return(paste0(mat[,cols[1]],sep1, mat[,cols[2]], ...))
     } else {
       return(paste0(mat[,cols[1]],mat[,cols[2]],sep=sep, ...))

@@ -198,17 +198,20 @@ arms.race.example = function() {
   View(rne)
 }
 
+#' Get the intermediate steps in from t = T to t = 1 for
+#' a T-RNE or capped RNE that has been solved with
+#' \code{save.history = TRUE}
+get_T_rne_history = get_capped_history = function(g) {
+  g$eq.history
+}
+
 #' Compute a T-RNE
 #'
 #' The idea of a T-RNE is that only for a finite number of T periods relational contracts will be newly negoatiated. After T periods no new negotiations take place, i.e. every SPE continuation payoff can be implemented. For fixed T there is a unique RNE payoff.
 #'
-#' @param g The game
-#' @param T The number of periods in which new negotiations can take place.
-#' @param delta the discount factor
-#' @param rho the negotiation probability
-#' @param adjusted.delta the adjusted discount factor (1-rho)*delta. Can be specified instead of delta.
-rel_T_rne = function(g,T,  delta=g$param$delta, rho=g$param$rho, adjusted.delta=NULL,  tie.breaking=c("equal_r", "slack","random","first","last","max_r1","max_r2","unequal_r")[1], tol=1e-10,  save.details=FALSE, add.iterations=FALSE, save.history=FALSE, use.cpp=TRUE, spe=g[["spe"]], res.field="eq") {
-  rel_capped_rne(g=g,T=T,delta=delta, rho=rho, adjusted.delta=adjusted.delta, tie.breaking=tie.breaking, tol=tol,use.cpp=use.cpp, add.iterations=add.iterations, save.details=save.details,  save.history=save.history, res.field=res.field,T.rne=TRUE,spe=spe)
+#' @inheritParams rel_capped_rne
+rel_T_rne = function(g,T,  delta=g$param$delta, rho=g$param$rho, adjusted.delta=NULL, beta1 = g$param$beta1,   tie.breaking=c("equal_r", "slack","random","first","last","max_r1","max_r2","unequal_r")[1], tol=1e-12,  save.details=FALSE, add.iterations=FALSE, save.history=FALSE, use.cpp=TRUE, spe=g[["spe"]], res.field="eq") {
+  rel_capped_rne(g=g,T=T,delta=delta, rho=rho, adjusted.delta=adjusted.delta, beta1=beta1, tie.breaking=tie.breaking, tol=tol,use.cpp=use.cpp, add.iterations=add.iterations, save.details=save.details,  save.history=save.history, res.field=res.field,T.rne=TRUE,spe=spe)
 }
 
 #' Solve an RNE for a capped version of a game
@@ -220,6 +223,7 @@ rel_T_rne = function(g,T,  delta=g$param$delta, rho=g$param$rho, adjusted.delta=
 #' @param delta the discount factor
 #' @param rho the negotiation probability
 #' @param adjusted.delta the adjusted discount factor (1-rho)*delta. Can be specified instead of delta.
+#' @param beta1 the bargaining weight of player 1. By default equal to 0.5. Can also be initially specified with \code{rel_param}.
 #' @param tie.breaking A tie breaking rule when multiple action profiles could be implemented on the equilibrium path with same joint payoff U. Can take the following values:
 #' \itemize{
 #'   \item "equal_r" (DEFAULT) prefer actions that in expectation move to states with more equal negotiation payoffs.
@@ -231,8 +235,8 @@ rel_T_rne = function(g,T,  delta=g$param$delta, rho=g$param$rho, adjusted.delta=
 #' @param tol Due to numerical inaccuracies the calculated incentive constraints for some action profiles may be vialoated even though with exact computation they should hold, yielding unexpected results. We therefore also allow action profiles whose numeric incentive constraints is violated by not more than tol. By default we have \code{tol=1e-10}.
 #' @param add.iterations if TRUE just add T iterations to the previously computed capped RNE or T-RNE.
 #' @param save.details if set TRUE details of the equilibrium are saved that can be analysed later by calling \code{get_rne_details}. For an example, see the vignette for the Arms Race game.
-#' @param save.history by
-rel_capped_rne = function(g,T, delta=g$param$delta, rho=g$param$rho, adjusted.delta=NULL,  tie.breaking=c("equal_r", "slack","random","first","last","max_r1","max_r2","unequal_r")[1],tol=1e-10,add.iterations=FALSE,   save.details=FALSE,  save.history=FALSE,use.cpp=TRUE, T.rne=FALSE, spe=NULL,res.field="eq") {
+#' @param save.history saves the values for intermediate T.
+rel_capped_rne = function(g,T, delta=g$param$delta, rho=g$param$rho, adjusted.delta=NULL, beta1 = g$param$beta1,  tie.breaking=c("equal_r", "slack","random","first","last","max_r1","max_r2","unequal_r")[1],tol=1e-12,add.iterations=FALSE,   save.details=FALSE,  save.history=FALSE,use.cpp=TRUE, T.rne=FALSE, spe=NULL,res.field="eq") {
   restore.point("rel_capped_rne")
   if (!g$is_compiled) g = rel_compile(g)
 
@@ -251,7 +255,6 @@ rel_capped_rne = function(g,T, delta=g$param$delta, rho=g$param$rho, adjusted.de
 
 
   adj_delta = (1-rho)*delta
-  beta1 = g$param$beta1
   beta2 = 1-beta1
 
   if (add.iterations) {
@@ -335,7 +338,7 @@ capped.rne.iterations = function(g,T=1,rne=g[["eq"]], tie.breaking, debug_row=-1
       res = list(rne=res_rne, details=NULL)
     }
   } else {
-    res = r.capped.rne.iterations(T=T, g=g, rne=rne, tie.breaking=tie.breaking, save.details=save.details, save.history = save.history)
+    res = r.capped.rne.iterations(T=T, g=g, rne=rne, tie.breaking=tie.breaking, save.details=save.details, save.history = save.history, tol=tol)
   }
   res
 }
@@ -467,9 +470,11 @@ r.capped.rne.iterations = function(T, g, rne, tie.breaking,delta=g$param$delta, 
         extra.x = g$x.df[g$x.df$x==x,setdiff(colnames(g$x.df),"x")]
         arows = seq_along(IC.holds)
         details.li[[row]] = cbind(
-          x=x,
-          a.lab = g$a.labs.df$lab[g$a.labs.df$x==x],
-          best.dev = dev.lab,
+          quick_df(
+            x=x,
+            a.lab = g$a.labs.df$lab[g$a.labs.df$x==x],
+            best.dev = dev.lab
+          ),
           quick_df(
             U.hat = U.hat,
             slack=slack,
@@ -498,7 +503,6 @@ r.capped.rne.iterations = function(T, g, rne, tie.breaking,delta=g$param$delta, 
         ) %>% arrange(
           -U.hat, -slack
         )
-
       }
 
     }

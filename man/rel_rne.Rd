@@ -9,6 +9,16 @@ rel_rne(g, delta = g$param$delta, rho = g$param$rho,
 }
 \arguments{
 \item{g}{The game object}
+
+\item{delta}{the discount factor}
+
+\item{rho}{the negotiation probability}
+
+\item{adjusted.delta}{the adjusted discount factor (1-rho)*delta. Can be specified instead of delta.}
+
+\item{beta1}{the bargaining weight of player 1. By default equal to 0.5. Can also be initially specified with \code{rel_param}.}
+
+\item{verbose}{if \code{TRUE} give more detailed information over the solution process.}
 }
 \description{
 If the game is strongly directional,

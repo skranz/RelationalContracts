@@ -77,7 +77,21 @@ probability to directly transist from x to y." />
      
   </a>
 </li>
-<li class="dropdown-header">Manuals</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Manuals
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="../articles/1_Specifying_Games.html">Specifying Games</a>
+    </li>
+    <li>
+      <a href="../articles/2_Arms_Race_Example.html">Arms Race Game: Advanced Modelling and Equilibrium Exploration</a>
+    </li>
+  </ul>
+</li>
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
@@ -119,7 +133,9 @@ probability to directly transist from x to y.</p>
   <span class='kw'>use.x</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>just.eq.chain</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>x0</span> <span class='kw'>=</span> <span class='no'>g</span>$<span class='no'>sdf</span>$<span class='no'>x</span>[<span class='fl'>1</span>],
   <span class='kw'>hide.passive.edge</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>label.fun</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>tooltip.fun</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
   <span class='kw'>active.edge.color</span> <span class='kw'>=</span> <span class='st'>"#000077"</span>, <span class='kw'>passive.edge.color</span> <span class='kw'>=</span> <span class='st'>"#dddddd"</span>,
-  <span class='kw'>passive.edge.width</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>return.dfs</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>eq</span> <span class='kw'>=</span> <span class='no'>g</span><span class='kw'>[[</span><span class='st'>"eq"</span>]])</pre>
+  <span class='kw'>add.passive.edge</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>passive.edge.width</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>return.dfs</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
+  <span class='kw'>eq</span> <span class='kw'>=</span> <span class='no'>g</span><span class='kw'>[[</span><span class='st'>"eq"</span>]], <span class='kw'>font.size</span> <span class='kw'>=</span> <span class='fl'>24</span>, <span class='kw'>font</span> <span class='kw'>=</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/paste'>paste0</a></span>(<span class='no'>font.size</span>,
+  <span class='st'>"px Arial black"</span>))</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -159,6 +175,10 @@ probability to directly transist from x to y.</p>
     <tr>
       <th>return.dfs</th>
       <td><p>if TRUE don't show diagram but only return the relevant edge and node data frames that can be used to call <code><a href='https://www.rdocumentation.org/packages/DiagrammeR/topics/create_graph'>DiagrammeR::create_graph</a></code>. Useful if you want to manually customize graphs further.</p></td>
+    </tr>
+    <tr>
+      <th>font.size</th>
+      <td><p>The font size</p></td>
     </tr>
     </table>
     

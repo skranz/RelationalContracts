@@ -418,8 +418,8 @@ compile.sdf = function(g) {
 
 
   g$sdf = sdf
-  g$actions1 = actions1
-  g$actions2 = actions2
+  g$actions1 = intersect(actions1,cols)
+  g$actions2 = intersect(actions2,cols)
   g$ax.grid = ax.grid
 
   g
