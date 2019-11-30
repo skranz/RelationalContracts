@@ -33,7 +33,7 @@ notifications:
 
 script:
   - R CMD build --no-build-vignettes --no-manual .
-  - R CMD check *tar.gz
+#  - R CMD check *tar.gz
   - R CMD INSTALL *.tar.gz
 #  - R CMD INSTALL --no-docs --no-html .
   - Rscript testex/run_et.r
