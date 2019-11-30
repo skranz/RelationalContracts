@@ -4,7 +4,7 @@ library(testex)
 et = readRDS("testex/et.Rds")
 
 library(RelationalContracts)
-exceptions=testex_exemptions(funs = c("animate_capped_rne_history"),classes = c("relgame","visNetwork"))
+exemptions=testex_exemptions(funs = c("animate_capped_rne_history"),classes = c("relgame","visNetwork"))
 
 res = testex_run(et,log.file = "testex/log.Rmd",stat.file = "testex/stats.csv", exemptions=exemptions)
 
