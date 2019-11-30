@@ -32,13 +32,15 @@ notifications:
     on_failure: always # default: always
 
 script:
-  - echo "travis_fold:start:SCRIPT folding starts"
+  - echo "travis_fold:start:R_CMD_BUILD folding starts"
   - R CMD build --no-build-vignettes --no-manual .
 #  - R CMD check *tar.gz
   - R CMD INSTALL *.tar.gz
 #  - R CMD INSTALL --no-docs --no-html .
-  - echo "travis_fold:end:SCRIPT folding ends"
+  - echo "travis_fold:end:R_CMD_BUILD folding ends"
+  - echo "travis_fold:start:run_et folding starts"
   - Rscript testex/run_et.r
+  - echo "travis_fold:end:run_et folding ends"
 
 after_failure:
   - Rscript testex/after.R
