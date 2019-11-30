@@ -1,0 +1,26 @@
+# Comparison of examples
+
+2019-11-30 19:56:15 (new) vs
+2019-11-30 19:55:06 (old)
+
+## inst/examples/arms_race.R arms.race.example
+
+Everything ok.
+## inst/examples/blackmailing.R blackmailing
+
+Everything ok.
+## inst/examples/capacity_investments.R examples.capacity.cournot.staggered
+
+Everything ok.
+## inst/examples/cost_ladder.R examples.cost.ladder.cournot.staggered
+
+Everything ok.
+## inst/examples/multi_market.R examples.multimarket.cost.ladder.cournot
+
+Everything ok.
+## inst/examples/rubinstein.R rubinstein
+
+Everything ok.
+## inst/examples/starting_small.R starting_small
+
+Everything ok.

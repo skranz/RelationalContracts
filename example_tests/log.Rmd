@@ -1,8 +1,0 @@
-# Comparison of examples
-
-2019-11-29 14:01:59 (new) vs
-2019-11-28 08:00:50 (old)
-
-## blackmailing.R blackmailing
-
-Everything ok.

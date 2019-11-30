@@ -74,7 +74,7 @@ arms.race.example = function() {
   g2 = g %>% rel_change_param(d.factor = 0.5) %>%
     rel_T_rne(T=1000)
 
-  plot.arms.race(g1)%>%
+  res = plot.arms.race(g1)%>%
     visPhysics(barnesHut=list(gravitationalConstant=-500))
 
   plot.arms.race(g2)
@@ -155,11 +155,83 @@ arms.race.example = function() {
   det = g1 %>%
     get_rne_details(x="1_1") %>%
     filter(i1!="d", i2!="d")
-  View(det)
-
+  det
 
   eq = get_eq(g1)
 
 
 }
 
+plot.arms.race = function(g, eq=get_eq(g)) {
+  restore.point("plot.arms.race")
+
+  res = eq_diagram(g,eq = eq, return.dfs = TRUE, passive.edge.width = 0)
+  edf = res$edf
+  ndf = left_join(res$ndf, eq, by="x")
+  ndf = ndf %>% mutate(
+    conflict = ae.a1 == "a" | ae.a2 == "a",
+    shape = ifelse(conflict, "box","circle"),
+    type = ifelse(conflict, "conflict_node", "peace_node"),
+    label = paste0(x1, " ",x2),
+    font = "30px Arial black"
+  )
+  library(visNetwork)
+  visNetwork(ndf, edf) %>%
+  visPhysics(barnesHut=list(gravitationalConstant=-500))
+
+  graph = create_graph(ndf, edf)
+  render_graph(graph, output="visNetwork")
+}
+
+plot.turns.arms.race = function(g, eq=get_eq(g), simple.label=TRUE) {
+
+  eq_group = eq %>%
+    group_by(x1,x2, xgroup) %>%
+    summarize(
+      attack1 = any(ae.a1=="a", na.rm=TRUE),
+      attack2 = any(ae.a2=="a", na.rm=TRUE),
+      b1 = any(ae.i1=="b", na.rm=TRUE),
+      b2 = any(ae.i2=="b", na.rm=TRUE),
+      d1 = any(ae.i1=="d", na.rm=TRUE),
+      d2 = any(ae.i2=="d", na.rm=TRUE),
+      r1 = round(mean(r1),1),
+      r2 = round(mean(r2),1)
+    )
+
+  res = eq_diagram_xgroup(g,return.dfs = TRUE, passive.edge.width = 0)
+  edf = res$edf
+
+  ndf = left_join(res$ndf, eq_group, by="xgroup")
+  ndf = ndf %>% mutate(
+    conflict = attack1 | attack2,
+    shape = ifelse(conflict, "box","circle"),
+    type = ifelse(conflict, "conflict_node", "peace_node"),
+    title = paste0(xgroup,"<br>",
+      ifelse(attack1,"a","w"), ifelse(b1,"b","") , ifelse(d1,"d",""),
+      "_",
+      ifelse(attack2,"a","w"),ifelse(b2,"b","") , ifelse(d2,"d",""),
+      "<br>",
+      r1, "_",r2
+    )
+
+  )
+  if (!simple.label) {
+    ndf = ndf%>% mutate(
+      label = paste0(xgroup,"\n",
+        ifelse(attack1,"a",""), ifelse(b1,"b","") , ifelse(d1,"d",""),
+        " ",
+        ifelse(attack2,"a",""),ifelse(b2,"b","") , ifelse(d2,"d",""),
+        "\n",
+        r1, " ",r2
+      )
+    )
+  } else {
+    ndf = ndf%>% mutate(
+      label = paste0(x1," ",x2),
+      font = "30px Arial black"
+    )
+  }
+
+  graph = create_graph(ndf, edf)
+  render_graph(graph, output="visNetwork")
+}
