@@ -146,8 +146,7 @@ g = rel_game() %>%
     pi1 = ifelse(e2 != -1,e2, -x/5) - 0.5*e1^2,
     pi2 = e1 - 0.5*pmax(e2,0)^2
   ) %>%
-  rel_transition(xs = 0:4,xd=1:5, inc_vul=TRUE,prob=1) %>%
-  rel_transition(xs = 1:5,xd=0:4, prob=0.05)
+  rel_transition(xs = 0:4,xd=1:5, inc_vul=TRUE,prob=1)
   
 
 # Solve SPE
@@ -494,11 +493,7 @@ We see that both the first and last row transist to the same state. In the first
 Consider the following variant of the dynamic Cournot duopoly, where we have splitted the "static" actions `q1` and `q2` which don't affect the state transitions from the "dynamic" actions `i1` and `i2`:
 
 ```{r}
-# Exogenous paramaters
 x.max = 5
-a = 8
-i.cost = 1
-
 # State matrix
 x.df = tidyr::expand_grid(x1=0:x.max, x2=0:x.max) %>%
   mutate(x=paste0(x1,"_",x2))
@@ -512,7 +507,7 @@ static.A.fun = function(x1,x2,...) {
 }
 
 # dynamic action space 
-A.fun = function(x1,x2,...) {
+A.fun = function(x1,x2,x.max,...) {
   list(
     A1=list(i1=c(0, if (x1 < x.max) 1)),
     A2=list(i2=c(0, if (x2 < x.max) 1))
@@ -520,7 +515,7 @@ A.fun = function(x1,x2,...) {
 }
 
 # State transitions: deterministic investments
-trans.fun = function(ax.df,...) {
+trans.fun = function(ax.df,x.max,...) {
   restore.point("trans.fun")
   ax.df %>%
     select(x,x1,x2,i1,i2) %>%
@@ -535,6 +530,7 @@ trans.fun = function(ax.df,...) {
 }
 
 g = rel_game("Cournot with Investment") %>%
+  rel_param(a = 10,i.cost = 1.5,x.max=x.max) %>%  
   rel_states(x=x.df,
     A.fun=A.fun,
     static.A.fun = static.A.fun,
@@ -549,6 +545,9 @@ g %>% rel_spe(delta=0.3) %>% get_eq() %>% select(x, ae.lab,U)
 ```
 
 If we specify static actions via `static.A.fun`, or`static.A1` and `static.A2` it means that each period consists of two stages in which actions can be chosen (each preceded by a stage in which transfers can be performed). First, the static actions are chosen and then the dynamic actions. Splitting up actions in this fashion can substantially reduce numerical complexity in form of memory requirements and run time of the solution algorithms.
+
+Note that we have also have specified here the parameters `x.max`, `i.cost` and `a` via the function `rel_param`. All the specified parameters will be passed to the different functions like `trans.fun` that specify the game and can be used in expressions like `pi1` that will be lazily evaluated.
+
 
 ## 11. Make players move in turns
 
