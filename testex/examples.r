@@ -1,1 +1,0 @@
-x = mysquare(5)
