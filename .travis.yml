@@ -1,7 +1,7 @@
 language: r
 warnings_are_errors: false
 sudo: false
-# cache: packages
+cache: packages
 
 repos:
   CRAN: https://cloud.r-project.org
