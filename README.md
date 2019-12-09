@@ -1,10 +1,7 @@
 # Relational Contracts
 
-Author: Sebastian Kranz, Ulm University
 
-This package allows to characterize the equilibrium payoff set in repeated games (and more general stochastic games) that describe long term relationships between two parties.
-
-It will be introduced in two blog posts.
+This package allows to characterize the equilibrium payoff set in repeated games (and more general stochastic games) that describe long term relationships between two parties. It will be introduced in two blog posts.
 
 ### Installation
 
@@ -24,3 +21,9 @@ install.packages("RelationalContracts",repos = c("https://skranz-repo.github.io/
 ### Documentation
 
 For detailed usage, see the [vignettes](https://skranz.github.io/RelationalContracts/articles/), and the examples in [inst/examples](https://github.com/skranz/RelationalContracts/tree/master/inst/examples)
+
+### Related packages
+
+- The older package [repgame](https://github.com/skranz/repgame) also allows to solve repeated games with more than 2 players and repeated games with imperfect public monitoring. It is not actively maintained anymore, however.
+
+- The package [gtree](https://skranz.github.io/gtree/) can be used to model and solve normal extensive form games that are not repeated.
