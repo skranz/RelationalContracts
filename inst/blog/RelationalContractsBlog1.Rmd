@@ -4,10 +4,10 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, dev="svg", error=TRUE, warning=FALSE, fig.width=5, fig.height=4)
+knitr::opts_chunk$set(echo = TRUE, dev="svg", error=TRUE, warning=FALSE, fig.width=5, fig.height=4, cache=FALSE)
 library(dplyr)
 library(RelationalContracts)
-library(repgame)
+#library(repgame)
 library(RSGSolve)
 ```
 
@@ -17,9 +17,9 @@ rmarkdown::render("D:/libraries/RelationalHoldup/RelationalContracts/inst/guide/
 
 One goal of game theory is to understand how effective cooperation can be sustained in relationships. You may have heard of [Axelrod's famous tournaments](https://en.wikipedia.org/wiki/The_Evolution_of_Cooperation#Axelrod's_tournaments) that studied how effective different submitted strategies are in sustaining cooperation in repeated Prisoners' dilemma games.
 
-A related approach to understand the scope for cooperation in relationships is to characterize game theoretic *equilibria*, in which every player always acts optimal given the strategies of everybody else. This blog post illustrates the new R package `RelationalContracts` that facilitates such equilibrium analysis. I also want to introduce you to the problem of multiple equilibria and how one can select equilibria by assuming parties explicitly negotiate the terms of their relationship.
+A related approach to understand the scope for cooperation in relationships is to characterize game theoretic *equilibria*, in which every player always acts optimal given the strategies of everybody else. This blog post illustrates the new R package [RelationalContracts](skranz.github.io/RelationalContracts/) that facilitates such equilibrium analysis. I also want to introduce you to the problem of multiple equilibria and how one can select equilibria by assuming parties explicitly negotiate the terms of their relationship.
 
-The second part of this blog series will introduce [stochastic games](https://en.wikipedia.org/wiki/Stochastic_game) that allow for more complex relationships with endogenous states. It also illustrates the *vulnerability paradoxon* and show how one can account for *hold-up* concerns. In the third part we study a relatively complex game of conflict with an arms race.
+The second part of this blog series will introduce [stochastic games](https://en.wikipedia.org/wiki/Stochastic_game) that allow for more complex relationships with endogenous states. It also illustrates the *vulnerability paradoxon* and shows how one can account for *hold-up* concerns.
 
 The most well known game in game theory is probably the [prisoners' dilemma](https://en.wikipedia.org/wiki/Prisoner%27s_dilemma). 
 The following code creates a variation of an infinitely repeated prisoners' dilemma with a bit larger action space:
@@ -71,7 +71,7 @@ Numerically computing the set of SPE payoffs is a hard problem and tractable alg
 One assumption is that at the beginning of a period all players observe the realization of a standard uniform random variable that can be used as a public correlation device. This makes the SPE payoff set a [convex polyhedron](https://en.wikipedia.org/wiki/Convex_polytope). Another restriction is that one only looks at pure strategy equilibria, i.e. chosen actions are a deterministic function of the history of play and the outcome of the commonly observed correlation device.
 
 The following code solves and illustrates the SPE payoff set of our game assuming a public correlation device.
-```{r cache=TRUE}
+```{r cache=FALSE}
 library(RSGSolve)
 # Transform game in format used by RSGSolve
 rsg = make.rsg.game(g)
@@ -124,9 +124,13 @@ When loosely interpreting a subgame perfect equilibrium in real world terms, I w
 
 On the other hand, conventions and codified laws don't just fall from the sky but people can reason, discuss and coordinate how they want to structure their relationships. 
 
-Look at our example game above. Why should two rational parties follow the worst possible equilibrum and never exert any effort when both can be strictly better off by coordinating to a convention (picking an equilibrium) that supports positive effort levels? A common assumption in the relational contracting literature is that players never pick an equilibrium that is suboptimal in so far that there is another equilibrium that makes both better off (and at least one player strictly). In other words, one assumes that players pick an equilibrium that is [Pareto-optimal](https://en.wikipedia.org/wiki/Pareto_efficiency) among all equilibria.
+Look at our example game above. Why should two rational parties follow the worst possible equilibrum and never exert any effort when both can be strictly better off by coordinating to a convention (picking an equilibrium) that supports positive effort levels?
 
-Of course, assuming that in real relationships parties manage to implement all incentive compatible Pareto improvements is fairly  optimistic. But even if real world conventions are not Pareto optimal, one might be hopeful that the qualitative insights of how to structure relationships and which institutions facilitate cooperation from looking at Pareto-optimal equilbria are useful. While I share this view for repeated games, I want to convince you later in this series that once we move to more general games with endogenous states, the predictions of Pareto-optimal equilibria can be quite unintuitive because this equilibrium selection rules out plausible hold-up concerns. But I will discuss this in the second post...
+A common assumption in the relational contracting literature is that players don't pick a [Pareto-dominated](https://en.wikipedia.org/wiki/Pareto_efficiency) equilibrium. This means they don't pick a particular equilibrium if there is another equilibrium that would make both player's better off (and at least one player strictly). 
+
+Of course, assuming that in real relationships parties really manage to always find all incentive compatible Pareto improvements is fairly  optimistic. But even if real world conventions are not Pareto optimal, one might be hopeful that the qualitative insights of how to structure relationships and which institutions facilitate cooperation from looking at Pareto-optimal equilbria are useful.
+
+While I share this view for repeated games, I want to later convince you that once we move to more general games with endogenous states, the predictions of Pareto-optimal equilibria can be quite unintuitive because this equilibrium selection rules out plausible hold-up concerns. But let's postpone this discussion to the second blog post...
 
 ## What happens if a player becomes vulnerable?
 
@@ -168,7 +172,7 @@ Does is this mean that in this game it is beneficial for player 1 to be vulnerab
 
 To make sharper predictions, we need stronger assumptions on equilibrium selection. Let us assume that at the beginning of their relationship parties select an equilibrium via bargaining. The mathematic formulation of a [bargaining problem](https://en.wikipedia.org/wiki/Bargaining_problem) requires a feasible set of payoffs, which would be the set of SPE payoffs, and a disagreement payoff that will be implemented if no agreement is reached.
 
-In general a player benefits in bargaining if disagreement gives her a high payoff and the other player a low payoff. Unfortunately, there is no clear rule that specifies a single appropriate disagreement point for our bargaining over repeated game equilibria. In our example, let us assume that under disagreement both players choose in every period the stage game Nash equilibrium where everybody picks the lowest possible effort level, this means negative effort by player 2 if player 1 is vulnerable. This corresponds to the lower left point $(-1,0)$ of the SPE payoff set.
+In general a player benefits in bargaining if disagreement gives her a high payoff and the other player a low payoff. Unfortunately, there is no clear rule that specifies a single appropriate disagreement point when players bargaining over repeated game equilibria. In our example, let us assume that under disagreement both players choose in every period the stage game Nash equilibrium where everybody picks the lowest possible effort level, this means negative effort by player 2 if player 1 is vulnerable. This corresponds to the lower left point $(-1,0)$ of the SPE payoff set.
 
 Given a linear Pareto-frontier, the Nash bargaining solution splits the gains over the disagreement point equally. In our example, the Nash bargaining solution is just the center point of the Pareto frontier of SPE payoffs. Let us recall the payoff sets with and without vulnerability:
 ```{r}
@@ -178,4 +182,4 @@ plot_eq_payoff_set(g,add=TRUE, add.state.label = FALSE)
 
 The Nash bargaining solutions for both cases are marked now with black dots. We see that player 1 would here be worse off from being vulnerable. Even though vulnerability allows to incentivize higher effort levels and thus creates efficiency gains, this positive effect is outweighed for player 1 by a strong weakening of her bargaining position arising from the vulnerability.
 
-This finishes the first part of this blog series. In the next part we will continue our study looking at stochastic games with endogenous states and discuss the *vulnerability paradoxon*...
+This finishes the first part of this blog series. In the next part we will continue our study looking at stochastic games with endogenous states and discuss hold-up concerns and the *vulnerability paradoxon*...

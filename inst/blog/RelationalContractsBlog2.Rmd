@@ -4,17 +4,16 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, dev="svg", error=TRUE, warning=FALSE, fig.width=5, fig.height=4)
+knitr::opts_chunk$set(echo = TRUE, dev="svg", error=TRUE, warning=FALSE, fig.width=5, fig.height=4, cache=TRUE)
 library(dplyr)
 library(RelationalContracts)
-library(repgame)
 ```
 
 ```{r include=FALSE, eval=FALSE, cache=FALSE}
 rmarkdown::render("D:/libraries/RelationalHoldup/RelationalContracts/inst/guide/RelationalContractsBlog2.Rmd")
 ```
 
-In this second part of the blog series on relational contracting, we look at more complex infinite horizon games with endogenous states. I also introduce a new equilibrium concept in which players repeatedly negotiate their relational contracts and why in games with endogenous state transitions they yield more plausible results than Pareto-optimal equilibria.
+In this second part of the blog series on relational contracting, we look at more complex infinite horizon games with endogenous states. I also illustrate how one can explicitly combine relational contracting and hold-up concerns.
 
 The following code specifies a game with 3 states:
 ```{r}

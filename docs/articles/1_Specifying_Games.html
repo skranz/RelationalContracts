@@ -225,13 +225,20 @@
 <a class="sourceLine" id="cb8-14" title="14">    <span class="dt">pi1 =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/ifelse">ifelse</a></span>(e2 <span class="op">!=</span><span class="st"> </span><span class="dv">-1</span>,e2, <span class="op">-</span>x<span class="op">/</span><span class="dv">5</span>) <span class="op">-</span><span class="st"> </span><span class="fl">0.5</span><span class="op">*</span>e1<span class="op">^</span><span class="dv">2</span>,</a>
 <a class="sourceLine" id="cb8-15" title="15">    <span class="dt">pi2 =</span> e1 <span class="op">-</span><span class="st"> </span><span class="fl">0.5</span><span class="op">*</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/Extremes">pmax</a></span>(e2,<span class="dv">0</span>)<span class="op">^</span><span class="dv">2</span></a>
 <a class="sourceLine" id="cb8-16" title="16">  ) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb8-17" title="17"><span class="st">  </span><span class="kw"><a href="../reference/rel_transition.html">rel_transition</a></span>(<span class="dt">xs =</span> <span class="dv">0</span><span class="op">:</span><span class="dv">4</span>,<span class="dt">xd=</span><span class="dv">1</span><span class="op">:</span><span class="dv">5</span>, <span class="dt">inc_vul=</span><span class="ot">TRUE</span>,<span class="dt">prob=</span><span class="dv">1</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb8-18" title="18"><span class="st">  </span><span class="kw"><a href="../reference/rel_transition.html">rel_transition</a></span>(<span class="dt">xs =</span> <span class="dv">1</span><span class="op">:</span><span class="dv">5</span>,<span class="dt">xd=</span><span class="dv">0</span><span class="op">:</span><span class="dv">4</span>, <span class="dt">prob=</span><span class="fl">0.05</span>)</a>
-<a class="sourceLine" id="cb8-19" title="19">  </a>
-<a class="sourceLine" id="cb8-20" title="20"></a>
-<a class="sourceLine" id="cb8-21" title="21"><span class="co"># Solve SPE</span></a>
-<a class="sourceLine" id="cb8-22" title="22">g <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="../reference/rel_spe.html">rel_spe</a></span>(<span class="dt">delta=</span><span class="fl">0.3</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="../reference/get_eq.html">get_eq</a></span>() <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">select</span>(x, ae.lab)</a></code></pre></div>
-<pre><code>## Error in compute.x.trans.mat(x = x, g = g): Have computed sum of transition probabilities larger than 1 for state 3</code></pre>
+<a class="sourceLine" id="cb8-17" title="17"><span class="st">  </span><span class="kw"><a href="../reference/rel_transition.html">rel_transition</a></span>(<span class="dt">xs =</span> <span class="dv">0</span><span class="op">:</span><span class="dv">4</span>,<span class="dt">xd=</span><span class="dv">1</span><span class="op">:</span><span class="dv">5</span>, <span class="dt">inc_vul=</span><span class="ot">TRUE</span>,<span class="dt">prob=</span><span class="dv">1</span>)</a>
+<a class="sourceLine" id="cb8-18" title="18">  </a>
+<a class="sourceLine" id="cb8-19" title="19"></a>
+<a class="sourceLine" id="cb8-20" title="20"><span class="co"># Solve SPE</span></a>
+<a class="sourceLine" id="cb8-21" title="21">g <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="../reference/rel_spe.html">rel_spe</a></span>(<span class="dt">delta=</span><span class="fl">0.3</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="../reference/get_eq.html">get_eq</a></span>() <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">select</span>(x, ae.lab)</a></code></pre></div>
+<pre><code>## # A tibble: 6 x 2
+##       x ae.lab     
+##   &lt;int&gt; &lt;chr&gt;      
+## 1     0 0.6 1 | 0.6
+## 2     1 0.7 1 | 0.7
+## 3     2 0.7 1 | 0.8
+## 4     3 0.8 1 | 0.8
+## 5     4 0.8 1 | 0.9
+## 6     5 0.9 0 | 0.9</code></pre>
 <p>The function <code>A.fun</code> will be called separately for each state <code>x</code> and should return a list with elements <code>A1</code> and <code>A2</code> describing the action spaces of both players for the current state.</p>
 </div>
 <div id="specify-payoffs-via-pi-fun-instead-of-pi1-and-pi2" class="section level2">
@@ -560,96 +567,94 @@ tail(ax.df,3)
 <h2 class="hasAnchor">
 <a href="#separating-static-and-dynamic-actions" class="anchor"></a>10. Separating static and dynamic actions</h2>
 <p>Consider the following variant of the dynamic Cournot duopoly, where we have splitted the “static” actions <code>q1</code> and <code>q2</code> which don’t affect the state transitions from the “dynamic” actions <code>i1</code> and <code>i2</code>:</p>
-<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb29-1" title="1"><span class="co"># Exogenous paramaters</span></a>
-<a class="sourceLine" id="cb29-2" title="2">x.max =<span class="st"> </span><span class="dv">5</span></a>
-<a class="sourceLine" id="cb29-3" title="3">a =<span class="st"> </span><span class="dv">8</span></a>
-<a class="sourceLine" id="cb29-4" title="4">i.cost =<span class="st"> </span><span class="dv">1</span></a>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb29-1" title="1">x.max =<span class="st"> </span><span class="dv">5</span></a>
+<a class="sourceLine" id="cb29-2" title="2"><span class="co"># State matrix</span></a>
+<a class="sourceLine" id="cb29-3" title="3">x.df =<span class="st"> </span>tidyr<span class="op">::</span><span class="kw"><a href="https://tidyr.tidyverse.org/reference/expand_grid.html">expand_grid</a></span>(<span class="dt">x1=</span><span class="dv">0</span><span class="op">:</span>x.max, <span class="dt">x2=</span><span class="dv">0</span><span class="op">:</span>x.max) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb29-4" title="4"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">x=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/paste">paste0</a></span>(x1,<span class="st">"_"</span>,x2))</a>
 <a class="sourceLine" id="cb29-5" title="5"></a>
-<a class="sourceLine" id="cb29-6" title="6"><span class="co"># State matrix</span></a>
-<a class="sourceLine" id="cb29-7" title="7">x.df =<span class="st"> </span>tidyr<span class="op">::</span><span class="kw"><a href="https://tidyr.tidyverse.org/reference/expand_grid.html">expand_grid</a></span>(<span class="dt">x1=</span><span class="dv">0</span><span class="op">:</span>x.max, <span class="dt">x2=</span><span class="dv">0</span><span class="op">:</span>x.max) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb29-8" title="8"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">x=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/paste">paste0</a></span>(x1,<span class="st">"_"</span>,x2))</a>
-<a class="sourceLine" id="cb29-9" title="9"></a>
-<a class="sourceLine" id="cb29-10" title="10"><span class="co"># static action space</span></a>
-<a class="sourceLine" id="cb29-11" title="11">static.A.fun =<span class="st"> </span><span class="cf">function</span>(x1,x2,...) {</a>
-<a class="sourceLine" id="cb29-12" title="12">  <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(</a>
-<a class="sourceLine" id="cb29-13" title="13">    <span class="dt">A1=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">q1 =</span> <span class="dv">0</span><span class="op">:</span>x1),</a>
-<a class="sourceLine" id="cb29-14" title="14">    <span class="dt">A2=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">q2 =</span> <span class="dv">0</span><span class="op">:</span>x2)</a>
-<a class="sourceLine" id="cb29-15" title="15">  )</a>
-<a class="sourceLine" id="cb29-16" title="16">}</a>
-<a class="sourceLine" id="cb29-17" title="17"></a>
-<a class="sourceLine" id="cb29-18" title="18"><span class="co"># dynamic action space </span></a>
-<a class="sourceLine" id="cb29-19" title="19">A.fun =<span class="st"> </span><span class="cf">function</span>(x1,x2,...) {</a>
-<a class="sourceLine" id="cb29-20" title="20">  <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(</a>
-<a class="sourceLine" id="cb29-21" title="21">    <span class="dt">A1=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">i1=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/c">c</a></span>(<span class="dv">0</span>, <span class="cf">if</span> (x1 <span class="op">&lt;</span><span class="st"> </span>x.max) <span class="dv">1</span>)),</a>
-<a class="sourceLine" id="cb29-22" title="22">    <span class="dt">A2=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">i2=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/c">c</a></span>(<span class="dv">0</span>, <span class="cf">if</span> (x2 <span class="op">&lt;</span><span class="st"> </span>x.max) <span class="dv">1</span>))</a>
-<a class="sourceLine" id="cb29-23" title="23">  )</a>
-<a class="sourceLine" id="cb29-24" title="24">}</a>
-<a class="sourceLine" id="cb29-25" title="25"></a>
-<a class="sourceLine" id="cb29-26" title="26"><span class="co"># State transitions: deterministic investments</span></a>
-<a class="sourceLine" id="cb29-27" title="27">trans.fun =<span class="st"> </span><span class="cf">function</span>(ax.df,...) {</a>
-<a class="sourceLine" id="cb29-28" title="28">  <span class="kw">restore.point</span>(<span class="st">"trans.fun"</span>)</a>
-<a class="sourceLine" id="cb29-29" title="29">  ax.df <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb29-30" title="30"><span class="st">    </span><span class="kw">select</span>(x,x1,x2,i1,i2) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb29-31" title="31"><span class="st">    </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/unique">unique</a></span>() <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb29-32" title="32"><span class="st">    </span><span class="kw">mutate</span>(</a>
-<a class="sourceLine" id="cb29-33" title="33">      <span class="dt">new_x1 =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/Extremes">pmin</a></span>(x1<span class="op">+</span>i1,x.max),</a>
-<a class="sourceLine" id="cb29-34" title="34">      <span class="dt">new_x2 =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/Extremes">pmin</a></span>(x2<span class="op">+</span>i2,x.max),</a>
-<a class="sourceLine" id="cb29-35" title="35">      <span class="dt">xd =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/paste">paste0</a></span>(new_x1,<span class="st">"_"</span>,new_x2),</a>
-<a class="sourceLine" id="cb29-36" title="36">      <span class="dt">xs=</span>x,</a>
-<a class="sourceLine" id="cb29-37" title="37">      <span class="dt">prob =</span> <span class="dv">1</span></a>
-<a class="sourceLine" id="cb29-38" title="38">    )</a>
-<a class="sourceLine" id="cb29-39" title="39">}</a>
-<a class="sourceLine" id="cb29-40" title="40"></a>
-<a class="sourceLine" id="cb29-41" title="41">g =<span class="st"> </span><span class="kw"><a href="../reference/rel_game.html">rel_game</a></span>(<span class="st">"Cournot with Investment"</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb29-42" title="42"><span class="st">  </span><span class="kw"><a href="../reference/rel_states.html">rel_states</a></span>(<span class="dt">x=</span>x.df,</a>
-<a class="sourceLine" id="cb29-43" title="43">    <span class="dt">A.fun=</span>A.fun,</a>
-<a class="sourceLine" id="cb29-44" title="44">    <span class="dt">static.A.fun =</span> static.A.fun,</a>
-<a class="sourceLine" id="cb29-45" title="45">    <span class="dt">static.pi1 =</span> (a<span class="op">-</span>(q1<span class="op">+</span>q2))<span class="op">*</span>q1,</a>
-<a class="sourceLine" id="cb29-46" title="46">    <span class="dt">static.pi2 =</span> (a<span class="op">-</span>(q1<span class="op">+</span>q2))<span class="op">*</span>q2,</a>
-<a class="sourceLine" id="cb29-47" title="47">    <span class="dt">pi1 =</span> <span class="op">-</span><span class="st"> </span>i.cost<span class="op">*</span>i1,</a>
-<a class="sourceLine" id="cb29-48" title="48">    <span class="dt">pi2 =</span> <span class="op">-</span><span class="st"> </span>i.cost<span class="op">*</span>i2,</a>
-<a class="sourceLine" id="cb29-49" title="49">    <span class="dt">trans.fun=</span>trans.fun</a>
-<a class="sourceLine" id="cb29-50" title="50">  )</a>
-<a class="sourceLine" id="cb29-51" title="51"></a>
-<a class="sourceLine" id="cb29-52" title="52">g <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="../reference/rel_spe.html">rel_spe</a></span>(<span class="dt">delta=</span><span class="fl">0.3</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="../reference/get_eq.html">get_eq</a></span>() <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">select</span>(x, ae.lab,U)</a></code></pre></div>
-<pre><code>##      x        ae.lab     U
-## 1  0_0 0 | 0 | 1 | 1  2.26
-## 2  0_1 0 | 1 | 1 | 1  8.00
-## 3  0_2 0 | 2 | 1 | 0 12.20
-## 4  0_3 0 | 3 | 1 | 0 14.60
-## 5  0_4 0 | 4 | 0 | 0 16.00
-## 6  0_5 0 | 4 | 0 | 0 16.00
-## 7  1_0 1 | 0 | 1 | 1  8.00
-## 8  1_1 1 | 1 | 0 | 1 12.20
-## 9  1_2 1 | 2 | 0 | 0 15.00
-## 10 1_3 1 | 3 | 0 | 0 16.00
-## 11 1_4 1 | 3 | 0 | 0 16.00
-## 12 1_5 1 | 3 | 0 | 0 16.00
-## 13 2_0 2 | 0 | 0 | 1 12.20
-## 14 2_1 2 | 1 | 0 | 0 15.00
-## 15 2_2 2 | 2 | 0 | 0 16.00
-## 16 2_3 2 | 2 | 0 | 0 16.00
-## 17 2_4 2 | 2 | 0 | 0 16.00
-## 18 2_5 2 | 2 | 0 | 0 16.00
-## 19 3_0 3 | 0 | 0 | 1 14.60
-## 20 3_1 3 | 1 | 0 | 0 16.00
-## 21 3_2 2 | 2 | 0 | 0 16.00
-## 22 3_3 2 | 2 | 0 | 0 16.00
-## 23 3_4 2 | 2 | 0 | 0 16.00
-## 24 3_5 2 | 2 | 0 | 0 16.00
-## 25 4_0 4 | 0 | 0 | 0 16.00
-## 26 4_1 3 | 1 | 0 | 0 16.00
-## 27 4_2 2 | 2 | 0 | 0 16.00
-## 28 4_3 2 | 2 | 0 | 0 16.00
-## 29 4_4 2 | 2 | 0 | 0 16.00
-## 30 4_5 2 | 2 | 0 | 0 16.00
-## 31 5_0 4 | 0 | 0 | 0 16.00
-## 32 5_1 3 | 1 | 0 | 0 16.00
-## 33 5_2 2 | 2 | 0 | 0 16.00
-## 34 5_3 2 | 2 | 0 | 0 16.00
-## 35 5_4 2 | 2 | 0 | 0 16.00
-## 36 5_5 2 | 2 | 0 | 0 16.00</code></pre>
+<a class="sourceLine" id="cb29-6" title="6"><span class="co"># static action space</span></a>
+<a class="sourceLine" id="cb29-7" title="7">static.A.fun =<span class="st"> </span><span class="cf">function</span>(x1,x2,...) {</a>
+<a class="sourceLine" id="cb29-8" title="8">  <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(</a>
+<a class="sourceLine" id="cb29-9" title="9">    <span class="dt">A1=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">q1 =</span> <span class="dv">0</span><span class="op">:</span>x1),</a>
+<a class="sourceLine" id="cb29-10" title="10">    <span class="dt">A2=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">q2 =</span> <span class="dv">0</span><span class="op">:</span>x2)</a>
+<a class="sourceLine" id="cb29-11" title="11">  )</a>
+<a class="sourceLine" id="cb29-12" title="12">}</a>
+<a class="sourceLine" id="cb29-13" title="13"></a>
+<a class="sourceLine" id="cb29-14" title="14"><span class="co"># dynamic action space </span></a>
+<a class="sourceLine" id="cb29-15" title="15">A.fun =<span class="st"> </span><span class="cf">function</span>(x1,x2,x.max,...) {</a>
+<a class="sourceLine" id="cb29-16" title="16">  <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(</a>
+<a class="sourceLine" id="cb29-17" title="17">    <span class="dt">A1=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">i1=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/c">c</a></span>(<span class="dv">0</span>, <span class="cf">if</span> (x1 <span class="op">&lt;</span><span class="st"> </span>x.max) <span class="dv">1</span>)),</a>
+<a class="sourceLine" id="cb29-18" title="18">    <span class="dt">A2=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(<span class="dt">i2=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/c">c</a></span>(<span class="dv">0</span>, <span class="cf">if</span> (x2 <span class="op">&lt;</span><span class="st"> </span>x.max) <span class="dv">1</span>))</a>
+<a class="sourceLine" id="cb29-19" title="19">  )</a>
+<a class="sourceLine" id="cb29-20" title="20">}</a>
+<a class="sourceLine" id="cb29-21" title="21"></a>
+<a class="sourceLine" id="cb29-22" title="22"><span class="co"># State transitions: deterministic investments</span></a>
+<a class="sourceLine" id="cb29-23" title="23">trans.fun =<span class="st"> </span><span class="cf">function</span>(ax.df,x.max,...) {</a>
+<a class="sourceLine" id="cb29-24" title="24">  <span class="kw">restore.point</span>(<span class="st">"trans.fun"</span>)</a>
+<a class="sourceLine" id="cb29-25" title="25">  ax.df <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb29-26" title="26"><span class="st">    </span><span class="kw">select</span>(x,x1,x2,i1,i2) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb29-27" title="27"><span class="st">    </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/unique">unique</a></span>() <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb29-28" title="28"><span class="st">    </span><span class="kw">mutate</span>(</a>
+<a class="sourceLine" id="cb29-29" title="29">      <span class="dt">new_x1 =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/Extremes">pmin</a></span>(x1<span class="op">+</span>i1,x.max),</a>
+<a class="sourceLine" id="cb29-30" title="30">      <span class="dt">new_x2 =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/Extremes">pmin</a></span>(x2<span class="op">+</span>i2,x.max),</a>
+<a class="sourceLine" id="cb29-31" title="31">      <span class="dt">xd =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/paste">paste0</a></span>(new_x1,<span class="st">"_"</span>,new_x2),</a>
+<a class="sourceLine" id="cb29-32" title="32">      <span class="dt">xs=</span>x,</a>
+<a class="sourceLine" id="cb29-33" title="33">      <span class="dt">prob =</span> <span class="dv">1</span></a>
+<a class="sourceLine" id="cb29-34" title="34">    )</a>
+<a class="sourceLine" id="cb29-35" title="35">}</a>
+<a class="sourceLine" id="cb29-36" title="36"></a>
+<a class="sourceLine" id="cb29-37" title="37">g =<span class="st"> </span><span class="kw"><a href="../reference/rel_game.html">rel_game</a></span>(<span class="st">"Cournot with Investment"</span>) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb29-38" title="38"><span class="st">  </span><span class="kw"><a href="../reference/rel_param.html">rel_param</a></span>(<span class="dt">a =</span> <span class="dv">10</span>,<span class="dt">i.cost =</span> <span class="fl">1.5</span>,<span class="dt">x.max=</span>x.max) <span class="op">%&gt;%</span><span class="st">  </span></a>
+<a class="sourceLine" id="cb29-39" title="39"><span class="st">  </span><span class="kw"><a href="../reference/rel_states.html">rel_states</a></span>(<span class="dt">x=</span>x.df,</a>
+<a class="sourceLine" id="cb29-40" title="40">    <span class="dt">A.fun=</span>A.fun,</a>
+<a class="sourceLine" id="cb29-41" title="41">    <span class="dt">static.A.fun =</span> static.A.fun,</a>
+<a class="sourceLine" id="cb29-42" title="42">    <span class="dt">static.pi1 =</span> (a<span class="op">-</span>(q1<span class="op">+</span>q2))<span class="op">*</span>q1,</a>
+<a class="sourceLine" id="cb29-43" title="43">    <span class="dt">static.pi2 =</span> (a<span class="op">-</span>(q1<span class="op">+</span>q2))<span class="op">*</span>q2,</a>
+<a class="sourceLine" id="cb29-44" title="44">    <span class="dt">pi1 =</span> <span class="op">-</span><span class="st"> </span>i.cost<span class="op">*</span>i1,</a>
+<a class="sourceLine" id="cb29-45" title="45">    <span class="dt">pi2 =</span> <span class="op">-</span><span class="st"> </span>i.cost<span class="op">*</span>i2,</a>
+<a class="sourceLine" id="cb29-46" title="46">    <span class="dt">trans.fun=</span>trans.fun</a>
+<a class="sourceLine" id="cb29-47" title="47">  )</a>
+<a class="sourceLine" id="cb29-48" title="48"></a>
+<a class="sourceLine" id="cb29-49" title="49">g <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="../reference/rel_spe.html">rel_spe</a></span>(<span class="dt">delta=</span><span class="fl">0.3</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="../reference/get_eq.html">get_eq</a></span>() <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">select</span>(x, ae.lab,U)</a></code></pre></div>
+<pre><code>##      x        ae.lab      U
+## 1  0_0 0 | 0 | 1 | 1  2.835
+## 2  0_1 0 | 1 | 1 | 1 10.500
+## 3  0_2 0 | 2 | 1 | 0 16.450
+## 4  0_3 0 | 3 | 1 | 0 20.850
+## 5  0_4 0 | 4 | 0 | 0 24.000
+## 6  0_5 0 | 5 | 0 | 0 25.000
+## 7  1_0 1 | 0 | 1 | 1 10.500
+## 8  1_1 1 | 1 | 0 | 1 16.450
+## 9  1_2 1 | 2 | 0 | 0 21.000
+## 10 1_3 1 | 3 | 0 | 0 24.000
+## 11 1_4 1 | 4 | 0 | 0 25.000
+## 12 1_5 1 | 4 | 0 | 0 25.000
+## 13 2_0 2 | 0 | 0 | 1 16.450
+## 14 2_1 2 | 1 | 0 | 0 21.000
+## 15 2_2 2 | 2 | 0 | 0 24.000
+## 16 2_3 2 | 3 | 0 | 0 25.000
+## 17 2_4 2 | 3 | 0 | 0 25.000
+## 18 2_5 2 | 3 | 0 | 0 25.000
+## 19 3_0 3 | 0 | 0 | 1 20.850
+## 20 3_1 3 | 1 | 0 | 0 24.000
+## 21 3_2 3 | 2 | 0 | 0 25.000
+## 22 3_3 2 | 3 | 0 | 0 25.000
+## 23 3_4 3 | 2 | 0 | 0 25.000
+## 24 3_5 3 | 2 | 0 | 0 25.000
+## 25 4_0 4 | 0 | 0 | 0 24.000
+## 26 4_1 4 | 1 | 0 | 0 25.000
+## 27 4_2 3 | 2 | 0 | 0 25.000
+## 28 4_3 2 | 3 | 0 | 0 25.000
+## 29 4_4 2 | 3 | 0 | 0 25.000
+## 30 4_5 2 | 3 | 0 | 0 25.000
+## 31 5_0 5 | 0 | 0 | 0 25.000
+## 32 5_1 4 | 1 | 0 | 0 25.000
+## 33 5_2 3 | 2 | 0 | 0 25.000
+## 34 5_3 2 | 3 | 0 | 0 25.000
+## 35 5_4 2 | 3 | 0 | 0 25.000
+## 36 5_5 2 | 3 | 0 | 0 25.000</code></pre>
 <p>If we specify static actions via <code>static.A.fun</code>, or<code>static.A1</code> and <code>static.A2</code> it means that each period consists of two stages in which actions can be chosen (each preceded by a stage in which transfers can be performed). First, the static actions are chosen and then the dynamic actions. Splitting up actions in this fashion can substantially reduce numerical complexity in form of memory requirements and run time of the solution algorithms.</p>
+<p>Note that we have also have specified here the parameters <code>x.max</code>, <code>i.cost</code> and <code>a</code> via the function <code>rel_param</code>. All the specified parameters will be passed to the different functions like <code>trans.fun</code> that specify the game and can be used in expressions like <code>pi1</code> that will be lazily evaluated.</p>
 </div>
 <div id="make-players-move-in-turns" class="section level2">
 <h2 class="hasAnchor">
@@ -753,5 +758,22 @@ tail(ax.df,3)
 
   
 
+
+  <script type="text/javascript">
+  var sc_project=12051162;
+  var sc_invisible=1;
+  var sc_security="60139410";
+  </script>
+  <script type="text/javascript"
+  src="https://www.statcounter.com/counter/counter.js"
+  async></script>
+  <noscript><div class="statcounter"><a title="Web Analytics
+  Made Easy - StatCounter" href="https://statcounter.com/"
+  target="_blank"><img class="statcounter"
+  src="https://c.statcounter.com/12051162/0/60139410/1/"
+  alt="Web Analytics Made Easy -
+  StatCounter"></a></div></noscript>
+
+  
   </body>
 </html>

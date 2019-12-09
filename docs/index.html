@@ -83,11 +83,31 @@
 <div id="relational-contracts" class="section level1">
 <div class="page-header"><h1 class="hasAnchor">
 <a href="#relational-contracts" class="anchor"></a>Relational Contracts</h1></div>
-<p>See the <code>vignettes</code>, the documents in <code>docs</code> and the examples in <code>inst/examples</code></p>
-<div id="installation" class="section level2">
-<h2 class="hasAnchor">
-<a href="#installation" class="anchor"></a>Installation</h2>
+<p>Author: Sebastian Kranz, Ulm University</p>
+<p>This package allows to characterize the equilibrium payoff set in repeated games (and more general stochastic games) that describe long term relationships between two parties.</p>
+<p>It will be introduced in two blog posts.</p>
+<div id="installation" class="section level3">
+<h3 class="hasAnchor">
+<a href="#installation" class="anchor"></a>Installation</h3>
+<p>The package can be best installed using my Github hosted R repositorium by calling</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1"><span class="kw"><a href="https://www.rdocumentation.org/packages/utils/topics/install.packages">install.packages</a></span>(<span class="st">"RelationalContracts"</span>,<span class="dt">repos =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/c">c</a></span>(<span class="st">"https://skranz-repo.github.io/drat/"</span>,<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/options">getOption</a></span>(<span class="st">"repos"</span>)))</a></code></pre></div>
+</div>
+<div id="some-features" class="section level3">
+<h3 class="hasAnchor">
+<a href="#some-features" class="anchor"></a>Some Features</h3>
+<ul>
+<li>Solve the set of pure strategy subgame perfect equilibrium payoffs in two player repeated or stochastic games with transfers.</li>
+<li>Describe simple equilibria that can implement such payoffs.</li>
+<li>Account for hold-up concerns by solving for repeated negotion equilibria as defined <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2210603">here</a>.</li>
+<li>Can be combinded with the <a href="https://github.com/skranz/RSGSolve">RSGSolve</a> package to solve for pure SPE payoff sets without assuming transfers using the pencil sharpening algorithm by Abreu, Brooks and Sannikov <a href="https://github.com/babrooks/SGSolve/">see here</a>
+</li>
+<li>Different tools for analysis like graphic representation of equilibrium state transitions as acyclic graphs.</li>
+</ul>
+</div>
+<div id="documentation" class="section level3">
+<h3 class="hasAnchor">
+<a href="#documentation" class="anchor"></a>Documentation</h3>
+<p>For detailed usage, see the <a href="https://skranz.github.io/RelationalContracts/articles/">vignettes</a>, and the examples in <a href="https://github.com/skranz/RelationalContracts/tree/master/inst/examples">inst/examples</a></p>
 </div>
 </div>
   </div>
@@ -121,5 +141,22 @@
 
   
 
+
+  <script type="text/javascript">
+  var sc_project=12051162;
+  var sc_invisible=1;
+  var sc_security="60139410";
+  </script>
+  <script type="text/javascript"
+  src="https://www.statcounter.com/counter/counter.js"
+  async></script>
+  <noscript><div class="statcounter"><a title="Web Analytics
+  Made Easy - StatCounter" href="https://statcounter.com/"
+  target="_blank"><img class="statcounter"
+  src="https://c.statcounter.com/12051162/0/60139410/1/"
+  alt="Web Analytics Made Easy -
+  StatCounter"></a></div></noscript>
+
+  
   </body>
 </html>
