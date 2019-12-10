@@ -3,7 +3,7 @@ library(testex)
 rfiles = list.files("inst/examples",glob2rx("*.R"),full.names = TRUE)
 rfiles = rfiles[!endsWith(rfiles,"speed_test.R")]
 
-rmd.files = list.files("vignettes",glob2rx("*.Rmd"),full.names = TRUE )
+rmd.files = list.files("vignettes",glob2rx("*.Rmd"),full.names = TRUE )[1]
 #rfiles = rfiles[1]
 sources = testex_sources(ex.in.fun.files = rfiles, rmd.files=rmd.files)
 
