@@ -103,7 +103,7 @@ rep.games.to.rne.df = function(g, delta=g$param$delta, rho=g$param$rho, rows=whi
 dyngame.sol.to.rel.sol = function(g,sol=g$dyngame.sol, m=g$dyngame, add.labels=TRUE) {
   restore.point("dyngame.sol.to.rel.sol")
 
-  res = as_data_frame(sol$sol.mat)
+  res = as_tibble(sol$sol.mat)
 
   ax.to.rel.a = function(m,ax) {
     xa = v.ind.to.rowcol(m$ind.ax.by.x, ax)[,2]

@@ -158,7 +158,7 @@ arms.race.example = function() {
 
 
   x.max = 5
-  x.df = as_data_frame(expand.grid(x1=0:x.max,x2=0:x.max))
+  x.df = as_tibble(expand.grid(x1=0:x.max,x2=0:x.max))
   x.df$x = paste0(x.df$x1,"_", x.df$x2)
 
   g = rel_game("Arms Race") %>%

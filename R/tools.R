@@ -54,7 +54,7 @@ expand.grid2 = function(A,B) {
 
 
 quick_df = function(...) {
-  as_data_frame(list(...))
+  as_tibble(list(...))
 }
 
 non.null = function(a,b) {

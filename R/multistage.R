@@ -50,7 +50,7 @@ examples.multistage = function() {
 
   x.seq = seq(0,1, by=0.5)
   #x.seq = c(0,0.01,0.05,0.1,0.2,0.5,1)
-  x.df = as_data_frame(expand.grid(x1=x.seq,x2=x.seq, stringsAsFactors = FALSE)) %>%
+  x.df = as_tibble(expand.grid(x1=x.seq,x2=x.seq, stringsAsFactors = FALSE)) %>%
     mutate(x= paste0(x1," ", x2))
 
   g = rel_game("Slowly Intensifying Repeated Principal-Agent") %>%

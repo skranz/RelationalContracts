@@ -67,7 +67,7 @@ examples.multistage.spe.trunc = function() {
 
   x.max = 100; x.step = 20
   x.seq = seq(0,x.max, by=x.step)
-  x.df = as_data_frame(expand.grid(x1=x.seq,x2=x.seq))
+  x.df = as_tibble(expand.grid(x1=x.seq,x2=x.seq))
   x.df$x = paste0(x.df$x1,"_", x.df$x2)
 
   g = rel_game("Cournot with Investment") %>%

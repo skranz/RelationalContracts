@@ -8,8 +8,6 @@ repos:
   sebkranz: https://skranz-repo.github.io/drat/
 
 r_github_packages:
-  - skranz/RSGSolve
-  - skranz/repgame
   - skranz/testex
 
 notifications:

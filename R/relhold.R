@@ -83,7 +83,7 @@ rel_compile = function(g,..., compute.just.static=FALSE) {
   x.T = rep(NA_character_, NROW(sdf))
 
   x.T.df = bind_rows(lapply(g_defs$xT_defs, function(def) {
-    as_data_frame(def)
+    as_tibble(def)
   }))
   if (NROW(x.T.df)>0) {
     rows = match(x.T.df$x, sdf$x)
@@ -158,7 +158,7 @@ rel_compile = function(g,..., compute.just.static=FALSE) {
 
   # Compute after cap state's payoffs
 
-  after_cap_payoffs = bind_rows(g$default_after_cap_payoffs, bind_rows(lapply(g_defs$after_cap_payoffs_defs,as_data_frame)))
+  after_cap_payoffs = bind_rows(g$default_after_cap_payoffs, bind_rows(lapply(g_defs$after_cap_payoffs_defs,as_tibble)))
 
   if (NROW(after_cap_payoffs)>0) {
     rows = which(is.na(after_cap_payoffs$x.T))
@@ -167,7 +167,7 @@ rel_compile = function(g,..., compute.just.static=FALSE) {
 
   }
 
-  after_cap_actions = lapply(g_defs$after_cap_actions_defs,as_data_frame) %>% bind_rows
+  after_cap_actions = lapply(g_defs$after_cap_actions_defs,as_tibble) %>% bind_rows
   if (NROW(after_cap_actions)>0) {
     g$after_cap_actions = after_cap_actions
   }
@@ -187,13 +187,13 @@ rel_compile = function(g,..., compute.just.static=FALSE) {
     def = g_defs$trans_defs[[ind]]
     if (is(def$prob,"formula")) {
 
-      df = as_data_frame(def[setdiff(names(df),"prob")])
+      df = as_tibble(def[setdiff(names(df),"prob")])
       env = as.environment(param)
       parent.env(env) = g$enclos
 
       df$prob = eval.rel.expression(def$prob,g = g,param = df,enclos=env)
     } else {
-      df = as_data_frame(def)
+      df = as_tibble(def)
     }
     if (!all(df$xs %in% sdf$x))
       stop("You define a state transition from an undefined state ", paste0(setdiff(df$xs,sdf$x), collapse=", "))
