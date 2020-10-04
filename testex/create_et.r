@@ -1,10 +1,11 @@
-setwd("D:/libraries/RelationalContracts/RelationalContracts")
+setwd("C:/libraries/RelationalContracts/RelationalContracts")
 library(testex)
 rfiles = list.files("inst/examples",glob2rx("*.R"),full.names = TRUE)
 rfiles = rfiles[!endsWith(rfiles,"speed_test.R")]
 
 rmd.files = list.files("vignettes",glob2rx("*.Rmd"),full.names = TRUE )[1]
 #rfiles = rfiles[1]
+rmd.files = NULL
 sources = testex_sources(ex.in.fun.files = rfiles, rmd.files=rmd.files)
 
 
