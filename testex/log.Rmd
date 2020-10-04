@@ -1,7 +1,7 @@
 # Comparison of examples
 
-2020-10-04 11:12:40 (new) vs
-2020-10-04 11:10:11 (old)
+2020-10-04 11:51:54 (new) vs
+2020-10-04 11:49:17 (old)
 
 ## inst/examples/arms_race.R arms.race.example
 
