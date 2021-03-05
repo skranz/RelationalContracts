@@ -4,8 +4,16 @@
 \alias{rel_after_cap_payoffs}
 \title{Specify the SPE payoff set(s) of the truncated game(s) after a cap in period T. While we could specify a complete repeated game that is played after the cap, it also suffices to specify just an SPE payoff set of the truncated game of the after-cap state.}
 \usage{
-rel_after_cap_payoffs(g, x = NA, U, v1 = NA, v2 = NA, v1.rep = NA,
-  v2.rep = NA, x.T = NA)
+rel_after_cap_payoffs(
+  g,
+  x = NA,
+  U,
+  v1 = NA,
+  v2 = NA,
+  v1.rep = NA,
+  v2.rep = NA,
+  x.T = NA
+)
 }
 \arguments{
 \item{g}{a relational contracting game created with rel_game}

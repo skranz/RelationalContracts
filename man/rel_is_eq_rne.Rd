@@ -4,8 +4,14 @@
 \alias{rel_is_eq_rne}
 \title{Checks if an equilibrium eq with negotiation payoffs is an RNE}
 \usage{
-rel_is_eq_rne(g, eq = g[["eq"]], r1 = eq$r1, r2 = eq$r2, r.tol = 1e-10,
-  verbose = TRUE)
+rel_is_eq_rne(
+  g,
+  eq = g[["eq"]],
+  r1 = eq$r1,
+  r2 = eq$r2,
+  r.tol = 1e-10,
+  verbose = TRUE
+)
 }
 \description{
 We simply solve the truncated game with r1 and r2

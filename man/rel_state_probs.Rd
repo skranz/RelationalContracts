@@ -5,9 +5,15 @@
 \title{Compute the long run probability distribution over states if an
 equilibrium is played for many periods.}
 \usage{
-rel_state_probs(g, x0 = c("equal", "first", "first.group")[1],
-  start.prob = NULL, n.burn.in = 100, n.averaging = 100, tol = 1e-13,
-  eq.field = "eq")
+rel_state_probs(
+  g,
+  x0 = c("equal", "first", "first.group")[1],
+  start.prob = NULL,
+  n.burn.in = 100,
+  n.averaging = 100,
+  tol = 1e-13,
+  eq.field = "eq"
+)
 }
 \arguments{
 \item{g}{the game object for which an equilibrium has been solved}

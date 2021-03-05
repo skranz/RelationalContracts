@@ -6,18 +6,19 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Arms Race Game: Advanced Modelling and Equilibrium Exploration • RelationalContracts</title>
-<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script><!-- Bootstrap --><link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.3.7/cerulean/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous">
-<!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script><!-- sticky kit --><script src="https://cdnjs.cloudflare.com/ajax/libs/sticky-kit/1.1.3/sticky-kit.min.js" integrity="sha256-c4Rlo1ZozqTPE2RLuvbusY3+SU1pQaJC0TjuhygMipw=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
+<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/cerulean/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
+<script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
+<!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
 <script src="../pkgdown.js"></script><meta property="og:title" content="Arms Race Game: Advanced Modelling and Equilibrium Exploration">
-<meta property="og:description" content="">
-<meta name="twitter:card" content="summary">
+<meta property="og:description" content="RelationalContracts">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
 </head>
-<body>
+<body data-spy="scroll" data-target="#toc">
     <div class="container template-article">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -30,7 +31,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">RelationalContracts</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.2.0</span>
       </span>
     </div>
 
@@ -42,20 +43,8 @@
      
   </a>
 </li>
-<li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-    Manuals
-     
-    <span class="caret"></span>
-  </a>
-  <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="../articles/1_Specifying_Games.html">Specifying Games</a>
-    </li>
-    <li>
-      <a href="../articles/2_Arms_Race_Example.html">Arms Race Game: Advanced Modelling and Equilibrium Exploration</a>
-    </li>
-  </ul>
+  <a href="../articles/index.html">Manuals</a>
 </li>
 <li>
   <a href="../reference/index.html">Reference</a>
@@ -77,11 +66,13 @@
 <!--/.navbar -->
 
       
-      </header><script src="2_Arms_Race_Example_files/htmlwidgets-1.2/htmlwidgets.js"></script><link href="2_Arms_Race_Example_files/vis-4.20.1/vis.css" rel="stylesheet">
-<script src="2_Arms_Race_Example_files/vis-4.20.1/vis.min.js"></script><script src="2_Arms_Race_Example_files/visNetwork-binding-2.0.3/visNetwork.js"></script><div class="row">
+
+      </header><script src="2_Arms_Race_Example_files/header-attrs-2.5/header-attrs.js"></script><link href="2_Arms_Race_Example_files/anchor-sections-1.0/anchor-sections.css" rel="stylesheet">
+<script src="2_Arms_Race_Example_files/anchor-sections-1.0/anchor-sections.js"></script><script src="2_Arms_Race_Example_files/htmlwidgets-1.3/htmlwidgets.js"></script><link href="2_Arms_Race_Example_files/vis-4.20.1/vis.css" rel="stylesheet">
+<script src="2_Arms_Race_Example_files/vis-4.20.1/vis.min.js"></script><script src="2_Arms_Race_Example_files/visNetwork-binding-2.0.9/visNetwork.js"></script><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
-      <h1>Arms Race Game: Advanced Modelling and Equilibrium Exploration</h1>
+      <h1 data-toc-skip>Arms Race Game: Advanced Modelling and Equilibrium Exploration</h1>
             
       
       
@@ -100,83 +91,87 @@
 <p>Players can decide each period whether or not they want to attack the other player. If player 1 attacks, he inflicts harm of size <code>x1</code> on the other player but has attack costs <code>c.a * x1</code>.</p>
 <p>Each unit in a player’s arsenal has maintance cost of <code>c.x</code> irrespectively of whether it is used for an attack or not. All cost parameters <code>c.x</code>, <code>c.a</code>, <code>c.i</code> shall be strictly positive.</p>
 <p>The following code generates the game:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(RelationalContracts)</a>
-<a class="sourceLine" id="cb1-2" title="2"><span class="co"># Action space for each state</span></a>
-<a class="sourceLine" id="cb1-3" title="3"><span class="co"># a1, a2: (w)ait or (a)ttack</span></a>
-<a class="sourceLine" id="cb1-4" title="4"><span class="co"># i1, i2: (b)uild new weapons, (d)estroy own weapons</span></a>
-<a class="sourceLine" id="cb1-5" title="5">A.fun =<span class="st"> </span><span class="cf">function</span>(x1,x2, x.max,...) {</a>
-<a class="sourceLine" id="cb1-6" title="6">  <span class="kw">restore.point</span>(<span class="st">"A.fun"</span>)</a>
-<a class="sourceLine" id="cb1-7" title="7">  <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(</a>
-<a class="sourceLine" id="cb1-8" title="8">    <span class="dt">A1=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(</a>
-<a class="sourceLine" id="cb1-9" title="9">      <span class="dt">a1=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/c">c</a></span>(<span class="st">"w"</span>, <span class="cf">if</span> (x1<span class="op">&gt;</span><span class="dv">0</span>) <span class="st">"a"</span>),</a>
-<a class="sourceLine" id="cb1-10" title="10">      <span class="dt">i1=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/c">c</a></span>(<span class="cf">if</span> (x1<span class="op">&gt;</span><span class="dv">0</span>) <span class="st">"d"</span>,<span class="st">""</span>,<span class="cf">if</span> (x1<span class="op">&lt;</span>x.max) <span class="st">"b"</span>)</a>
-<a class="sourceLine" id="cb1-11" title="11">    ),</a>
-<a class="sourceLine" id="cb1-12" title="12">    <span class="dt">A2=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(</a>
-<a class="sourceLine" id="cb1-13" title="13">      <span class="dt">a2=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/c">c</a></span>(<span class="st">"w"</span>, <span class="cf">if</span> (x2<span class="op">&gt;</span><span class="dv">0</span>) <span class="st">"a"</span>),</a>
-<a class="sourceLine" id="cb1-14" title="14">      <span class="dt">i2=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/c">c</a></span>(<span class="cf">if</span> (x2<span class="op">&gt;</span><span class="dv">0</span>) <span class="st">"d"</span>,<span class="st">""</span>,<span class="cf">if</span> (x2<span class="op">&lt;</span>x.max) <span class="st">"b"</span>)</a>
-<a class="sourceLine" id="cb1-15" title="15">    )</a>
-<a class="sourceLine" id="cb1-16" title="16">  )</a>
-<a class="sourceLine" id="cb1-17" title="17">}</a>
-<a class="sourceLine" id="cb1-18" title="18"></a>
-<a class="sourceLine" id="cb1-19" title="19"><span class="co"># State transition function</span></a>
-<a class="sourceLine" id="cb1-20" title="20">trans.fun =<span class="st"> </span><span class="cf">function</span>(ax.df,x.max, sp,...) {</a>
-<a class="sourceLine" id="cb1-21" title="21">  <span class="kw">restore.point</span>(<span class="st">"trans.fun"</span>)</a>
-<a class="sourceLine" id="cb1-22" title="22"></a>
-<a class="sourceLine" id="cb1-23" title="23">  <span class="co"># Transitions only depend on the state</span></a>
-<a class="sourceLine" id="cb1-24" title="24">  <span class="co"># and investments, so we only consider</span></a>
-<a class="sourceLine" id="cb1-25" title="25">  <span class="co"># unique combinations of these variables.</span></a>
-<a class="sourceLine" id="cb1-26" title="26">  tr =<span class="st"> </span>ax.df <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb1-27" title="27"><span class="st">    </span><span class="kw">select</span>(x,x1,x2,i1,i2) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb1-28" title="28"><span class="st">    </span><span class="kw">distinct</span>()</a>
-<a class="sourceLine" id="cb1-29" title="29">  </a>
-<a class="sourceLine" id="cb1-30" title="30">  <span class="co"># The changes in x1 and x2 are</span></a>
-<a class="sourceLine" id="cb1-31" title="31">  <span class="co"># independent random variables.</span></a>
-<a class="sourceLine" id="cb1-32" title="32">  <span class="co"># irv_joint_dist helps here.</span></a>
-<a class="sourceLine" id="cb1-33" title="33">  tr =<span class="st"> </span>tr <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="../reference/irv_joint_dist.html">irv_joint_dist</a></span>(</a>
-<a class="sourceLine" id="cb1-34" title="34">    <span class="kw"><a href="../reference/irv.html">irv</a></span>(<span class="st">"change_1"</span>,<span class="dt">default=</span><span class="dv">0</span>,</a>
-<a class="sourceLine" id="cb1-35" title="35">      <span class="kw"><a href="../reference/irv_val.html">irv_val</a></span>(<span class="dv">1</span>, (i1<span class="op">==</span><span class="st">"b"</span>)<span class="op">*</span>sp),</a>
-<a class="sourceLine" id="cb1-36" title="36">      <span class="kw"><a href="../reference/irv_val.html">irv_val</a></span>(<span class="op">-</span><span class="dv">1</span>, (i1<span class="op">==</span><span class="st">"d"</span>)<span class="op">*</span><span class="dv">1</span>)</a>
-<a class="sourceLine" id="cb1-37" title="37">    ),</a>
-<a class="sourceLine" id="cb1-38" title="38">    <span class="kw"><a href="../reference/irv.html">irv</a></span>(<span class="st">"change_2"</span>,<span class="dt">default=</span><span class="dv">0</span>,</a>
-<a class="sourceLine" id="cb1-39" title="39">      <span class="kw"><a href="../reference/irv_val.html">irv_val</a></span>(<span class="dv">1</span>, (i2<span class="op">==</span><span class="st">"b"</span>)<span class="op">*</span>sp),</a>
-<a class="sourceLine" id="cb1-40" title="40">      <span class="kw"><a href="../reference/irv_val.html">irv_val</a></span>(<span class="op">-</span><span class="dv">1</span>, (i2<span class="op">==</span><span class="st">"d"</span>)<span class="op">*</span><span class="dv">1</span>)</a>
-<a class="sourceLine" id="cb1-41" title="41">    )</a>
-<a class="sourceLine" id="cb1-42" title="42">  )</a>
-<a class="sourceLine" id="cb1-43" title="43"></a>
-<a class="sourceLine" id="cb1-44" title="44">  <span class="co"># We now simply specify the new values</span></a>
-<a class="sourceLine" id="cb1-45" title="45">  <span class="co"># of x1 and x2 by adding the changes.</span></a>
-<a class="sourceLine" id="cb1-46" title="46">  tr <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">mutate</span>(</a>
-<a class="sourceLine" id="cb1-47" title="47">    <span class="dt">new_x1 =</span> x1<span class="op">+</span>change_<span class="dv">1</span>,</a>
-<a class="sourceLine" id="cb1-48" title="48">    <span class="dt">new_x2 =</span> x2<span class="op">+</span>change_<span class="dv">2</span>,</a>
-<a class="sourceLine" id="cb1-49" title="49">    <span class="dt">xd =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/paste">paste0</a></span>(new_x1,<span class="st">"_"</span>,new_x2),</a>
-<a class="sourceLine" id="cb1-50" title="50">    <span class="dt">xs=</span>x</a>
-<a class="sourceLine" id="cb1-51" title="51">  )</a>
-<a class="sourceLine" id="cb1-52" title="52">}</a>
-<a class="sourceLine" id="cb1-53" title="53"></a>
-<a class="sourceLine" id="cb1-54" title="54"><span class="co"># Maximum size of weapons arsenal</span></a>
-<a class="sourceLine" id="cb1-55" title="55">x.max =<span class="st"> </span><span class="dv">3</span></a>
-<a class="sourceLine" id="cb1-56" title="56"><span class="co"># State data frame</span></a>
-<a class="sourceLine" id="cb1-57" title="57">x.df =<span class="st"> </span>tidyr<span class="op">::</span><span class="kw"><a href="https://tidyr.tidyverse.org/reference/expand_grid.html">expand_grid</a></span>(<span class="dt">x1=</span><span class="dv">0</span><span class="op">:</span>x.max,<span class="dt">x2=</span><span class="dv">0</span><span class="op">:</span>x.max) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb1-58" title="58"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">x =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/paste">paste0</a></span>(x1,<span class="st">"_"</span>, x2))</a>
-<a class="sourceLine" id="cb1-59" title="59"></a>
-<a class="sourceLine" id="cb1-60" title="60"></a>
-<a class="sourceLine" id="cb1-61" title="61"><span class="co"># Specify game</span></a>
-<a class="sourceLine" id="cb1-62" title="62">g =<span class="st"> </span><span class="kw"><a href="../reference/rel_game.html">rel_game</a></span>(<span class="st">"Arms Race"</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb1-63" title="63"><span class="st">  </span><span class="kw"><a href="../reference/rel_options.html">rel_options</a></span>(<span class="dt">lab.action.sep =</span> <span class="st">""</span>) <span class="op">%&gt;%</span><span class="st">  </span></a>
-<a class="sourceLine" id="cb1-64" title="64"><span class="st">  </span><span class="kw"><a href="../reference/rel_param.html">rel_param</a></span>(<span class="dt">delta=</span><span class="fl">0.99</span>, <span class="dt">rho=</span><span class="fl">0.65</span>, <span class="dt">c.a=</span><span class="fl">0.05</span>,<span class="dt">c.i=</span><span class="fl">0.01</span>, <span class="dt">c.x=</span><span class="fl">0.3</span>,<span class="dt">x.max=</span>x.max, <span class="dt">sp=</span><span class="fl">0.08</span>, <span class="dt">d.factor=</span><span class="dv">0</span>, <span class="dt">d.exp=</span><span class="dv">1</span>, <span class="dt">can.destroy=</span><span class="ot">TRUE</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb1-65" title="65"><span class="st">  </span><span class="kw"><a href="../reference/rel_states.html">rel_states</a></span>(x.df,<span class="dt">A.fun=</span>A.fun, <span class="dt">trans.fun=</span>trans.fun,</a>
-<a class="sourceLine" id="cb1-66" title="66">    <span class="dt">pi1 =</span> <span class="op">-</span>c.a<span class="op">*</span>(a1<span class="op">==</span><span class="st">"a"</span>)<span class="op">*</span>x1 <span class="op">-</span><span class="st"> </span>(a2<span class="op">==</span><span class="st">"a"</span>)<span class="op">*</span>x2 <span class="op">-</span><span class="st"> </span>c.i<span class="op">*</span>(i1<span class="op">==</span><span class="st">"b"</span>)<span class="op">-</span>c.x<span class="op">*</span>x1,</a>
-<a class="sourceLine" id="cb1-67" title="67">    <span class="dt">pi2 =</span> <span class="op">-</span>c.a<span class="op">*</span>(a2<span class="op">==</span><span class="st">"a"</span>)<span class="op">*</span>x2 <span class="op">-</span><span class="st"> </span>(a1<span class="op">==</span><span class="st">"a"</span>)<span class="op">*</span>x1 <span class="op">-</span><span class="st"> </span>c.i<span class="op">*</span>(i2<span class="op">==</span><span class="st">"b"</span>)<span class="op">-</span>c.x<span class="op">*</span>x2</a>
-<a class="sourceLine" id="cb1-68" title="68">  )</a></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="downlit">
+<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="kw">RelationalContracts</span>)
+<span class="co"># Action space for each state</span>
+<span class="co"># a1, a2: (w)ait or (a)ttack</span>
+<span class="co"># i1, i2: (b)uild new weapons, (d)estroy own weapons</span>
+<span class="kw">A.fun</span> <span class="op">=</span> <span class="fu">function</span>(<span class="kw">x1</span>,<span class="kw">x2</span>, <span class="kw">x.max</span>,<span class="kw">...</span>) {
+  <span class="fu">restore.point</span>(<span class="st">"A.fun"</span>)
+  <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(
+    A1=<span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(
+      a1=<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"w"</span>, <span class="co">if</span> (<span class="kw">x1</span><span class="op">&gt;</span><span class="fl">0</span>) <span class="st">"a"</span>),
+      i1=<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="co">if</span> (<span class="kw">x1</span><span class="op">&gt;</span><span class="fl">0</span>) <span class="st">"d"</span>,<span class="st">""</span>,<span class="co">if</span> (<span class="kw">x1</span><span class="op">&lt;</span><span class="kw">x.max</span>) <span class="st">"b"</span>)
+    ),
+    A2=<span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(
+      a2=<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"w"</span>, <span class="co">if</span> (<span class="kw">x2</span><span class="op">&gt;</span><span class="fl">0</span>) <span class="st">"a"</span>),
+      i2=<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="co">if</span> (<span class="kw">x2</span><span class="op">&gt;</span><span class="fl">0</span>) <span class="st">"d"</span>,<span class="st">""</span>,<span class="co">if</span> (<span class="kw">x2</span><span class="op">&lt;</span><span class="kw">x.max</span>) <span class="st">"b"</span>)
+    )
+  )
+}
+
+<span class="co"># State transition function</span>
+<span class="kw">trans.fun</span> <span class="op">=</span> <span class="fu">function</span>(<span class="kw">ax.df</span>,<span class="kw">x.max</span>, <span class="kw">sp</span>,<span class="kw">...</span>) {
+  <span class="fu">restore.point</span>(<span class="st">"trans.fun"</span>)
+
+  <span class="co"># Transitions only depend on the state</span>
+  <span class="co"># and investments, so we only consider</span>
+  <span class="co"># unique combinations of these variables.</span>
+  <span class="kw">tr</span> <span class="op">=</span> <span class="kw">ax.df</span> <span class="op">%&gt;%</span> 
+    <span class="fu">select</span>(<span class="kw">x</span>,<span class="kw">x1</span>,<span class="kw">x2</span>,<span class="kw">i1</span>,<span class="kw">i2</span>) <span class="op">%&gt;%</span>
+    <span class="fu">distinct</span>()
+  
+  <span class="co"># The changes in x1 and x2 are</span>
+  <span class="co"># independent random variables.</span>
+  <span class="co"># irv_joint_dist helps here.</span>
+  <span class="kw">tr</span> <span class="op">=</span> <span class="kw">tr</span> <span class="op">%&gt;%</span> <span class="fu"><a href="../reference/irv_joint_dist.html">irv_joint_dist</a></span>(
+    <span class="fu"><a href="../reference/irv.html">irv</a></span>(<span class="st">"change_1"</span>,default=<span class="fl">0</span>,
+      <span class="fu"><a href="../reference/irv_val.html">irv_val</a></span>(<span class="fl">1</span>, (<span class="kw">i1</span><span class="op">==</span><span class="st">"b"</span>)<span class="op">*</span><span class="kw">sp</span>),
+      <span class="fu"><a href="../reference/irv_val.html">irv_val</a></span>(<span class="op">-</span><span class="fl">1</span>, (<span class="kw">i1</span><span class="op">==</span><span class="st">"d"</span>)<span class="op">*</span><span class="fl">1</span>)
+    ),
+    <span class="fu"><a href="../reference/irv.html">irv</a></span>(<span class="st">"change_2"</span>,default=<span class="fl">0</span>,
+      <span class="fu"><a href="../reference/irv_val.html">irv_val</a></span>(<span class="fl">1</span>, (<span class="kw">i2</span><span class="op">==</span><span class="st">"b"</span>)<span class="op">*</span><span class="kw">sp</span>),
+      <span class="fu"><a href="../reference/irv_val.html">irv_val</a></span>(<span class="op">-</span><span class="fl">1</span>, (<span class="kw">i2</span><span class="op">==</span><span class="st">"d"</span>)<span class="op">*</span><span class="fl">1</span>)
+    )
+  )
+
+  <span class="co"># We now simply specify the new values</span>
+  <span class="co"># of x1 and x2 by adding the changes.</span>
+  <span class="kw">tr</span> <span class="op">%&gt;%</span> <span class="fu">mutate</span>(
+    new_x1 = <span class="kw">x1</span><span class="op">+</span><span class="kw">change_1</span>,
+    new_x2 = <span class="kw">x2</span><span class="op">+</span><span class="kw">change_2</span>,
+    xd = <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span>(<span class="kw">new_x1</span>,<span class="st">"_"</span>,<span class="kw">new_x2</span>),
+    xs=<span class="kw">x</span>
+  )
+}
+
+<span class="co"># Maximum size of weapons arsenal</span>
+<span class="kw">x.max</span> <span class="op">=</span> <span class="fl">3</span>
+<span class="co"># State data frame</span>
+<span class="kw">x.df</span> <span class="op">=</span> <span class="kw">tidyr</span>::<span class="fu"><a href="https://tidyr.tidyverse.org/reference/expand_grid.html">expand_grid</a></span>(x1=<span class="fl">0</span><span class="op">:</span><span class="kw">x.max</span>,x2=<span class="fl">0</span><span class="op">:</span><span class="kw">x.max</span>) <span class="op">%&gt;%</span>
+  <span class="fu">mutate</span>(x = <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span>(<span class="kw">x1</span>,<span class="st">"_"</span>, <span class="kw">x2</span>))
+
+
+<span class="co"># Specify game</span>
+<span class="kw">g</span> <span class="op">=</span> <span class="fu"><a href="../reference/rel_game.html">rel_game</a></span>(<span class="st">"Arms Race"</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/rel_options.html">rel_options</a></span>(lab.action.sep = <span class="st">""</span>) <span class="op">%&gt;%</span>  
+  <span class="fu"><a href="../reference/rel_param.html">rel_param</a></span>(delta=<span class="fl">0.99</span>, rho=<span class="fl">0.65</span>, c.a=<span class="fl">0.05</span>,c.i=<span class="fl">0.01</span>, c.x=<span class="fl">0.3</span>,x.max=<span class="kw">x.max</span>, sp=<span class="fl">0.08</span>, d.factor=<span class="fl">0</span>, d.exp=<span class="fl">1</span>, can.destroy=<span class="fl">TRUE</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/rel_states.html">rel_states</a></span>(<span class="kw">x.df</span>,A.fun=<span class="kw">A.fun</span>, trans.fun=<span class="kw">trans.fun</span>,
+    pi1 = <span class="op">-</span><span class="kw">c.a</span><span class="op">*</span>(<span class="kw">a1</span><span class="op">==</span><span class="st">"a"</span>)<span class="op">*</span><span class="kw">x1</span> <span class="op">-</span> (<span class="kw">a2</span><span class="op">==</span><span class="st">"a"</span>)<span class="op">*</span><span class="kw">x2</span> <span class="op">-</span> <span class="kw">c.i</span><span class="op">*</span>(<span class="kw">i1</span><span class="op">==</span><span class="st">"b"</span>)<span class="op">-</span><span class="kw">c.x</span><span class="op">*</span><span class="kw">x1</span>,
+    pi2 = <span class="op">-</span><span class="kw">c.a</span><span class="op">*</span>(<span class="kw">a2</span><span class="op">==</span><span class="st">"a"</span>)<span class="op">*</span><span class="kw">x2</span> <span class="op">-</span> (<span class="kw">a1</span><span class="op">==</span><span class="st">"a"</span>)<span class="op">*</span><span class="kw">x1</span> <span class="op">-</span> <span class="kw">c.i</span><span class="op">*</span>(<span class="kw">i2</span><span class="op">==</span><span class="st">"b"</span>)<span class="op">-</span><span class="kw">c.x</span><span class="op">*</span><span class="kw">x2</span>
+  )
+</pre></div>
 <p>Note that we specify the action sets such that player 1 (and equivalently player 2) can only build new weapons (<code>i1="b"</code>) if <code>x1 &lt; x.max</code>. Similarly, she can only destroy weapons (<code>i1="d"</code>) and attack (<code>a1="a"</code>) if <code>x1 &gt; 0</code>. The most complex part in the game specification is the transition function <code>trans.fun</code>. Here we use the helper function <code>irv_joint_dist</code>. Take a look at the vignette on <a href="Link%20Here">Specifying Games</a> for a detailed explanation of this function.</p>
 </div>
 <div id="pareto-optimal-spe" class="section level2">
 <h2 class="hasAnchor">
 <a href="#pareto-optimal-spe" class="anchor"></a>2. Pareto-optimal SPE</h2>
 <p>The following code solves for a Pareto-optimal SPE of this arms race game.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" title="1">g.spe =<span class="st"> </span>g <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="../reference/rel_spe.html">rel_spe</a></span>()</a>
-<a class="sourceLine" id="cb2-2" title="2"><span class="kw"><a href="../reference/get_eq.html">get_eq</a></span>(g.spe) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb2-3" title="3"><span class="st">  </span><span class="kw">select</span>(x, ae.lab)</a></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="downlit">
+<span class="kw">g.spe</span> <span class="op">=</span> <span class="kw">g</span> <span class="op">%&gt;%</span> <span class="fu"><a href="../reference/rel_spe.html">rel_spe</a></span>()
+<span class="fu"><a href="../reference/get_eq.html">get_eq</a></span>(<span class="kw">g.spe</span>) <span class="op">%&gt;%</span>
+  <span class="fu">select</span>(<span class="kw">x</span>, <span class="kw">ae.lab</span>)
+</pre></div>
 <pre><code>## # A tibble: 16 x 2
 ##    x     ae.lab 
 ##    &lt;chr&gt; &lt;chr&gt;  
@@ -203,9 +198,11 @@
 <h2 class="hasAnchor">
 <a href="#repeated-negotiation-equilibrium" class="anchor"></a>3. Repeated Negotiation Equilibrium</h2>
 <p>We now solve a repeated negotiation equilibrium (RNE) in which we assume that with probability <code>rho=0.65</code> players newly negotiate their relational contract at the beginning of a period. For numerical tractability we also assume that only in the first <code>T=1000</code> periods new negotiations can take place. We call this an T-RNE (see our <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2210603">paper</a> for details).</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" title="1">g.rne =<span class="st"> </span>g <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="../reference/rel_T_rne.html">rel_T_rne</a></span>(<span class="dt">rho=</span><span class="fl">0.65</span>, <span class="dt">T=</span><span class="dv">1000</span>)</a>
-<a class="sourceLine" id="cb4-2" title="2"><span class="kw"><a href="../reference/get_eq.html">get_eq</a></span>(g.rne) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb4-3" title="3"><span class="st">  </span><span class="kw">select</span>(x, ae.lab)</a></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="downlit">
+<span class="kw">g.rne</span> <span class="op">=</span> <span class="kw">g</span> <span class="op">%&gt;%</span> <span class="fu"><a href="../reference/rel_T_rne.html">rel_T_rne</a></span>(rho=<span class="fl">0.65</span>, T=<span class="fl">1000</span>)
+<span class="fu"><a href="../reference/get_eq.html">get_eq</a></span>(<span class="kw">g.rne</span>) <span class="op">%&gt;%</span>
+  <span class="fu">select</span>(<span class="kw">x</span>, <span class="kw">ae.lab</span>)
+</pre></div>
 <pre><code>##      x  ae.lab
 ## 1  0_0 wb | wb
 ## 2  0_1  wb | w
@@ -229,9 +226,11 @@
 <h2 class="hasAnchor">
 <a href="#equilibrium-diagram-with-state-transitions" class="anchor"></a>4. Equilibrium diagram with state transitions</h2>
 <p>The function <code>eq_diagram</code> is useful to visualize the equilibrium:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" title="1"><span class="kw"><a href="../reference/eq_diagram.html">eq_diagram</a></span>(g.rne, <span class="dt">font.size=</span><span class="dv">20</span>)</a></code></pre></div>
-<div id="htmlwidget-548539ac20d1f0420eb7" style="width:672px;height:672px;" class="visNetwork html-widget"></div>
-<script type="application/json" data-for="htmlwidget-548539ac20d1f0420eb7">{"x":{"nodes":{"id":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"group":["node","node","node","node","node","node","node","node","node","node","node","node","node","node","node","node"],"label":["0_0 \n-0.27 -0.27","0_1 \n-0.39 -0.18","0_2 \n-0.48 -0.12","0_3 \n-0.53 -0.09","1_0 \n-0.18 -0.39","1_1 \n-0.3 -0.3","1_2 \n-0.42 -0.27","1_3 \n-0.48 -0.25","2_0 \n-0.12 -0.48","2_1 \n-0.27 -0.42","2_2 \n-0.39 -0.39","2_3 \n-0.44 -0.36","3_0 \n-0.09 -0.53","3_1 \n-0.25 -0.48","3_2 \n-0.36 -0.44","3_3 \n-0.41 -0.41"],"shape":["box","box","box","box","box","box","box","box","box","box","box","box","box","box","box","box"],"title":["0_0<br>ae: wb | wb<br>a1: wb | wb<br>a2: wb | wb<br>v1=-0.27 v2=-0.27<br>U=-0.53","0_1<br>ae: wb | w<br>a1: wb | ab<br>a2: wb | w<br>v1=-0.4 v2=-0.19<br>U=-0.57","0_2<br>ae: w | w<br>a1: wb | ab<br>a2: wb | w<br>v1=-0.5 v2=-0.14<br>U=-0.6","0_3<br>ae: w | w<br>a1: wb | a<br>a2: wb | w<br>v1=-0.56 v2=-0.12<br>U=-0.63","1_0<br>ae: w | wb<br>a1: w | wb<br>a2: ab | wb<br>v1=-0.19 v2=-0.4<br>U=-0.57","1_1<br>ae: w | w<br>a1: w | ab<br>a2: ab | w<br>v1=-0.33 v2=-0.33<br>U=-0.6","1_2<br>ae: w | w<br>a1: wb | ab<br>a2: ab | w<br>v1=-0.45 v2=-0.3<br>U=-0.69","1_3<br>ae: w | w<br>a1: wb | a<br>a2: ab | w<br>v1=-0.51 v2=-0.28<br>U=-0.72","2_0<br>ae: w | w<br>a1: w | wb<br>a2: ab | wb<br>v1=-0.14 v2=-0.5<br>U=-0.6","2_1<br>ae: w | w<br>a1: w | ab<br>a2: ab | wb<br>v1=-0.3 v2=-0.45<br>U=-0.69","2_2<br>ae: w | w<br>a1: w | ab<br>a2: ab | w<br>v1=-0.43 v2=-0.43<br>U=-0.78","2_3<br>ae: w | w<br>a1: wb | a<br>a2: ab | w<br>v1=-0.48 v2=-0.4<br>U=-0.8","3_0<br>ae: w | w<br>a1: w | wb<br>a2: a | wb<br>v1=-0.12 v2=-0.56<br>U=-0.63","3_1<br>ae: w | w<br>a1: w | ab<br>a2: a | wb<br>v1=-0.28 v2=-0.51<br>U=-0.72","3_2<br>ae: w | w<br>a1: w | ab<br>a2: a | wb<br>v1=-0.4 v2=-0.48<br>U=-0.8","3_3<br>ae: w | w<br>a1: w | a<br>a2: a | w<br>v1=-0.45 v2=-0.45<br>U=-0.81"],"font":["20px Arial black","20px Arial black","20px Arial black","20px Arial black","20px Arial black","20px Arial black","20px Arial black","20px Arial black","20px Arial black","20px Arial black","20px Arial black","20px Arial black","20px Arial black","20px Arial black","20px Arial black","20px Arial black"]},"edges":{"id":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],"from":[1,1,1,2,2,2,2,2,3,3,3,3,3,4,4,4,5,5,5,5,5,6,6,6,6,6,6,6,6,7,7,7,7,7,7,7,7,8,8,8,8,8,9,9,9,9,9,10,10,10,10,10,10,10,10,11,11,11,11,11,11,11,11,12,12,12,12,12,13,13,13,14,14,14,14,14,15,15,15,15,15,16,16,16],"to":[6,2,5,7,3,5,1,6,8,4,6,2,7,7,3,8,10,2,6,9,1,11,3,7,9,1,5,10,2,12,4,8,10,2,6,11,3,11,3,7,12,4,14,6,10,13,5,15,7,11,13,5,9,14,6,16,8,12,14,6,10,15,7,15,7,11,16,8,10,14,9,11,15,9,13,10,12,16,10,14,11,11,15,12],"label":["","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","",""],"color":["#000077","#000077","#000077","#dddddd","#dddddd","#dddddd","#dddddd","#000077","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#000077","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd"],"width":[2,2,2,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],"hidden":[false,false,false,true,true,true,true,false,true,true,true,true,true,true,true,true,true,true,false,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true]},"nodesToDataframe":true,"edgesToDataframe":true,"options":{"width":"100%","height":"100%","nodes":{"shape":"dot"},"manipulation":{"enabled":false},"edges":{"arrows":{"to":{"enabled":true,"scaleFactor":1}}},"physics":{"stabilization":{"enabled":true,"onlyDynamicEdges":false,"fit":true}},"layout":{"improvedLayout":true}},"groups":"node","width":null,"height":null,"idselection":{"enabled":false},"byselection":{"enabled":false},"main":null,"submain":null,"footer":null,"background":"rgba(0, 0, 0, 0)"},"evals":[],"jsHooks":[]}</script><p>Each blue box corresponds to a state <code>x</code>. Below the state label each box shows the negotiation payoffs <code>r1</code> and <code>r2</code> of both players in that state. We see how symmetric high weapon arsenals are bad for both players, due to costly weapon maintenance. In states with asymmetric arsenals, the player with fewer weapons has a lower negotiation payoff. The reason is that the player with more weapons has a higher threat potential and can thus extort higher payments in negotiations.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit">
+<span class="fu"><a href="../reference/eq_diagram.html">eq_diagram</a></span>(<span class="kw">g.rne</span>, font.size=<span class="fl">20</span>)
+</pre></div>
+<div id="htmlwidget-ba5ca7610d3067772d37" style="width:672px;height:672px;" class="visNetwork html-widget"></div>
+<script type="application/json" data-for="htmlwidget-ba5ca7610d3067772d37">{"x":{"nodes":{"id":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"group":["node","node","node","node","node","node","node","node","node","node","node","node","node","node","node","node"],"label":["0_0 \n-0.27 -0.27","0_1 \n-0.39 -0.18","0_2 \n-0.48 -0.12","0_3 \n-0.53 -0.09","1_0 \n-0.18 -0.39","1_1 \n-0.3 -0.3","1_2 \n-0.42 -0.27","1_3 \n-0.48 -0.25","2_0 \n-0.12 -0.48","2_1 \n-0.27 -0.42","2_2 \n-0.39 -0.39","2_3 \n-0.44 -0.36","3_0 \n-0.09 -0.53","3_1 \n-0.25 -0.48","3_2 \n-0.36 -0.44","3_3 \n-0.41 -0.41"],"shape":["box","box","box","box","box","box","box","box","box","box","box","box","box","box","box","box"],"title":["0_0<br>ae: wb | wb<br>a1: wb | wb<br>a2: wb | wb<br>v1=-0.27 v2=-0.27<br>U=-0.53","0_1<br>ae: wb | w<br>a1: wb | ab<br>a2: wb | w<br>v1=-0.4 v2=-0.19<br>U=-0.57","0_2<br>ae: w | w<br>a1: wb | ab<br>a2: wb | w<br>v1=-0.5 v2=-0.14<br>U=-0.6","0_3<br>ae: w | w<br>a1: wb | a<br>a2: wb | w<br>v1=-0.56 v2=-0.12<br>U=-0.63","1_0<br>ae: w | wb<br>a1: w | wb<br>a2: ab | wb<br>v1=-0.19 v2=-0.4<br>U=-0.57","1_1<br>ae: w | w<br>a1: w | ab<br>a2: ab | w<br>v1=-0.33 v2=-0.33<br>U=-0.6","1_2<br>ae: w | w<br>a1: wb | ab<br>a2: ab | w<br>v1=-0.45 v2=-0.3<br>U=-0.69","1_3<br>ae: w | w<br>a1: wb | a<br>a2: ab | w<br>v1=-0.51 v2=-0.28<br>U=-0.72","2_0<br>ae: w | w<br>a1: w | wb<br>a2: ab | wb<br>v1=-0.14 v2=-0.5<br>U=-0.6","2_1<br>ae: w | w<br>a1: w | ab<br>a2: ab | wb<br>v1=-0.3 v2=-0.45<br>U=-0.69","2_2<br>ae: w | w<br>a1: w | ab<br>a2: ab | w<br>v1=-0.43 v2=-0.43<br>U=-0.78","2_3<br>ae: w | w<br>a1: wb | a<br>a2: ab | w<br>v1=-0.48 v2=-0.4<br>U=-0.8","3_0<br>ae: w | w<br>a1: w | wb<br>a2: a | wb<br>v1=-0.12 v2=-0.56<br>U=-0.63","3_1<br>ae: w | w<br>a1: w | ab<br>a2: a | wb<br>v1=-0.28 v2=-0.51<br>U=-0.72","3_2<br>ae: w | w<br>a1: w | ab<br>a2: a | wb<br>v1=-0.4 v2=-0.48<br>U=-0.8","3_3<br>ae: w | w<br>a1: w | a<br>a2: a | w<br>v1=-0.45 v2=-0.45<br>U=-0.81"],"font":["20px Arial black","20px Arial black","20px Arial black","20px Arial black","20px Arial black","20px Arial black","20px Arial black","20px Arial black","20px Arial black","20px Arial black","20px Arial black","20px Arial black","20px Arial black","20px Arial black","20px Arial black","20px Arial black"]},"edges":{"id":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],"from":[1,1,1,2,2,2,2,2,3,3,3,3,3,4,4,4,5,5,5,5,5,6,6,6,6,6,6,6,6,7,7,7,7,7,7,7,7,8,8,8,8,8,9,9,9,9,9,10,10,10,10,10,10,10,10,11,11,11,11,11,11,11,11,12,12,12,12,12,13,13,13,14,14,14,14,14,15,15,15,15,15,16,16,16],"to":[6,2,5,7,3,5,1,6,8,4,6,2,7,7,3,8,10,2,6,9,1,11,3,7,9,1,5,10,2,12,4,8,10,2,6,11,3,11,3,7,12,4,14,6,10,13,5,15,7,11,13,5,9,14,6,16,8,12,14,6,10,15,7,15,7,11,16,8,10,14,9,11,15,9,13,10,12,16,10,14,11,11,15,12],"label":["","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","",""],"color":["#000077","#000077","#000077","#dddddd","#dddddd","#dddddd","#dddddd","#000077","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#000077","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd"],"width":[2,2,2,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],"hidden":[false,false,false,true,true,true,true,false,true,true,true,true,true,true,true,true,true,true,false,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true]},"nodesToDataframe":true,"edgesToDataframe":true,"options":{"width":"100%","height":"100%","nodes":{"shape":"dot"},"manipulation":{"enabled":false},"edges":{"arrows":{"to":{"enabled":true,"scaleFactor":1}}},"physics":{"solver":"barnesHut","stabilization":{"enabled":true,"onlyDynamicEdges":false,"fit":true}},"layout":{"improvedLayout":true}},"groups":["node"],"width":null,"height":null,"idselection":{"enabled":false},"byselection":{"enabled":false},"main":null,"submain":null,"footer":null,"background":"rgba(0, 0, 0, 0)"},"evals":[],"jsHooks":[]}</script><p>Each blue box corresponds to a state <code>x</code>. Below the state label each box shows the negotiation payoffs <code>r1</code> and <code>r2</code> of both players in that state. We see how symmetric high weapon arsenals are bad for both players, due to costly weapon maintenance. In states with asymmetric arsenals, the player with fewer weapons has a lower negotiation payoff. The reason is that the player with more weapons has a higher threat potential and can thus extort higher payments in negotiations.</p>
 <p>You can hover with the mouse over a state and see additional equilibrium information. First you see compact labels for the equilibrium path action profile <code>ae</code> and the profiles <code>a1</code> and <code>a2</code>, used to punish player 1 or 2, respectively, if they fail to make a required payment in the transfer stage. We explain further below how you can explore the candidates for these action profiles in more detail in order to understand why these particular action profiles have been chosen.</p>
 <p>You further see the joint continuation payoff <code>U</code> and the lowest implementable continuation payoffs taking into account future negotiations <code>v1</code> and <code>v2</code> for both players.</p>
 <p>In our example, you can see from the punishment profiles that players are punished by an attack if the other player has weapons and typically the punishing player also attempts to build new weapons.</p>
@@ -242,14 +241,16 @@
 <h2 class="hasAnchor">
 <a href="#more-equilibrium-details-joint-payoffs-and-incentive-constraints-of-all-possible-action-profiles-in-a-state-" class="anchor"></a>5. More equilibrium details: Joint payoffs and incentive constraints of all possible action profiles in a state.</h2>
 <p>To understand better what is going on in state “1_0” run the following code.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" title="1"><span class="co"># Solve again for RNE and store equilibrium details</span></a>
-<a class="sourceLine" id="cb7-2" title="2">g.rne =<span class="st"> </span><span class="kw"><a href="../reference/rel_T_rne.html">rel_T_rne</a></span>(g,<span class="dt">rho=</span><span class="fl">0.65</span>,<span class="dt">T=</span><span class="dv">1000</span>,<span class="dt">save.details =</span> <span class="ot">TRUE</span>)</a>
-<a class="sourceLine" id="cb7-3" title="3"></a>
-<a class="sourceLine" id="cb7-4" title="4"><span class="co"># Show equilibrium details for state "1_0"</span></a>
-<a class="sourceLine" id="cb7-5" title="5">g.rne <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb7-6" title="6"><span class="st">  </span><span class="kw"><a href="../reference/get_rne_details.html">get_rne_details</a></span>(<span class="dt">x=</span><span class="st">"1_0"</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb7-7" title="7"><span class="st">  </span><span class="kw"><a href="https://www.rdocumentation.org/packages/stats/topics/filter">filter</a></span>(i1<span class="op">!=</span><span class="st">"d"</span>, i2<span class="op">!=</span><span class="st">"d"</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb7-8" title="8"><span class="st">  </span><span class="kw">select</span>(x<span class="op">:</span>can.ae)</a></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="downlit">
+<span class="co"># Solve again for RNE and store equilibrium details</span>
+<span class="kw">g.rne</span> <span class="op">=</span> <span class="fu"><a href="../reference/rel_T_rne.html">rel_T_rne</a></span>(<span class="kw">g</span>,rho=<span class="fl">0.65</span>,T=<span class="fl">1000</span>,save.details = <span class="fl">TRUE</span>)
+
+<span class="co"># Show equilibrium details for state "1_0"</span>
+<span class="kw">g.rne</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/get_rne_details.html">get_rne_details</a></span>(x=<span class="st">"1_0"</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span>(<span class="kw">i1</span>!=<span class="st">"d"</span>, <span class="kw">i2</span>!=<span class="st">"d"</span>) <span class="op">%&gt;%</span>
+  <span class="fu">select</span>(<span class="kw">x</span><span class="op">:</span><span class="kw">can.ae</span>)
+</pre></div>
 <pre><code>##     x   a.lab best.dev      U.hat IC.holds can.ae
 ## 1 1_0   w | w  wb | wb -0.5647873    FALSE      0
 ## 2 1_0  w | wb  wb | wb -0.5674622     TRUE      2
@@ -272,16 +273,20 @@
 <h2 class="hasAnchor">
 <a href="#finding-alternative-t-rne" class="anchor"></a>6. Finding alternative T-RNE</h2>
 <p>Even though T-RNE negotiation payoffs are unique for a fixed T, there can be multiple T-RNE that differ by the chosen action profiles in one or several states. Run the following code to find an alternative T-RNE in which in state “1_0” the action profile “wb | w” would be chosen in which player 1 instead of player 2 invests.</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" title="1"><span class="co"># Solve again for RNE and store equilibrium details</span></a>
-<a class="sourceLine" id="cb9-2" title="2">g.rne =<span class="st"> </span><span class="kw"><a href="../reference/rel_T_rne.html">rel_T_rne</a></span>(g,<span class="dt">rho=</span><span class="fl">0.65</span>,<span class="dt">T=</span><span class="dv">1000</span>,<span class="dt">save.details =</span> <span class="ot">TRUE</span>,<span class="dt">tie.breaking =</span> <span class="st">"max_r1"</span>)</a>
-<a class="sourceLine" id="cb9-3" title="3"></a>
-<a class="sourceLine" id="cb9-4" title="4"><span class="kw"><a href="../reference/eq_diagram.html">eq_diagram</a></span>(g.rne)</a></code></pre></div>
-<div id="htmlwidget-e212cdc08607171e2de6" style="width:480px;height:384px;" class="visNetwork html-widget"></div>
-<script type="application/json" data-for="htmlwidget-e212cdc08607171e2de6">{"x":{"nodes":{"id":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"group":["node","node","node","node","node","node","node","node","node","node","node","node","node","node","node","node"],"label":["0_0 \n-0.27 -0.27","0_1 \n-0.39 -0.18","0_2 \n-0.48 -0.12","0_3 \n-0.53 -0.09","1_0 \n-0.18 -0.39","1_1 \n-0.3 -0.3","1_2 \n-0.42 -0.27","1_3 \n-0.48 -0.25","2_0 \n-0.12 -0.48","2_1 \n-0.27 -0.42","2_2 \n-0.39 -0.39","2_3 \n-0.44 -0.36","3_0 \n-0.09 -0.53","3_1 \n-0.25 -0.48","3_2 \n-0.36 -0.44","3_3 \n-0.41 -0.41"],"shape":["box","box","box","box","box","box","box","box","box","box","box","box","box","box","box","box"],"title":["0_0<br>ae: wb | wb<br>a1: wb | wb<br>a2: wb | wb<br>v1=-0.27 v2=-0.27<br>U=-0.53","0_1<br>ae: wb | w<br>a1: wb | ab<br>a2: wb | w<br>v1=-0.4 v2=-0.19<br>U=-0.57","0_2<br>ae: w | w<br>a1: wb | ab<br>a2: wb | w<br>v1=-0.5 v2=-0.14<br>U=-0.6","0_3<br>ae: w | w<br>a1: wb | a<br>a2: wb | w<br>v1=-0.56 v2=-0.12<br>U=-0.63","1_0<br>ae: wb | w<br>a1: wb | wb<br>a2: ab | w<br>v1=-0.19 v2=-0.4<br>U=-0.57","1_1<br>ae: w | w<br>a1: wb | ab<br>a2: ab | w<br>v1=-0.33 v2=-0.33<br>U=-0.6","1_2<br>ae: w | w<br>a1: wb | ab<br>a2: ab | w<br>v1=-0.45 v2=-0.3<br>U=-0.69","1_3<br>ae: w | w<br>a1: wb | a<br>a2: ab | w<br>v1=-0.51 v2=-0.28<br>U=-0.72","2_0<br>ae: w | w<br>a1: wb | wb<br>a2: ab | w<br>v1=-0.14 v2=-0.5<br>U=-0.6","2_1<br>ae: w | w<br>a1: wb | ab<br>a2: ab | w<br>v1=-0.3 v2=-0.45<br>U=-0.69","2_2<br>ae: w | w<br>a1: wb | ab<br>a2: ab | w<br>v1=-0.43 v2=-0.43<br>U=-0.78","2_3<br>ae: w | w<br>a1: wb | a<br>a2: ab | w<br>v1=-0.48 v2=-0.4<br>U=-0.8","3_0<br>ae: w | w<br>a1: w | wb<br>a2: a | w<br>v1=-0.12 v2=-0.56<br>U=-0.63","3_1<br>ae: w | w<br>a1: w | ab<br>a2: a | w<br>v1=-0.28 v2=-0.51<br>U=-0.72","3_2<br>ae: w | w<br>a1: w | ab<br>a2: a | w<br>v1=-0.4 v2=-0.48<br>U=-0.8","3_3<br>ae: w | w<br>a1: w | a<br>a2: a | w<br>v1=-0.45 v2=-0.45<br>U=-0.81"],"font":["24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black"]},"edges":{"id":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],"from":[1,1,1,2,2,2,2,2,3,3,3,3,3,4,4,4,5,5,5,5,5,6,6,6,6,6,6,6,6,7,7,7,7,7,7,7,7,8,8,8,8,8,9,9,9,9,9,10,10,10,10,10,10,10,10,11,11,11,11,11,11,11,11,12,12,12,12,12,13,13,13,14,14,14,14,14,15,15,15,15,15,16,16,16],"to":[6,2,5,7,3,5,1,6,8,4,6,2,7,7,3,8,10,2,6,9,1,11,3,7,9,1,5,10,2,12,4,8,10,2,6,11,3,11,3,7,12,4,14,6,10,13,5,15,7,11,13,5,9,14,6,16,8,12,14,6,10,15,7,15,7,11,16,8,10,14,9,11,15,9,13,10,12,16,10,14,11,11,15,12],"label":["","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","",""],"color":["#000077","#000077","#000077","#dddddd","#dddddd","#dddddd","#dddddd","#000077","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#000077","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd"],"width":[2,2,2,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],"hidden":[false,false,false,true,true,true,true,false,true,true,true,true,true,true,true,true,true,true,true,false,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true]},"nodesToDataframe":true,"edgesToDataframe":true,"options":{"width":"100%","height":"100%","nodes":{"shape":"dot"},"manipulation":{"enabled":false},"edges":{"arrows":{"to":{"enabled":true,"scaleFactor":1}}},"physics":{"stabilization":{"enabled":true,"onlyDynamicEdges":false,"fit":true}},"layout":{"improvedLayout":true}},"groups":"node","width":null,"height":null,"idselection":{"enabled":false},"byselection":{"enabled":false},"main":null,"submain":null,"footer":null,"background":"rgba(0, 0, 0, 0)"},"evals":[],"jsHooks":[]}</script><div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" title="1"><span class="co"># Show equilibrium details for state "1_0"</span></a>
-<a class="sourceLine" id="cb10-2" title="2">g.rne <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb10-3" title="3"><span class="st">  </span><span class="kw"><a href="../reference/get_rne_details.html">get_rne_details</a></span>(<span class="dt">x=</span><span class="st">"1_0"</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb10-4" title="4"><span class="st">  </span><span class="kw"><a href="https://www.rdocumentation.org/packages/stats/topics/filter">filter</a></span>(i1<span class="op">!=</span><span class="st">"d"</span>, i2<span class="op">!=</span><span class="st">"d"</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb10-5" title="5"><span class="st">  </span><span class="kw">select</span>(x<span class="op">:</span>can.ae)</a></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="downlit">
+<span class="co"># Solve again for RNE and store equilibrium details</span>
+<span class="kw">g.rne</span> <span class="op">=</span> <span class="fu"><a href="../reference/rel_T_rne.html">rel_T_rne</a></span>(<span class="kw">g</span>,rho=<span class="fl">0.65</span>,T=<span class="fl">1000</span>,save.details = <span class="fl">TRUE</span>,tie.breaking = <span class="st">"max_r1"</span>)
+
+<span class="fu"><a href="../reference/eq_diagram.html">eq_diagram</a></span>(<span class="kw">g.rne</span>)
+</pre></div>
+<div id="htmlwidget-81e7b8399e929eeaf818" style="width:480px;height:384px;" class="visNetwork html-widget"></div>
+<script type="application/json" data-for="htmlwidget-81e7b8399e929eeaf818">{"x":{"nodes":{"id":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"group":["node","node","node","node","node","node","node","node","node","node","node","node","node","node","node","node"],"label":["0_0 \n-0.27 -0.27","0_1 \n-0.39 -0.18","0_2 \n-0.48 -0.12","0_3 \n-0.53 -0.09","1_0 \n-0.18 -0.39","1_1 \n-0.3 -0.3","1_2 \n-0.42 -0.27","1_3 \n-0.48 -0.25","2_0 \n-0.12 -0.48","2_1 \n-0.27 -0.42","2_2 \n-0.39 -0.39","2_3 \n-0.44 -0.36","3_0 \n-0.09 -0.53","3_1 \n-0.25 -0.48","3_2 \n-0.36 -0.44","3_3 \n-0.41 -0.41"],"shape":["box","box","box","box","box","box","box","box","box","box","box","box","box","box","box","box"],"title":["0_0<br>ae: wb | wb<br>a1: wb | wb<br>a2: wb | wb<br>v1=-0.27 v2=-0.27<br>U=-0.53","0_1<br>ae: wb | w<br>a1: wb | ab<br>a2: wb | w<br>v1=-0.4 v2=-0.19<br>U=-0.57","0_2<br>ae: w | w<br>a1: wb | ab<br>a2: wb | w<br>v1=-0.5 v2=-0.14<br>U=-0.6","0_3<br>ae: w | w<br>a1: wb | a<br>a2: wb | w<br>v1=-0.56 v2=-0.12<br>U=-0.63","1_0<br>ae: wb | w<br>a1: wb | wb<br>a2: ab | w<br>v1=-0.19 v2=-0.4<br>U=-0.57","1_1<br>ae: w | w<br>a1: wb | ab<br>a2: ab | w<br>v1=-0.33 v2=-0.33<br>U=-0.6","1_2<br>ae: w | w<br>a1: wb | ab<br>a2: ab | w<br>v1=-0.45 v2=-0.3<br>U=-0.69","1_3<br>ae: w | w<br>a1: wb | a<br>a2: ab | w<br>v1=-0.51 v2=-0.28<br>U=-0.72","2_0<br>ae: w | w<br>a1: wb | wb<br>a2: ab | w<br>v1=-0.14 v2=-0.5<br>U=-0.6","2_1<br>ae: w | w<br>a1: wb | ab<br>a2: ab | w<br>v1=-0.3 v2=-0.45<br>U=-0.69","2_2<br>ae: w | w<br>a1: wb | ab<br>a2: ab | w<br>v1=-0.43 v2=-0.43<br>U=-0.78","2_3<br>ae: w | w<br>a1: wb | a<br>a2: ab | w<br>v1=-0.48 v2=-0.4<br>U=-0.8","3_0<br>ae: w | w<br>a1: w | wb<br>a2: a | w<br>v1=-0.12 v2=-0.56<br>U=-0.63","3_1<br>ae: w | w<br>a1: w | ab<br>a2: a | w<br>v1=-0.28 v2=-0.51<br>U=-0.72","3_2<br>ae: w | w<br>a1: w | ab<br>a2: a | w<br>v1=-0.4 v2=-0.48<br>U=-0.8","3_3<br>ae: w | w<br>a1: w | a<br>a2: a | w<br>v1=-0.45 v2=-0.45<br>U=-0.81"],"font":["24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black"]},"edges":{"id":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],"from":[1,1,1,2,2,2,2,2,3,3,3,3,3,4,4,4,5,5,5,5,5,6,6,6,6,6,6,6,6,7,7,7,7,7,7,7,7,8,8,8,8,8,9,9,9,9,9,10,10,10,10,10,10,10,10,11,11,11,11,11,11,11,11,12,12,12,12,12,13,13,13,14,14,14,14,14,15,15,15,15,15,16,16,16],"to":[6,2,5,7,3,5,1,6,8,4,6,2,7,7,3,8,10,2,6,9,1,11,3,7,9,1,5,10,2,12,4,8,10,2,6,11,3,11,3,7,12,4,14,6,10,13,5,15,7,11,13,5,9,14,6,16,8,12,14,6,10,15,7,15,7,11,16,8,10,14,9,11,15,9,13,10,12,16,10,14,11,11,15,12],"label":["","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","",""],"color":["#000077","#000077","#000077","#dddddd","#dddddd","#dddddd","#dddddd","#000077","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#000077","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd"],"width":[2,2,2,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],"hidden":[false,false,false,true,true,true,true,false,true,true,true,true,true,true,true,true,true,true,true,false,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true]},"nodesToDataframe":true,"edgesToDataframe":true,"options":{"width":"100%","height":"100%","nodes":{"shape":"dot"},"manipulation":{"enabled":false},"edges":{"arrows":{"to":{"enabled":true,"scaleFactor":1}}},"physics":{"solver":"barnesHut","stabilization":{"enabled":true,"onlyDynamicEdges":false,"fit":true}},"layout":{"improvedLayout":true}},"groups":["node"],"width":null,"height":null,"idselection":{"enabled":false},"byselection":{"enabled":false},"main":null,"submain":null,"footer":null,"background":"rgba(0, 0, 0, 0)"},"evals":[],"jsHooks":[]}</script><div class="sourceCode" id="cb10"><pre class="downlit">
+<span class="co"># Show equilibrium details for state "1_0"</span>
+<span class="kw">g.rne</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/get_rne_details.html">get_rne_details</a></span>(x=<span class="st">"1_0"</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span>(<span class="kw">i1</span>!=<span class="st">"d"</span>, <span class="kw">i2</span>!=<span class="st">"d"</span>) <span class="op">%&gt;%</span>
+  <span class="fu">select</span>(<span class="kw">x</span><span class="op">:</span><span class="kw">can.ae</span>)
+</pre></div>
 <pre><code>##     x   a.lab best.dev      U.hat IC.holds can.ae
 ## 1 1_0   w | w  wb | wb -0.5647873    FALSE      0
 ## 2 1_0  w | wb  wb | wb -0.5674622     TRUE      1
@@ -300,13 +305,15 @@
 <p>All equilibria have the form of <em>simple equilibria</em>, which we explain in detail in our <a href="https://www.uni-ulm.de/fileadmin/website_uni_ulm/mawi.inst.160/pdf_dokumente/mitarbeiter/kranz/dyngame.pdf">2017 article</a>. That article also explains how this class of equilibria can implement every SPE payoff simply by adjusting transfers on the equilibrium path.</p>
 <p>The key idea is that on the equilibrium path the same action profile <span class="math inline">\(a^e(x)\)</span> is played in state <span class="math inline">\(x\)</span>. Should a player deviate, he is asked to pay a fine to the other player at the beginning of the next period. Should player <span class="math inline">\(i\)</span> fail to pay a fine, or some other required transfer on the equilibrium path, he is punished by playing for one period a punishment profile <span class="math inline">\(a^i(x)\)</span>. Punishment will be stopped once a player redeems himself by paying the fine.</p>
 <p>The following code uses <code>get_rne_details</code> to explore the candidate punishment action profiles <span class="math inline">\(a^2\)</span> against player 2 in state “1_0”.</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb12-1" title="1"><span class="co"># Show details for punishment actions against</span></a>
-<a class="sourceLine" id="cb12-2" title="2"><span class="co"># player 2 in state "1_0"</span></a>
-<a class="sourceLine" id="cb12-3" title="3">g.rne <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb12-4" title="4"><span class="st">  </span><span class="kw"><a href="../reference/get_rne_details.html">get_rne_details</a></span>(<span class="dt">x=</span><span class="st">"1_0"</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb12-5" title="5"><span class="st">  </span><span class="kw"><a href="https://www.rdocumentation.org/packages/stats/topics/filter">filter</a></span>(i1<span class="op">!=</span><span class="st">"d"</span>, i2<span class="op">!=</span><span class="st">"d"</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb12-6" title="6"><span class="st">  </span><span class="kw">arrange</span>(v2.hat) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb12-7" title="7"><span class="st">  </span><span class="kw">select</span>(x<span class="op">:</span>IC.holds, v2.hat, can.a2)</a></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="downlit">
+<span class="co"># Show details for punishment actions against</span>
+<span class="co"># player 2 in state "1_0"</span>
+<span class="kw">g.rne</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/get_rne_details.html">get_rne_details</a></span>(x=<span class="st">"1_0"</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span>(<span class="kw">i1</span>!=<span class="st">"d"</span>, <span class="kw">i2</span>!=<span class="st">"d"</span>) <span class="op">%&gt;%</span>
+  <span class="fu">arrange</span>(<span class="kw">v2.hat</span>) <span class="op">%&gt;%</span>
+  <span class="fu">select</span>(<span class="kw">x</span><span class="op">:</span><span class="kw">IC.holds</span>, <span class="kw">v2.hat</span>, <span class="kw">can.a2</span>)
+</pre></div>
 <pre><code>##     x   a.lab best.dev      U.hat IC.holds     v2.hat can.a2
 ## 1 1_0  ab | w  wb | wb -0.5779622     TRUE -0.4005789      2
 ## 2 1_0 ab | wb  wb | wb -0.5810082     TRUE -0.4005789      1
@@ -318,13 +325,15 @@
 ## 8 1_0  w | wb  wb | wb -0.5674622     TRUE -0.3828838      0</code></pre>
 <p>The variable <code>v2.hat</code> denotes the lowest continuation payoff that player 2 could guarantee himself if in the current period the profile in <code>a.lab</code> is supposed to be played and in all future the punishment profiles <span class="math inline">\(a^2(x)\)</span> are supposed to be played. I say “supposed to be played” because when computing <code>v2.hat</code>, we assume that the punished player 2 is allowed to optimally deviate from any of those action profiles. The best punishment profile in a given state is the one with the lowest value of <code>v2.hat</code> among all incentive compatible profiles, i.e. <code>IC.holds</code> must be true. Here we see that an optimal punishment against player 2 is that player 1 attacks (a) and builds (b) new weapons. Whether during the punishment player 2 just waits “w” or also builds weapons “wb”, does not matter. The value of <code>v2.hat</code> is only determined by player 2’s best reply which is always “wb”.</p>
 <p>Similarly, we can explore the candidate punishment profiles <span class="math inline">\(a^1\)</span> against player 1 in state “1_0” with the following code:</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb14-1" title="1"><span class="co"># Show details for punishment actions against</span></a>
-<a class="sourceLine" id="cb14-2" title="2"><span class="co"># player 2 in state "1_0"</span></a>
-<a class="sourceLine" id="cb14-3" title="3">g.rne <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb14-4" title="4"><span class="st">  </span><span class="kw"><a href="../reference/get_rne_details.html">get_rne_details</a></span>(<span class="dt">x=</span><span class="st">"1_0"</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb14-5" title="5"><span class="st">  </span><span class="kw"><a href="https://www.rdocumentation.org/packages/stats/topics/filter">filter</a></span>(i1<span class="op">!=</span><span class="st">"d"</span>, i2<span class="op">!=</span><span class="st">"d"</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb14-6" title="6"><span class="st">  </span><span class="kw">arrange</span>(v1.hat) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb14-7" title="7"><span class="st">  </span><span class="kw">select</span>(x<span class="op">:</span>IC.holds, v1.hat, can.a1)</a></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="downlit">
+<span class="co"># Show details for punishment actions against</span>
+<span class="co"># player 2 in state "1_0"</span>
+<span class="kw">g.rne</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/get_rne_details.html">get_rne_details</a></span>(x=<span class="st">"1_0"</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span>(<span class="kw">i1</span>!=<span class="st">"d"</span>, <span class="kw">i2</span>!=<span class="st">"d"</span>) <span class="op">%&gt;%</span>
+  <span class="fu">arrange</span>(<span class="kw">v1.hat</span>) <span class="op">%&gt;%</span>
+  <span class="fu">select</span>(<span class="kw">x</span><span class="op">:</span><span class="kw">IC.holds</span>, <span class="kw">v1.hat</span>, <span class="kw">can.a1</span>)
+</pre></div>
 <pre><code>##     x   a.lab best.dev      U.hat IC.holds     v1.hat can.a1
 ## 1 1_0  w | wb  wb | wb -0.5674622     TRUE -0.1890513      1
 ## 2 1_0 wb | wb  wb | wb -0.5705082     TRUE -0.1890513      2
@@ -343,32 +352,40 @@
 <h3 class="hasAnchor">
 <a href="#increasing-the-success-probability-of-investments" class="anchor"></a>8.1 Increasing the success probability of investments</h3>
 <p>So far we have assumed that the success probability <code>sp</code> of investments is only 8%. We now want to study how the T-RNE changes if instead weapon investments are always successful, i.e. <code>sp=1</code>, keeping all other parameters the same:</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb16-1" title="1">g1 =<span class="st"> </span>g <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb16-2" title="2"><span class="st">  </span><span class="kw"><a href="../reference/rel_change_param.html">rel_change_param</a></span>(<span class="dt">sp=</span><span class="dv">1</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb16-3" title="3"><span class="st">  </span><span class="kw"><a href="../reference/rel_T_rne.html">rel_T_rne</a></span>(<span class="dt">T=</span><span class="dv">1000</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="downlit">
+<span class="kw">g1</span> <span class="op">=</span> <span class="kw">g</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="../reference/rel_change_param.html">rel_change_param</a></span>(sp=<span class="fl">1</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/rel_T_rne.html">rel_T_rne</a></span>(T=<span class="fl">1000</span>)
+</pre></div>
 <p>Note that you can call <code>rel_change_param</code> only for game objects that have not been compiled (i.e. no equilibrium should yet have been solved). That is why I, originaly stored the game in the variable <code>g</code> but use different variable names for solved games, like <code>g1</code> here.</p>
 <p>Given that the costs of weapon investments stayed constant but the success probability has dramatically gone up, investments have effectively become cheaper. One may thus suspect that in equilibrium larger weapon arsenals are aquired.</p>
 <p>Let us take a look at the result:</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb17-1" title="1"><span class="kw"><a href="../reference/eq_diagram.html">eq_diagram</a></span>(g1)</a></code></pre></div>
-<div id="htmlwidget-31674838387d7c84dd88" style="width:480px;height:384px;" class="visNetwork html-widget"></div>
-<script type="application/json" data-for="htmlwidget-31674838387d7c84dd88">{"x":{"nodes":{"id":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"group":["node","node","node","node","node","node","node","node","node","node","node","node","node","node","node","node"],"label":["0_0 \n0 0","0_1 \n-0.01 0.01","0_2 \n-0.02 0.01","0_3 \n-0.03 0.01","1_0 \n0.01 -0.01","1_1 \n0 0","1_2 \n-0.01 0","1_3 \n-0.02 0","2_0 \n0.01 -0.02","2_1 \n0 -0.01","2_2 \n-0.01 -0.01","2_3 \n-0.02 -0.01","3_0 \n0.01 -0.03","3_1 \n0 -0.02","3_2 \n-0.01 -0.02","3_3 \n-0.02 -0.02"],"shape":["box","box","box","box","box","box","box","box","box","box","box","box","box","box","box","box"],"title":["0_0<br>ae: w | w<br>a1: wb | wb<br>a2: wb | wb<br>v1=-0.02 v2=-0.02<br>U=0","0_1<br>ae: w | wd<br>a1: wb | ab<br>a2: wb | w<br>v1=-0.04 v2=-0.02<br>U=0","0_2<br>ae: w | wd<br>a1: wb | ab<br>a2: wb | wd<br>v1=-0.06 v2=-0.02<br>U=-0.01","0_3<br>ae: w | wd<br>a1: wb | a<br>a2: wb | wd<br>v1=-0.07 v2=-0.03<br>U=-0.02","1_0<br>ae: wd | w<br>a1: w | wb<br>a2: ab | wb<br>v1=-0.02 v2=-0.04<br>U=0","1_1<br>ae: w | wd<br>a1: wb | ab<br>a2: ab | wb<br>v1=-0.04 v2=-0.04<br>U=-0.01","1_2<br>ae: wd | wd<br>a1: wb | ab<br>a2: ab | w<br>v1=-0.06 v2=-0.05<br>U=-0.01","1_3<br>ae: wd | wd<br>a1: wb | a<br>a2: ab | wd<br>v1=-0.07 v2=-0.05<br>U=-0.03","2_0<br>ae: wd | w<br>a1: wd | wb<br>a2: ab | wb<br>v1=-0.02 v2=-0.06<br>U=-0.01","2_1<br>ae: wd | wd<br>a1: w | ab<br>a2: ab | wb<br>v1=-0.05 v2=-0.06<br>U=-0.01","2_2<br>ae: wd | wd<br>a1: wb | ab<br>a2: ab | wb<br>v1=-0.06 v2=-0.06<br>U=-0.03","2_3<br>ae: wd | wd<br>a1: wb | a<br>a2: ab | w<br>v1=-0.07 v2=-0.07<br>U=-0.03","3_0<br>ae: wd | w<br>a1: wd | wb<br>a2: a | wb<br>v1=-0.03 v2=-0.07<br>U=-0.02","3_1<br>ae: wd | wd<br>a1: wd | ab<br>a2: a | wb<br>v1=-0.05 v2=-0.07<br>U=-0.03","3_2<br>ae: wd | wd<br>a1: w | ab<br>a2: a | wb<br>v1=-0.07 v2=-0.07<br>U=-0.03","3_3<br>ae: wd | wd<br>a1: w | a<br>a2: a | w<br>v1=-0.08 v2=-0.08<br>U=-0.04"],"font":["24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black"]},"edges":{"id":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],"from":[1,1,1,2,2,2,2,2,3,3,3,3,3,4,4,4,5,5,5,5,5,6,6,6,6,6,6,6,6,7,7,7,7,7,7,7,7,8,8,8,8,8,9,9,9,9,9,10,10,10,10,10,10,10,10,11,11,11,11,11,11,11,11,12,12,12,12,12,13,13,13,14,14,14,14,14,15,15,15,15,15,16,16,16],"to":[6,2,5,7,3,5,1,6,8,4,6,2,7,7,3,8,10,2,6,9,1,11,3,7,9,1,5,10,2,12,4,8,10,2,6,11,3,11,3,7,12,4,14,6,10,13,5,15,7,11,13,5,9,14,6,16,8,12,14,6,10,15,7,15,7,11,16,8,10,14,9,11,15,9,13,10,12,16,10,14,11,11,15,12],"label":["","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","",""],"color":["#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#000077","#dddddd","#dddddd","#dddddd","#dddddd","#000077","#dddddd","#dddddd","#000077","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#000077","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#000077","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#000077","#dddddd","#dddddd","#dddddd","#dddddd","#000077","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#000077","#dddddd","#dddddd","#dddddd","#dddddd","#000077","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#000077","#dddddd","#dddddd","#dddddd","#dddddd","#000077","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#000077","#dddddd","#dddddd","#000077","#dddddd","#dddddd","#dddddd","#dddddd","#000077","#dddddd","#dddddd","#000077","#dddddd","#dddddd"],"width":[1,1,1,1,1,1,2,1,1,1,1,2,1,1,2,1,1,1,1,1,2,1,1,1,1,1,2,1,1,1,1,1,1,2,1,1,1,1,2,1,1,1,1,1,1,1,2,1,1,1,1,2,1,1,1,1,1,1,1,2,1,1,1,1,2,1,1,1,1,1,2,1,1,2,1,1,1,1,2,1,1,2,1,1],"hidden":[true,true,true,true,true,true,false,true,true,true,true,false,true,true,false,true,true,true,true,true,false,true,true,true,true,true,false,true,true,true,true,true,true,false,true,true,true,true,false,true,true,true,true,true,true,true,false,true,true,true,true,false,true,true,true,true,true,true,true,false,true,true,true,true,false,true,true,true,true,true,false,true,true,false,true,true,true,true,false,true,true,false,true,true]},"nodesToDataframe":true,"edgesToDataframe":true,"options":{"width":"100%","height":"100%","nodes":{"shape":"dot"},"manipulation":{"enabled":false},"edges":{"arrows":{"to":{"enabled":true,"scaleFactor":1}}},"physics":{"stabilization":{"enabled":true,"onlyDynamicEdges":false,"fit":true}},"layout":{"improvedLayout":true}},"groups":"node","width":null,"height":null,"idselection":{"enabled":false},"byselection":{"enabled":false},"main":null,"submain":null,"footer":null,"background":"rgba(0, 0, 0, 0)"},"evals":[],"jsHooks":[]}</script><p>We have quite an opposite result. Now in no state weapon investments are conducted. Moreover, if players start with strictly positive weapon arsenals, they reduce their weapon arsenals step by step until the weapon-free state “0_0” is reached. To understand the result, note that players invest as punishment (and attack if the current arsenal of the punisher is positive). Since investments are always successful, the threat of a quick aquisition of weapons, which will be used if the punished player refues to pay a fine, is sufficient to prevent any weapon aquisition on the equilibrium path. Moreover, this threat is so effective that it can even incentivize players to reduce their weapon arsenal.</p>
+<div class="sourceCode" id="cb17"><pre class="downlit">
+<span class="fu"><a href="../reference/eq_diagram.html">eq_diagram</a></span>(<span class="kw">g1</span>)
+</pre></div>
+<div id="htmlwidget-0626a885f50459c9188a" style="width:480px;height:384px;" class="visNetwork html-widget"></div>
+<script type="application/json" data-for="htmlwidget-0626a885f50459c9188a">{"x":{"nodes":{"id":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"group":["node","node","node","node","node","node","node","node","node","node","node","node","node","node","node","node"],"label":["0_0 \n0 0","0_1 \n-0.01 0.01","0_2 \n-0.02 0.01","0_3 \n-0.03 0.01","1_0 \n0.01 -0.01","1_1 \n0 0","1_2 \n-0.01 0","1_3 \n-0.02 0","2_0 \n0.01 -0.02","2_1 \n0 -0.01","2_2 \n-0.01 -0.01","2_3 \n-0.02 -0.01","3_0 \n0.01 -0.03","3_1 \n0 -0.02","3_2 \n-0.01 -0.02","3_3 \n-0.02 -0.02"],"shape":["box","box","box","box","box","box","box","box","box","box","box","box","box","box","box","box"],"title":["0_0<br>ae: w | w<br>a1: wb | wb<br>a2: wb | wb<br>v1=-0.02 v2=-0.02<br>U=0","0_1<br>ae: w | wd<br>a1: wb | ab<br>a2: wb | w<br>v1=-0.04 v2=-0.02<br>U=0","0_2<br>ae: w | wd<br>a1: wb | ab<br>a2: wb | wd<br>v1=-0.06 v2=-0.02<br>U=-0.01","0_3<br>ae: w | wd<br>a1: wb | a<br>a2: wb | wd<br>v1=-0.07 v2=-0.03<br>U=-0.02","1_0<br>ae: wd | w<br>a1: w | wb<br>a2: ab | wb<br>v1=-0.02 v2=-0.04<br>U=0","1_1<br>ae: w | wd<br>a1: wb | ab<br>a2: ab | wb<br>v1=-0.04 v2=-0.04<br>U=-0.01","1_2<br>ae: wd | wd<br>a1: wb | ab<br>a2: ab | w<br>v1=-0.06 v2=-0.05<br>U=-0.01","1_3<br>ae: wd | wd<br>a1: wb | a<br>a2: ab | wd<br>v1=-0.07 v2=-0.05<br>U=-0.03","2_0<br>ae: wd | w<br>a1: wd | wb<br>a2: ab | wb<br>v1=-0.02 v2=-0.06<br>U=-0.01","2_1<br>ae: wd | wd<br>a1: w | ab<br>a2: ab | wb<br>v1=-0.05 v2=-0.06<br>U=-0.01","2_2<br>ae: wd | wd<br>a1: wb | ab<br>a2: ab | wb<br>v1=-0.06 v2=-0.06<br>U=-0.03","2_3<br>ae: wd | wd<br>a1: wb | a<br>a2: ab | w<br>v1=-0.07 v2=-0.07<br>U=-0.03","3_0<br>ae: wd | w<br>a1: wd | wb<br>a2: a | wb<br>v1=-0.03 v2=-0.07<br>U=-0.02","3_1<br>ae: wd | wd<br>a1: wd | ab<br>a2: a | wb<br>v1=-0.05 v2=-0.07<br>U=-0.03","3_2<br>ae: wd | wd<br>a1: w | ab<br>a2: a | wb<br>v1=-0.07 v2=-0.07<br>U=-0.03","3_3<br>ae: wd | wd<br>a1: w | a<br>a2: a | w<br>v1=-0.08 v2=-0.08<br>U=-0.04"],"font":["24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black"]},"edges":{"id":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],"from":[1,1,1,2,2,2,2,2,3,3,3,3,3,4,4,4,5,5,5,5,5,6,6,6,6,6,6,6,6,7,7,7,7,7,7,7,7,8,8,8,8,8,9,9,9,9,9,10,10,10,10,10,10,10,10,11,11,11,11,11,11,11,11,12,12,12,12,12,13,13,13,14,14,14,14,14,15,15,15,15,15,16,16,16],"to":[6,2,5,7,3,5,1,6,8,4,6,2,7,7,3,8,10,2,6,9,1,11,3,7,9,1,5,10,2,12,4,8,10,2,6,11,3,11,3,7,12,4,14,6,10,13,5,15,7,11,13,5,9,14,6,16,8,12,14,6,10,15,7,15,7,11,16,8,10,14,9,11,15,9,13,10,12,16,10,14,11,11,15,12],"label":["","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","",""],"color":["#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#000077","#dddddd","#dddddd","#dddddd","#dddddd","#000077","#dddddd","#dddddd","#000077","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#000077","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#000077","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#000077","#dddddd","#dddddd","#dddddd","#dddddd","#000077","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#000077","#dddddd","#dddddd","#dddddd","#dddddd","#000077","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#000077","#dddddd","#dddddd","#dddddd","#dddddd","#000077","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#000077","#dddddd","#dddddd","#000077","#dddddd","#dddddd","#dddddd","#dddddd","#000077","#dddddd","#dddddd","#000077","#dddddd","#dddddd"],"width":[1,1,1,1,1,1,2,1,1,1,1,2,1,1,2,1,1,1,1,1,2,1,1,1,1,1,2,1,1,1,1,1,1,2,1,1,1,1,2,1,1,1,1,1,1,1,2,1,1,1,1,2,1,1,1,1,1,1,1,2,1,1,1,1,2,1,1,1,1,1,2,1,1,2,1,1,1,1,2,1,1,2,1,1],"hidden":[true,true,true,true,true,true,false,true,true,true,true,false,true,true,false,true,true,true,true,true,false,true,true,true,true,true,false,true,true,true,true,true,true,false,true,true,true,true,false,true,true,true,true,true,true,true,false,true,true,true,true,false,true,true,true,true,true,true,true,false,true,true,true,true,false,true,true,true,true,true,false,true,true,false,true,true,true,true,false,true,true,false,true,true]},"nodesToDataframe":true,"edgesToDataframe":true,"options":{"width":"100%","height":"100%","nodes":{"shape":"dot"},"manipulation":{"enabled":false},"edges":{"arrows":{"to":{"enabled":true,"scaleFactor":1}}},"physics":{"solver":"barnesHut","stabilization":{"enabled":true,"onlyDynamicEdges":false,"fit":true}},"layout":{"improvedLayout":true}},"groups":["node"],"width":null,"height":null,"idselection":{"enabled":false},"byselection":{"enabled":false},"main":null,"submain":null,"footer":null,"background":"rgba(0, 0, 0, 0)"},"evals":[],"jsHooks":[]}</script><p>We have quite an opposite result. Now in no state weapon investments are conducted. Moreover, if players start with strictly positive weapon arsenals, they reduce their weapon arsenals step by step until the weapon-free state “0_0” is reached. To understand the result, note that players invest as punishment (and attack if the current arsenal of the punisher is positive). Since investments are always successful, the threat of a quick aquisition of weapons, which will be used if the punished player refues to pay a fine, is sufficient to prevent any weapon aquisition on the equilibrium path. Moreover, this threat is so effective that it can even incentivize players to reduce their weapon arsenal.</p>
 <p>This outcome is facilitated by the fact that a high weapon arsenal generally gives less scope for extortion if the other player can quickly and cheaply build his own arsenal. You see that the differences in negotiation payoffs in asymmetric states like “3_0” or “0_3” are much smaller than in the previous specification in which weapon investments only were successful with a probability of 8%.</p>
 </div>
 <div id="changing-some-other-parameters" class="section level3">
 <h3 class="hasAnchor">
 <a href="#changing-some-other-parameters" class="anchor"></a>Changing some other parameters</h3>
 <p>In the following example we change some parameters again a bit.</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb18-1" title="1">g2 =<span class="st"> </span>g <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb18-2" title="2"><span class="st">  </span><span class="kw"><a href="../reference/rel_change_param.html">rel_change_param</a></span>(<span class="dt">delta=</span><span class="fl">0.95</span>,<span class="dt">rho=</span><span class="fl">0.6</span>,<span class="dt">sp=</span><span class="fl">0.1</span>,<span class="dt">c.x=</span><span class="fl">0.1</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb18-3" title="3"><span class="st">  </span><span class="kw"><a href="../reference/rel_T_rne.html">rel_T_rne</a></span>(<span class="dt">T=</span><span class="dv">1000</span>, <span class="dt">save.details =</span> <span class="ot">TRUE</span>)</a>
-<a class="sourceLine" id="cb18-4" title="4"></a>
-<a class="sourceLine" id="cb18-5" title="5"><span class="kw"><a href="../reference/eq_diagram.html">eq_diagram</a></span>(g2)</a></code></pre></div>
-<div id="htmlwidget-53be5794e55c8e4a8ea6" style="width:480px;height:384px;" class="visNetwork html-widget"></div>
-<script type="application/json" data-for="htmlwidget-53be5794e55c8e4a8ea6">{"x":{"nodes":{"id":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"group":["node","node","node","node","node","node","node","node","node","node","node","node","node","node","node","node"],"label":["0_0 \n-0.07 -0.07","0_1 \n-0.41 0.24","0_2 \n-0.68 0.48","0_3 \n-0.89 0.59","1_0 \n0.24 -0.41","1_1 \n-0.1 -0.1","1_2 \n-0.41 0.11","1_3 \n-0.6 0.23","2_0 \n0.48 -0.68","2_1 \n0.11 -0.41","2_2 \n-0.2 -0.2","2_3 \n-0.36 -0.05","3_0 \n0.59 -0.89","3_1 \n0.23 -0.6","3_2 \n-0.05 -0.36","3_3 \n-0.21 -0.21"],"shape":["box","box","box","box","box","box","box","box","box","box","box","box","box","box","box","box"],"title":["0_0<br>ae: wb | wb<br>a1: wb | wb<br>a2: wb | wb<br>v1=-0.07 v2=-0.07<br>U=-0.14","0_1<br>ae: wb | w<br>a1: wb | ab<br>a2: wb | w<br>v1=-0.46 v2=0.19<br>U=-0.17","0_2<br>ae: w | w<br>a1: wb | ab<br>a2: wb | w<br>v1=-0.78 v2=0.38<br>U=-0.2","0_3<br>ae: w | w<br>a1: wb | a<br>a2: wb | w<br>v1=-1.02 v2=0.46<br>U=-0.3","1_0<br>ae: w | wb<br>a1: w | wb<br>a2: ab | wb<br>v1=0.19 v2=-0.46<br>U=-0.17","1_1<br>ae: w | w<br>a1: w | ab<br>a2: ab | w<br>v1=-0.2 v2=-0.2<br>U=-0.2","1_2<br>ae: w | w<br>a1: wb | ab<br>a2: ab | w<br>v1=-0.55 v2=-0.03<br>U=-0.3","1_3<br>ae: w | w<br>a1: wb | a<br>a2: ab | w<br>v1=-0.77 v2=0.06<br>U=-0.37","2_0<br>ae: w | w<br>a1: w | wb<br>a2: ab | wb<br>v1=0.38 v2=-0.78<br>U=-0.2","2_1<br>ae: w | w<br>a1: w | ab<br>a2: ab | wb<br>v1=-0.03 v2=-0.55<br>U=-0.3","2_2<br>ae: w | w<br>a1: w | ab<br>a2: ab | w<br>v1=-0.37 v2=-0.37<br>U=-0.4","2_3<br>ae: wb | wd<br>a1: wb | a<br>a2: ab | w<br>v1=-0.57 v2=-0.26<br>U=-0.41","3_0<br>ae: w | w<br>a1: w | wb<br>a2: a | wb<br>v1=0.46 v2=-1.02<br>U=-0.3","3_1<br>ae: w | w<br>a1: w | ab<br>a2: a | wb<br>v1=0.06 v2=-0.77<br>U=-0.37","3_2<br>ae: wd | wb<br>a1: w | ab<br>a2: a | wb<br>v1=-0.26 v2=-0.57<br>U=-0.41","3_3<br>ae: wd | w<br>a1: w | a<br>a2: a | w<br>v1=-0.46 v2=-0.46<br>U=-0.42"],"font":["24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black"]},"edges":{"id":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],"from":[1,1,1,2,2,2,2,2,3,3,3,3,3,4,4,4,5,5,5,5,5,6,6,6,6,6,6,6,6,7,7,7,7,7,7,7,7,8,8,8,8,8,9,9,9,9,9,10,10,10,10,10,10,10,10,11,11,11,11,11,11,11,11,12,12,12,12,12,13,13,13,14,14,14,14,14,15,15,15,15,15,16,16,16],"to":[6,2,5,7,3,5,1,6,8,4,6,2,7,7,3,8,10,2,6,9,1,11,3,7,9,1,5,10,2,12,4,8,10,2,6,11,3,11,3,7,12,4,14,6,10,13,5,15,7,11,13,5,9,14,6,16,8,12,14,6,10,15,7,15,7,11,16,8,10,14,9,11,15,9,13,10,12,16,10,14,11,11,15,12],"label":["","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","",""],"color":["#000077","#000077","#000077","#dddddd","#dddddd","#dddddd","#dddddd","#000077","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#000077","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#000077","#dddddd","#000077","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#000077","#dddddd","#dddddd","#dddddd","#000077","#dddddd","#dddddd","#000077"],"width":[2,2,2,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,2,1,1,1,1,1,1,1,1,1,1,2,1,1,1,2,1,1,2],"hidden":[false,false,false,true,true,true,true,false,true,true,true,true,true,true,true,true,true,true,false,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,false,true,false,true,true,true,true,true,true,true,true,true,true,false,true,true,true,false,true,true,false]},"nodesToDataframe":true,"edgesToDataframe":true,"options":{"width":"100%","height":"100%","nodes":{"shape":"dot"},"manipulation":{"enabled":false},"edges":{"arrows":{"to":{"enabled":true,"scaleFactor":1}}},"physics":{"stabilization":{"enabled":true,"onlyDynamicEdges":false,"fit":true}},"layout":{"improvedLayout":true}},"groups":"node","width":null,"height":null,"idselection":{"enabled":false},"byselection":{"enabled":false},"main":null,"submain":null,"footer":null,"background":"rgba(0, 0, 0, 0)"},"evals":[],"jsHooks":[]}</script><p>Interestingly, we find that in state “3_2” player 1 destroys (d) her weapons while at the same time player 2 tries to build (b) new weapons (the reverse holds in state “2_3). To understand what is going on let us explore the equilibrium details for state”3_2".</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb19-1" title="1">g2 <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb19-2" title="2"><span class="st">  </span><span class="kw"><a href="../reference/get_rne_details.html">get_rne_details</a></span>(<span class="dt">x=</span><span class="st">"3_2"</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb19-3" title="3"><span class="st">  </span><span class="kw">select</span>(x<span class="op">:</span>can.ae) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb19-4" title="4"><span class="st">  </span><span class="kw"><a href="https://www.rdocumentation.org/packages/utils/topics/head">head</a></span>(<span class="dv">5</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="downlit">
+<span class="kw">g2</span> <span class="op">=</span> <span class="kw">g</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="../reference/rel_change_param.html">rel_change_param</a></span>(delta=<span class="fl">0.95</span>,rho=<span class="fl">0.6</span>,sp=<span class="fl">0.1</span>,c.x=<span class="fl">0.1</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/rel_T_rne.html">rel_T_rne</a></span>(T=<span class="fl">1000</span>, save.details = <span class="fl">TRUE</span>)
+
+<span class="fu"><a href="../reference/eq_diagram.html">eq_diagram</a></span>(<span class="kw">g2</span>)
+</pre></div>
+<div id="htmlwidget-cd490342dc18443b6147" style="width:480px;height:384px;" class="visNetwork html-widget"></div>
+<script type="application/json" data-for="htmlwidget-cd490342dc18443b6147">{"x":{"nodes":{"id":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"group":["node","node","node","node","node","node","node","node","node","node","node","node","node","node","node","node"],"label":["0_0 \n-0.07 -0.07","0_1 \n-0.41 0.24","0_2 \n-0.68 0.48","0_3 \n-0.89 0.59","1_0 \n0.24 -0.41","1_1 \n-0.1 -0.1","1_2 \n-0.41 0.11","1_3 \n-0.6 0.23","2_0 \n0.48 -0.68","2_1 \n0.11 -0.41","2_2 \n-0.2 -0.2","2_3 \n-0.36 -0.05","3_0 \n0.59 -0.89","3_1 \n0.23 -0.6","3_2 \n-0.05 -0.36","3_3 \n-0.21 -0.21"],"shape":["box","box","box","box","box","box","box","box","box","box","box","box","box","box","box","box"],"title":["0_0<br>ae: wb | wb<br>a1: wb | wb<br>a2: wb | wb<br>v1=-0.07 v2=-0.07<br>U=-0.14","0_1<br>ae: wb | w<br>a1: wb | ab<br>a2: wb | w<br>v1=-0.46 v2=0.19<br>U=-0.17","0_2<br>ae: w | w<br>a1: wb | ab<br>a2: wb | w<br>v1=-0.78 v2=0.38<br>U=-0.2","0_3<br>ae: w | w<br>a1: wb | a<br>a2: wb | w<br>v1=-1.02 v2=0.46<br>U=-0.3","1_0<br>ae: w | wb<br>a1: w | wb<br>a2: ab | wb<br>v1=0.19 v2=-0.46<br>U=-0.17","1_1<br>ae: w | w<br>a1: w | ab<br>a2: ab | w<br>v1=-0.2 v2=-0.2<br>U=-0.2","1_2<br>ae: w | w<br>a1: wb | ab<br>a2: ab | w<br>v1=-0.55 v2=-0.03<br>U=-0.3","1_3<br>ae: w | w<br>a1: wb | a<br>a2: ab | w<br>v1=-0.77 v2=0.06<br>U=-0.37","2_0<br>ae: w | w<br>a1: w | wb<br>a2: ab | wb<br>v1=0.38 v2=-0.78<br>U=-0.2","2_1<br>ae: w | w<br>a1: w | ab<br>a2: ab | wb<br>v1=-0.03 v2=-0.55<br>U=-0.3","2_2<br>ae: w | w<br>a1: w | ab<br>a2: ab | w<br>v1=-0.37 v2=-0.37<br>U=-0.4","2_3<br>ae: wb | wd<br>a1: wb | a<br>a2: ab | w<br>v1=-0.57 v2=-0.26<br>U=-0.41","3_0<br>ae: w | w<br>a1: w | wb<br>a2: a | wb<br>v1=0.46 v2=-1.02<br>U=-0.3","3_1<br>ae: w | w<br>a1: w | ab<br>a2: a | wb<br>v1=0.06 v2=-0.77<br>U=-0.37","3_2<br>ae: wd | wb<br>a1: w | ab<br>a2: a | wb<br>v1=-0.26 v2=-0.57<br>U=-0.41","3_3<br>ae: wd | w<br>a1: w | a<br>a2: a | w<br>v1=-0.46 v2=-0.46<br>U=-0.42"],"font":["24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black","24px Arial black"]},"edges":{"id":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],"from":[1,1,1,2,2,2,2,2,3,3,3,3,3,4,4,4,5,5,5,5,5,6,6,6,6,6,6,6,6,7,7,7,7,7,7,7,7,8,8,8,8,8,9,9,9,9,9,10,10,10,10,10,10,10,10,11,11,11,11,11,11,11,11,12,12,12,12,12,13,13,13,14,14,14,14,14,15,15,15,15,15,16,16,16],"to":[6,2,5,7,3,5,1,6,8,4,6,2,7,7,3,8,10,2,6,9,1,11,3,7,9,1,5,10,2,12,4,8,10,2,6,11,3,11,3,7,12,4,14,6,10,13,5,15,7,11,13,5,9,14,6,16,8,12,14,6,10,15,7,15,7,11,16,8,10,14,9,11,15,9,13,10,12,16,10,14,11,11,15,12],"label":["","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","",""],"color":["#000077","#000077","#000077","#dddddd","#dddddd","#dddddd","#dddddd","#000077","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#000077","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#000077","#dddddd","#000077","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#dddddd","#000077","#dddddd","#dddddd","#dddddd","#000077","#dddddd","#dddddd","#000077"],"width":[2,2,2,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,2,1,1,1,1,1,1,1,1,1,1,2,1,1,1,2,1,1,2],"hidden":[false,false,false,true,true,true,true,false,true,true,true,true,true,true,true,true,true,true,false,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,false,true,false,true,true,true,true,true,true,true,true,true,true,false,true,true,true,false,true,true,false]},"nodesToDataframe":true,"edgesToDataframe":true,"options":{"width":"100%","height":"100%","nodes":{"shape":"dot"},"manipulation":{"enabled":false},"edges":{"arrows":{"to":{"enabled":true,"scaleFactor":1}}},"physics":{"solver":"barnesHut","stabilization":{"enabled":true,"onlyDynamicEdges":false,"fit":true}},"layout":{"improvedLayout":true}},"groups":["node"],"width":null,"height":null,"idselection":{"enabled":false},"byselection":{"enabled":false},"main":null,"submain":null,"footer":null,"background":"rgba(0, 0, 0, 0)"},"evals":[],"jsHooks":[]}</script><p>Interestingly, we find that in state “3_2” player 1 destroys (d) her weapons while at the same time player 2 tries to build (b) new weapons (the reverse holds in state “2_3). To understand what is going on let us explore the equilibrium details for state”3_2".</p>
+<div class="sourceCode" id="cb19"><pre class="downlit">
+<span class="kw">g2</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/get_rne_details.html">get_rne_details</a></span>(x=<span class="st">"3_2"</span>) <span class="op">%&gt;%</span>
+  <span class="fu">select</span>(<span class="kw">x</span><span class="op">:</span><span class="kw">can.ae</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span>(<span class="fl">5</span>)
+</pre></div>
 <pre><code>##       x   a.lab best.dev      U.hat IC.holds can.ae
 ## 285 3_2 wd | wd   w | wb -0.3100000    FALSE      0
 ## 286 3_2  w | wd   w | wb -0.3760523    FALSE      0
@@ -383,174 +400,166 @@
 <a href="#variant-attacks-can-destroy-weapons" class="anchor"></a>9. Variant: Attacks can destroy weapons</h2>
 <p>Trying out different parametrizations for the game above, you will find that attacks are only used as a threat in the punishment profiles, e.g. to credible extort payments, but never on the equilibrium path. If you think about it there is simply no reason to attack on the equilibrium path.</p>
 <p>We now want to a variant of the game in which an attack has a positive probability to destroy weapons of the other player. More precisely, if player 1 attack player 2 there shall be a probability of <code>d.factor * x1 / x.max</code> that player 2’s arsenal is reduced by one unit, where <code>d.factor</code> is an exogenous parameter between 0 and 1.</p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb21-1" title="1"><span class="co"># State transition function</span></a>
-<a class="sourceLine" id="cb21-2" title="2">trans.fun =<span class="st"> </span><span class="cf">function</span>(ax.df,x.max, sp,...) {</a>
-<a class="sourceLine" id="cb21-3" title="3">  <span class="kw">restore.point</span>(<span class="st">"trans.fun"</span>)</a>
-<a class="sourceLine" id="cb21-4" title="4"></a>
-<a class="sourceLine" id="cb21-5" title="5">  <span class="co"># Compute probability to destroy</span></a>
-<a class="sourceLine" id="cb21-6" title="6">  <span class="co"># a weapon unit of other player</span></a>
-<a class="sourceLine" id="cb21-7" title="7">  <span class="co"># if one attacks</span></a>
-<a class="sourceLine" id="cb21-8" title="8">  ax.df =<span class="st"> </span><span class="kw">mutate</span>(ax.df,</a>
-<a class="sourceLine" id="cb21-9" title="9">    <span class="dt">dp1 =</span> d.factor<span class="op">*</span>(x1 <span class="op">/</span><span class="st"> </span>x.max),</a>
-<a class="sourceLine" id="cb21-10" title="10">    <span class="dt">dp2 =</span> d.factor<span class="op">*</span>(x2 <span class="op">/</span><span class="st"> </span>x.max)</a>
-<a class="sourceLine" id="cb21-11" title="11">  )</a>
-<a class="sourceLine" id="cb21-12" title="12"></a>
-<a class="sourceLine" id="cb21-13" title="13"></a>
-<a class="sourceLine" id="cb21-14" title="14">  tr =<span class="st"> </span><span class="kw"><a href="../reference/irv_joint_dist.html">irv_joint_dist</a></span>(ax.df,</a>
-<a class="sourceLine" id="cb21-15" title="15">    <span class="kw"><a href="../reference/irv.html">irv</a></span>(<span class="st">"i_change_1"</span>,<span class="dt">default=</span><span class="dv">0</span>,</a>
-<a class="sourceLine" id="cb21-16" title="16">      <span class="kw"><a href="../reference/irv_val.html">irv_val</a></span>(<span class="dv">1</span>, (i1<span class="op">==</span><span class="st">"b"</span>)<span class="op">*</span>sp),</a>
-<a class="sourceLine" id="cb21-17" title="17">      <span class="kw"><a href="../reference/irv_val.html">irv_val</a></span>(<span class="op">-</span><span class="dv">1</span>, (i1<span class="op">==</span><span class="st">"d"</span>)<span class="op">*</span><span class="dv">1</span>)</a>
-<a class="sourceLine" id="cb21-18" title="18">    ),</a>
-<a class="sourceLine" id="cb21-19" title="19">    <span class="kw"><a href="../reference/irv.html">irv</a></span>(<span class="st">"i_change_2"</span>,<span class="dt">default=</span><span class="dv">0</span>,</a>
-<a class="sourceLine" id="cb21-20" title="20">      <span class="kw"><a href="../reference/irv_val.html">irv_val</a></span>(<span class="dv">1</span>, (i2<span class="op">==</span><span class="st">"b"</span>)<span class="op">*</span>sp),</a>
-<a class="sourceLine" id="cb21-21" title="21">      <span class="kw"><a href="../reference/irv_val.html">irv_val</a></span>(<span class="op">-</span><span class="dv">1</span>, (i2<span class="op">==</span><span class="st">"d"</span>)<span class="op">*</span><span class="dv">1</span>)</a>
-<a class="sourceLine" id="cb21-22" title="22">    ),</a>
-<a class="sourceLine" id="cb21-23" title="23">    <span class="kw"><a href="../reference/irv.html">irv</a></span>(<span class="st">"a_change_1"</span>,<span class="dt">default=</span><span class="dv">0</span>,</a>
-<a class="sourceLine" id="cb21-24" title="24">      <span class="kw"><a href="../reference/irv_val.html">irv_val</a></span>(<span class="op">-</span><span class="dv">1</span>, (a2<span class="op">==</span><span class="st">"a"</span>)<span class="op">*</span>dp2)</a>
-<a class="sourceLine" id="cb21-25" title="25">    ),</a>
-<a class="sourceLine" id="cb21-26" title="26">    <span class="kw"><a href="../reference/irv.html">irv</a></span>(<span class="st">"a_change_2"</span>,<span class="dt">default=</span><span class="dv">0</span>,</a>
-<a class="sourceLine" id="cb21-27" title="27">      <span class="kw"><a href="../reference/irv_val.html">irv_val</a></span>(<span class="op">-</span><span class="dv">1</span>, (a1<span class="op">==</span><span class="st">"a"</span>)<span class="op">*</span>dp1)</a>
-<a class="sourceLine" id="cb21-28" title="28">    )</a>
-<a class="sourceLine" id="cb21-29" title="29">  )</a>
-<a class="sourceLine" id="cb21-30" title="30"></a>
-<a class="sourceLine" id="cb21-31" title="31">  tr <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb21-32" title="32"><span class="st">    </span><span class="kw">mutate</span>(</a>
-<a class="sourceLine" id="cb21-33" title="33">      <span class="dt">new_x1 =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/Extremes">pmax</a></span>(x1<span class="op">+</span>i_change_<span class="dv">1</span><span class="op">+</span>a_change_<span class="dv">1</span>,<span class="dv">0</span>),</a>
-<a class="sourceLine" id="cb21-34" title="34">      <span class="dt">new_x2 =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/Extremes">pmax</a></span>(x2<span class="op">+</span>i_change_<span class="dv">2</span><span class="op">+</span>a_change_<span class="dv">2</span>,<span class="dv">0</span>),</a>
-<a class="sourceLine" id="cb21-35" title="35">      <span class="dt">xd =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/paste">paste0</a></span>(new_x1,<span class="st">"_"</span>,new_x2),</a>
-<a class="sourceLine" id="cb21-36" title="36">      <span class="dt">xs=</span>x</a>
-<a class="sourceLine" id="cb21-37" title="37">    ) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb21-38" title="38"><span class="st">    </span><span class="kw">group_by</span>(xs,xd,i1,i2,a1,a2) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb21-39" title="39"><span class="st">    </span><span class="kw">summarize</span>(<span class="dt">prob =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/sum">sum</a></span>(prob))</a>
-<a class="sourceLine" id="cb21-40" title="40">}</a>
-<a class="sourceLine" id="cb21-41" title="41"></a>
-<a class="sourceLine" id="cb21-42" title="42"></a>
-<a class="sourceLine" id="cb21-43" title="43"><span class="co"># Article version Attempt</span></a>
-<a class="sourceLine" id="cb21-44" title="44">g =<span class="st"> </span><span class="kw"><a href="../reference/rel_game.html">rel_game</a></span>(<span class="st">"Arms Race with destruction"</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb21-45" title="45"><span class="st">  </span><span class="kw"><a href="../reference/rel_param.html">rel_param</a></span>(<span class="dt">delta=</span><span class="fl">0.99</span>, <span class="dt">rho=</span><span class="fl">0.65</span>, <span class="dt">c.a=</span><span class="fl">0.05</span>,<span class="dt">c.i=</span><span class="fl">0.01</span>, <span class="dt">c.x=</span><span class="fl">0.2</span>,<span class="dt">x.max=</span>x.max, <span class="dt">sp=</span><span class="fl">0.08</span>, <span class="dt">d.factor=</span><span class="dv">0</span>, <span class="dt">d.exp=</span><span class="dv">1</span>, <span class="dt">can.destroy=</span><span class="ot">TRUE</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb21-46" title="46"><span class="st">  </span><span class="kw"><a href="../reference/rel_states.html">rel_states</a></span>(x.df,<span class="dt">A.fun=</span>A.fun, <span class="dt">trans.fun=</span>trans.fun,</a>
-<a class="sourceLine" id="cb21-47" title="47">    <span class="dt">pi1 =</span> <span class="op">-</span>c.a<span class="op">*</span>(a1<span class="op">==</span><span class="st">"a"</span>)<span class="op">*</span>x1 <span class="op">-</span><span class="st"> </span>(a2<span class="op">==</span><span class="st">"a"</span>)<span class="op">*</span>x2 <span class="op">-</span><span class="st"> </span>c.i<span class="op">*</span>(i1<span class="op">==</span><span class="st">"b"</span>)<span class="op">-</span>c.x<span class="op">*</span>x1,</a>
-<a class="sourceLine" id="cb21-48" title="48">    <span class="dt">pi2 =</span> <span class="op">-</span>c.a<span class="op">*</span>(a2<span class="op">==</span><span class="st">"a"</span>)<span class="op">*</span>x2 <span class="op">-</span><span class="st"> </span>(a1<span class="op">==</span><span class="st">"a"</span>)<span class="op">*</span>x1 <span class="op">-</span><span class="st"> </span>c.i<span class="op">*</span>(i2<span class="op">==</span><span class="st">"b"</span>)<span class="op">-</span>c.x<span class="op">*</span>x2</a>
-<a class="sourceLine" id="cb21-49" title="49">  )</a></code></pre></div>
+<div class="sourceCode" id="cb21"><pre class="downlit">
+<span class="co"># State transition function</span>
+<span class="kw">trans.fun</span> <span class="op">=</span> <span class="fu">function</span>(<span class="kw">ax.df</span>,<span class="kw">x.max</span>, <span class="kw">sp</span>,<span class="kw">...</span>) {
+  <span class="fu">restore.point</span>(<span class="st">"trans.fun"</span>)
+
+  <span class="co"># Compute probability to destroy</span>
+  <span class="co"># a weapon unit of other player</span>
+  <span class="co"># if one attacks</span>
+  <span class="kw">ax.df</span> <span class="op">=</span> <span class="fu">mutate</span>(<span class="kw">ax.df</span>,
+    dp1 = <span class="kw">d.factor</span><span class="op">*</span>(<span class="kw">x1</span> <span class="op">/</span> <span class="kw">x.max</span>),
+    dp2 = <span class="kw">d.factor</span><span class="op">*</span>(<span class="kw">x2</span> <span class="op">/</span> <span class="kw">x.max</span>)
+  )
+
+
+  <span class="kw">tr</span> <span class="op">=</span> <span class="fu"><a href="../reference/irv_joint_dist.html">irv_joint_dist</a></span>(<span class="kw">ax.df</span>,
+    <span class="fu"><a href="../reference/irv.html">irv</a></span>(<span class="st">"i_change_1"</span>,default=<span class="fl">0</span>,
+      <span class="fu"><a href="../reference/irv_val.html">irv_val</a></span>(<span class="fl">1</span>, (<span class="kw">i1</span><span class="op">==</span><span class="st">"b"</span>)<span class="op">*</span><span class="kw">sp</span>),
+      <span class="fu"><a href="../reference/irv_val.html">irv_val</a></span>(<span class="op">-</span><span class="fl">1</span>, (<span class="kw">i1</span><span class="op">==</span><span class="st">"d"</span>)<span class="op">*</span><span class="fl">1</span>)
+    ),
+    <span class="fu"><a href="../reference/irv.html">irv</a></span>(<span class="st">"i_change_2"</span>,default=<span class="fl">0</span>,
+      <span class="fu"><a href="../reference/irv_val.html">irv_val</a></span>(<span class="fl">1</span>, (<span class="kw">i2</span><span class="op">==</span><span class="st">"b"</span>)<span class="op">*</span><span class="kw">sp</span>),
+      <span class="fu"><a href="../reference/irv_val.html">irv_val</a></span>(<span class="op">-</span><span class="fl">1</span>, (<span class="kw">i2</span><span class="op">==</span><span class="st">"d"</span>)<span class="op">*</span><span class="fl">1</span>)
+    ),
+    <span class="fu"><a href="../reference/irv.html">irv</a></span>(<span class="st">"a_change_1"</span>,default=<span class="fl">0</span>,
+      <span class="fu"><a href="../reference/irv_val.html">irv_val</a></span>(<span class="op">-</span><span class="fl">1</span>, (<span class="kw">a2</span><span class="op">==</span><span class="st">"a"</span>)<span class="op">*</span><span class="kw">dp2</span>)
+    ),
+    <span class="fu"><a href="../reference/irv.html">irv</a></span>(<span class="st">"a_change_2"</span>,default=<span class="fl">0</span>,
+      <span class="fu"><a href="../reference/irv_val.html">irv_val</a></span>(<span class="op">-</span><span class="fl">1</span>, (<span class="kw">a1</span><span class="op">==</span><span class="st">"a"</span>)<span class="op">*</span><span class="kw">dp1</span>)
+    )
+  )
+
+  <span class="kw">tr</span> <span class="op">%&gt;%</span>
+    <span class="fu">mutate</span>(
+      new_x1 = <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">pmax</a></span>(<span class="kw">x1</span><span class="op">+</span><span class="kw">i_change_1</span><span class="op">+</span><span class="kw">a_change_1</span>,<span class="fl">0</span>),
+      new_x2 = <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">pmax</a></span>(<span class="kw">x2</span><span class="op">+</span><span class="kw">i_change_2</span><span class="op">+</span><span class="kw">a_change_2</span>,<span class="fl">0</span>),
+      xd = <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span>(<span class="kw">new_x1</span>,<span class="st">"_"</span>,<span class="kw">new_x2</span>),
+      xs=<span class="kw">x</span>
+    ) <span class="op">%&gt;%</span>
+    <span class="fu">group_by</span>(<span class="kw">xs</span>,<span class="kw">xd</span>,<span class="kw">i1</span>,<span class="kw">i2</span>,<span class="kw">a1</span>,<span class="kw">a2</span>) <span class="op">%&gt;%</span>
+    <span class="fu">summarize</span>(prob = <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span>(<span class="kw">prob</span>))
+}
+
+
+<span class="co"># Article version Attempt</span>
+<span class="kw">g</span> <span class="op">=</span> <span class="fu"><a href="../reference/rel_game.html">rel_game</a></span>(<span class="st">"Arms Race with destruction"</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/rel_param.html">rel_param</a></span>(delta=<span class="fl">0.99</span>, rho=<span class="fl">0.65</span>, c.a=<span class="fl">0.05</span>,c.i=<span class="fl">0.01</span>, c.x=<span class="fl">0.2</span>,x.max=<span class="kw">x.max</span>, sp=<span class="fl">0.08</span>, d.factor=<span class="fl">0</span>, d.exp=<span class="fl">1</span>, can.destroy=<span class="fl">TRUE</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/rel_states.html">rel_states</a></span>(<span class="kw">x.df</span>,A.fun=<span class="kw">A.fun</span>, trans.fun=<span class="kw">trans.fun</span>,
+    pi1 = <span class="op">-</span><span class="kw">c.a</span><span class="op">*</span>(<span class="kw">a1</span><span class="op">==</span><span class="st">"a"</span>)<span class="op">*</span><span class="kw">x1</span> <span class="op">-</span> (<span class="kw">a2</span><span class="op">==</span><span class="st">"a"</span>)<span class="op">*</span><span class="kw">x2</span> <span class="op">-</span> <span class="kw">c.i</span><span class="op">*</span>(<span class="kw">i1</span><span class="op">==</span><span class="st">"b"</span>)<span class="op">-</span><span class="kw">c.x</span><span class="op">*</span><span class="kw">x1</span>,
+    pi2 = <span class="op">-</span><span class="kw">c.a</span><span class="op">*</span>(<span class="kw">a2</span><span class="op">==</span><span class="st">"a"</span>)<span class="op">*</span><span class="kw">x2</span> <span class="op">-</span> (<span class="kw">a1</span><span class="op">==</span><span class="st">"a"</span>)<span class="op">*</span><span class="kw">x1</span> <span class="op">-</span> <span class="kw">c.i</span><span class="op">*</span>(<span class="kw">i2</span><span class="op">==</span><span class="st">"b"</span>)<span class="op">-</span><span class="kw">c.x</span><span class="op">*</span><span class="kw">x2</span>
+  )
+</pre></div>
 </div>
 <div id="an-arms-race-game-without-simultaneous-moves" class="section level2">
 <h2 class="hasAnchor">
 <a href="#an-arms-race-game-without-simultaneous-moves" class="anchor"></a>10. An arms race game without simultaneous moves</h2>
-<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb22-1" title="1"><span class="co"># Action space for each state</span></a>
-<a class="sourceLine" id="cb22-2" title="2">A.fun =<span class="st"> </span><span class="cf">function</span>(x1,x2,ap, x.max,...) {</a>
-<a class="sourceLine" id="cb22-3" title="3">  <span class="kw">restore.point</span>(<span class="st">"A.fun"</span>)</a>
-<a class="sourceLine" id="cb22-4" title="4">  <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(</a>
-<a class="sourceLine" id="cb22-5" title="5">    <span class="dt">A1=</span><span class="cf">if</span> (ap<span class="op">==</span><span class="dv">1</span>) <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(</a>
-<a class="sourceLine" id="cb22-6" title="6">      <span class="dt">a1=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/c">c</a></span>(<span class="st">"wait"</span>, <span class="cf">if</span> (x1<span class="op">&gt;</span><span class="dv">0</span>) <span class="st">"attack"</span>),</a>
-<a class="sourceLine" id="cb22-7" title="7">      <span class="dt">i1=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/c">c</a></span>(<span class="cf">if</span> (x1<span class="op">&gt;</span><span class="dv">0</span>) <span class="st">"d"</span>,<span class="st">""</span>,<span class="cf">if</span> (x1<span class="op">&lt;</span>x.max) <span class="st">"b"</span>)</a>
-<a class="sourceLine" id="cb22-8" title="8">    ),</a>
-<a class="sourceLine" id="cb22-9" title="9">    <span class="dt">A2=</span> <span class="cf">if</span> (ap<span class="op">==</span><span class="dv">2</span>) <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/list">list</a></span>(</a>
-<a class="sourceLine" id="cb22-10" title="10">      <span class="dt">a2=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/c">c</a></span>(<span class="st">"wait"</span>, <span class="cf">if</span> (x2<span class="op">&gt;</span><span class="dv">0</span>) <span class="st">"attack"</span>),</a>
-<a class="sourceLine" id="cb22-11" title="11">      <span class="dt">i2=</span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/c">c</a></span>(<span class="cf">if</span> (x2<span class="op">&gt;</span><span class="dv">0</span>) <span class="st">"d"</span>,<span class="st">""</span>,<span class="cf">if</span> (x2<span class="op">&lt;</span>x.max) <span class="st">"b"</span>)</a>
-<a class="sourceLine" id="cb22-12" title="12">    )</a>
-<a class="sourceLine" id="cb22-13" title="13">  )</a>
-<a class="sourceLine" id="cb22-14" title="14">}</a>
-<a class="sourceLine" id="cb22-15" title="15"></a>
-<a class="sourceLine" id="cb22-16" title="16">pi.fun =<span class="st"> </span><span class="cf">function</span>(ax.df,c.a,c.x,c.i, ...) {</a>
-<a class="sourceLine" id="cb22-17" title="17">  <span class="kw">restore.point</span>(<span class="st">"pi.fun"</span>)</a>
-<a class="sourceLine" id="cb22-18" title="18">  ax1 =<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/stats/topics/filter">filter</a></span>(ax.df, ap<span class="op">==</span><span class="dv">1</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb22-19" title="19"><span class="st">    </span><span class="kw">mutate</span>(</a>
-<a class="sourceLine" id="cb22-20" title="20">      <span class="dt">pi1 =</span> <span class="op">-</span>c.a<span class="op">*</span>(a1<span class="op">==</span><span class="st">"attack"</span>)<span class="op">*</span>x1  <span class="op">-</span><span class="st"> </span>c.i<span class="op">*</span>(i1<span class="op">==</span><span class="st">"b"</span>)<span class="op">-</span>c.x<span class="op">*</span>x1,</a>
-<a class="sourceLine" id="cb22-21" title="21">      <span class="dt">pi2 =</span> <span class="op">-</span><span class="st"> </span>(a1<span class="op">==</span><span class="st">"attack"</span>)<span class="op">*</span>x1 <span class="op">-</span>c.x<span class="op">*</span>x2</a>
-<a class="sourceLine" id="cb22-22" title="22">    )</a>
-<a class="sourceLine" id="cb22-23" title="23">  ax2 =<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/stats/topics/filter">filter</a></span>(ax.df, ap<span class="op">==</span><span class="dv">2</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb22-24" title="24"><span class="st">    </span><span class="kw">mutate</span>(</a>
-<a class="sourceLine" id="cb22-25" title="25">      <span class="dt">pi1 =</span> <span class="op">-</span><span class="st"> </span>(a2<span class="op">==</span><span class="st">"attack"</span>)<span class="op">*</span>x2 <span class="op">-</span>c.x<span class="op">*</span>x1,</a>
-<a class="sourceLine" id="cb22-26" title="26">      <span class="dt">pi2 =</span> <span class="op">-</span>c.a<span class="op">*</span>(a2<span class="op">==</span><span class="st">"attack"</span>)<span class="op">*</span>x2 <span class="op">-</span><span class="st"> </span>c.i<span class="op">*</span>(i2<span class="op">==</span><span class="st">"b"</span>)<span class="op">-</span>c.x<span class="op">*</span>x2</a>
-<a class="sourceLine" id="cb22-27" title="27">    )</a>
-<a class="sourceLine" id="cb22-28" title="28">  <span class="kw">bind_rows</span>(ax1,ax2)</a>
-<a class="sourceLine" id="cb22-29" title="29">}</a>
-<a class="sourceLine" id="cb22-30" title="30"></a>
-<a class="sourceLine" id="cb22-31" title="31"><span class="co"># State transition function</span></a>
-<a class="sourceLine" id="cb22-32" title="32">trans.fun =<span class="st"> </span><span class="cf">function</span>(ax.df,x.max, sp,<span class="dt">d.factor=</span><span class="dv">1</span>, <span class="dt">d.exp=</span><span class="dv">1</span>,...) {</a>
-<a class="sourceLine" id="cb22-33" title="33">  <span class="kw">restore.point</span>(<span class="st">"trans.fun"</span>)</a>
-<a class="sourceLine" id="cb22-34" title="34"></a>
-<a class="sourceLine" id="cb22-35" title="35">  <span class="co"># Compute probability to destroy</span></a>
-<a class="sourceLine" id="cb22-36" title="36">  <span class="co"># a weapon unit of other player</span></a>
-<a class="sourceLine" id="cb22-37" title="37">  <span class="co"># if one attacks</span></a>
-<a class="sourceLine" id="cb22-38" title="38">  ax.df =<span class="st"> </span><span class="kw">mutate</span>(ax.df,</a>
-<a class="sourceLine" id="cb22-39" title="39">    <span class="dt">i =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/ifelse">ifelse</a></span>(ap<span class="op">==</span><span class="dv">1</span>,i1,i2),</a>
-<a class="sourceLine" id="cb22-40" title="40">    <span class="dt">a =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/ifelse">ifelse</a></span>(ap<span class="op">==</span><span class="dv">1</span>,a1,a2),</a>
-<a class="sourceLine" id="cb22-41" title="41">    <span class="dt">xi =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/ifelse">ifelse</a></span>(ap<span class="op">==</span><span class="dv">1</span>,x1,x2),</a>
-<a class="sourceLine" id="cb22-42" title="42">    <span class="dt">xj =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/ifelse">ifelse</a></span>(ap<span class="op">==</span><span class="dv">1</span>,x2,x1),</a>
-<a class="sourceLine" id="cb22-43" title="43">    <span class="dt">dp =</span> d.factor<span class="op">*</span>(xi <span class="op">/</span><span class="st"> </span>x.max)<span class="op">^</span>d.exp</a>
-<a class="sourceLine" id="cb22-44" title="44">  )</a>
-<a class="sourceLine" id="cb22-45" title="45">  </a>
-<a class="sourceLine" id="cb22-46" title="46">  tr =<span class="st"> </span>ax.df <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb22-47" title="47"><span class="st">    </span><span class="kw">distinct</span>(ap,xi,xj,i,a) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb22-48" title="48"><span class="st">    </span><span class="kw">left_join</span>(ax.df, <span class="dt">by =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/c">c</a></span>(<span class="st">"ap"</span>, <span class="st">"xi"</span>, <span class="st">"xj"</span>, <span class="st">"i"</span>, <span class="st">"a"</span>))</a>
-<a class="sourceLine" id="cb22-49" title="49">  </a>
-<a class="sourceLine" id="cb22-50" title="50"></a>
-<a class="sourceLine" id="cb22-51" title="51">  tr =<span class="st"> </span><span class="kw"><a href="../reference/irv_joint_dist.html">irv_joint_dist</a></span>(tr,</a>
-<a class="sourceLine" id="cb22-52" title="52">    <span class="kw"><a href="../reference/irv.html">irv</a></span>(<span class="st">"bi"</span>,<span class="dt">default=</span><span class="dv">0</span>,</a>
-<a class="sourceLine" id="cb22-53" title="53">      <span class="kw"><a href="../reference/irv_val.html">irv_val</a></span>(<span class="dv">1</span>, (i<span class="op">==</span><span class="st">"b"</span>)<span class="op">*</span>sp),</a>
-<a class="sourceLine" id="cb22-54" title="54">      <span class="kw"><a href="../reference/irv_val.html">irv_val</a></span>(<span class="op">-</span><span class="dv">1</span>, (i<span class="op">==</span><span class="st">"d"</span>)<span class="op">*</span><span class="dv">1</span>)</a>
-<a class="sourceLine" id="cb22-55" title="55">    ),</a>
-<a class="sourceLine" id="cb22-56" title="56">    <span class="kw"><a href="../reference/irv.html">irv</a></span>(<span class="st">"dj"</span>,<span class="dt">default=</span><span class="dv">0</span>,</a>
-<a class="sourceLine" id="cb22-57" title="57">      <span class="kw"><a href="../reference/irv_val.html">irv_val</a></span>(<span class="dv">1</span>, (a<span class="op">==</span><span class="st">"attack"</span>)<span class="op">*</span>dp)</a>
-<a class="sourceLine" id="cb22-58" title="58">    ),</a>
-<a class="sourceLine" id="cb22-59" title="59">    <span class="kw"><a href="../reference/irv.html">irv</a></span>(<span class="st">"new_ap"</span>,<span class="kw"><a href="../reference/irv_val.html">irv_val</a></span>(<span class="dv">1</span>, <span class="fl">0.5</span>), <span class="kw"><a href="../reference/irv_val.html">irv_val</a></span>(<span class="dv">2</span>, <span class="fl">0.5</span>))</a>
-<a class="sourceLine" id="cb22-60" title="60">  )</a>
-<a class="sourceLine" id="cb22-61" title="61"></a>
-<a class="sourceLine" id="cb22-62" title="62">  tr =<span class="st"> </span>tr <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb22-63" title="63"><span class="st">    </span><span class="kw">mutate</span>(</a>
-<a class="sourceLine" id="cb22-64" title="64">      <span class="dt">new_xi =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/Extremes">pmax</a></span>(xi<span class="op">+</span>bi,<span class="dv">0</span>),</a>
-<a class="sourceLine" id="cb22-65" title="65">      <span class="dt">new_xj =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/Extremes">pmax</a></span>(xj<span class="op">-</span>dj,<span class="dv">0</span>),</a>
-<a class="sourceLine" id="cb22-66" title="66">      <span class="dt">new_x1 =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/ifelse">ifelse</a></span>(ap<span class="op">==</span><span class="dv">1</span>, new_xi,new_xj),</a>
-<a class="sourceLine" id="cb22-67" title="67">      <span class="dt">new_x2 =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/ifelse">ifelse</a></span>(ap<span class="op">==</span><span class="dv">1</span>, new_xj,new_xi),</a>
-<a class="sourceLine" id="cb22-68" title="68">      <span class="dt">xd =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/paste">paste0</a></span>(<span class="st">"p"</span>,new_ap,<span class="st">"_"</span>,new_x1,<span class="st">"_"</span>,new_x2),</a>
-<a class="sourceLine" id="cb22-69" title="69">      <span class="dt">xs=</span>x</a>
-<a class="sourceLine" id="cb22-70" title="70">    )</a>
-<a class="sourceLine" id="cb22-71" title="71">  tr</a>
-<a class="sourceLine" id="cb22-72" title="72">  </a>
-<a class="sourceLine" id="cb22-73" title="73">  test =<span class="st"> </span>tr <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb22-74" title="74"><span class="st">    </span><span class="kw">select</span>(xs,xd,ap,i1,i2,a1,a2, prob)</a>
-<a class="sourceLine" id="cb22-75" title="75">}</a>
-<a class="sourceLine" id="cb22-76" title="76"></a>
-<a class="sourceLine" id="cb22-77" title="77"><span class="co"># Maximum size of weapons arsenal</span></a>
-<a class="sourceLine" id="cb22-78" title="78">x.max =<span class="st"> </span><span class="dv">3</span></a>
-<a class="sourceLine" id="cb22-79" title="79">x.df1 =<span class="st"> </span>tidyr<span class="op">::</span><span class="kw"><a href="https://tidyr.tidyverse.org/reference/expand_grid.html">expand_grid</a></span>(<span class="dt">ap=</span><span class="dv">1</span>,<span class="dt">x1=</span><span class="dv">0</span><span class="op">:</span>x.max,<span class="dt">x2=</span><span class="dv">0</span><span class="op">:</span>x.max)  </a>
-<a class="sourceLine" id="cb22-80" title="80">x.df2 =<span class="st"> </span>x.df1 <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">mutate</span>(<span class="dt">ap=</span><span class="dv">2</span>)</a>
-<a class="sourceLine" id="cb22-81" title="81">x.df =<span class="st"> </span><span class="kw">bind_rows</span>(x.df1, x.df2) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb22-82" title="82"><span class="st">  </span><span class="kw">mutate</span>(</a>
-<a class="sourceLine" id="cb22-83" title="83">    <span class="dt">x =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/paste">paste0</a></span>(<span class="st">"p"</span>,ap,<span class="st">"_"</span> ,x1,<span class="st">"_"</span>, x2),</a>
-<a class="sourceLine" id="cb22-84" title="84">    <span class="dt">xgroup =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/paste">paste0</a></span>(x1,<span class="st">"_"</span>,x2)</a>
-<a class="sourceLine" id="cb22-85" title="85">  )</a>
-<a class="sourceLine" id="cb22-86" title="86"></a>
-<a class="sourceLine" id="cb22-87" title="87">g =<span class="st"> </span><span class="kw"><a href="../reference/rel_game.html">rel_game</a></span>(<span class="st">"Arms Race Turns"</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb22-88" title="88"><span class="st">  </span><span class="kw"><a href="../reference/rel_param.html">rel_param</a></span>(<span class="dt">delta=</span><span class="fl">0.9</span>, <span class="dt">rho=</span><span class="fl">0.6</span>, <span class="dt">c.a=</span><span class="fl">0.012</span>,<span class="dt">c.i=</span><span class="fl">0.01</span>, <span class="dt">c.x=</span><span class="fl">0.01</span>,<span class="dt">x.max=</span>x.max, <span class="dt">sp=</span><span class="fl">0.2</span>, <span class="dt">d.factor=</span><span class="fl">0.8</span>, <span class="dt">d.exp=</span><span class="dv">2</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb22-89" title="89"><span class="st">  </span><span class="kw"><a href="../reference/rel_states.html">rel_states</a></span>(x.df,<span class="dt">A.fun=</span>A.fun, <span class="dt">trans.fun=</span>trans.fun,<span class="dt">pi.fun=</span>pi.fun) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb22-90" title="90"><span class="st">  </span><span class="kw"><a href="../reference/rel_compile.html">rel_compile</a></span>()</a>
-<a class="sourceLine" id="cb22-91" title="91"></a>
-<a class="sourceLine" id="cb22-92" title="92">g =<span class="st"> </span>g <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="../reference/rel_capped_rne.html">rel_capped_rne</a></span>(<span class="dt">T=</span><span class="dv">1001</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb22"><pre class="downlit">
+<span class="co"># Action space for each state</span>
+<span class="kw">A.fun</span> <span class="op">=</span> <span class="fu">function</span>(<span class="kw">x1</span>,<span class="kw">x2</span>,<span class="kw">ap</span>, <span class="kw">x.max</span>,<span class="kw">...</span>) {
+  <span class="fu">restore.point</span>(<span class="st">"A.fun"</span>)
+  <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(
+    A1=<span class="co">if</span> (<span class="kw">ap</span><span class="op">==</span><span class="fl">1</span>) <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(
+      a1=<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"wait"</span>, <span class="co">if</span> (<span class="kw">x1</span><span class="op">&gt;</span><span class="fl">0</span>) <span class="st">"attack"</span>),
+      i1=<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="co">if</span> (<span class="kw">x1</span><span class="op">&gt;</span><span class="fl">0</span>) <span class="st">"d"</span>,<span class="st">""</span>,<span class="co">if</span> (<span class="kw">x1</span><span class="op">&lt;</span><span class="kw">x.max</span>) <span class="st">"b"</span>)
+    ),
+    A2= <span class="co">if</span> (<span class="kw">ap</span><span class="op">==</span><span class="fl">2</span>) <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(
+      a2=<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"wait"</span>, <span class="co">if</span> (<span class="kw">x2</span><span class="op">&gt;</span><span class="fl">0</span>) <span class="st">"attack"</span>),
+      i2=<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="co">if</span> (<span class="kw">x2</span><span class="op">&gt;</span><span class="fl">0</span>) <span class="st">"d"</span>,<span class="st">""</span>,<span class="co">if</span> (<span class="kw">x2</span><span class="op">&lt;</span><span class="kw">x.max</span>) <span class="st">"b"</span>)
+    )
+  )
+}
+
+<span class="kw">pi.fun</span> <span class="op">=</span> <span class="fu">function</span>(<span class="kw">ax.df</span>,<span class="kw">c.a</span>,<span class="kw">c.x</span>,<span class="kw">c.i</span>, <span class="kw">...</span>) {
+  <span class="fu">restore.point</span>(<span class="st">"pi.fun"</span>)
+  <span class="kw">ax1</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span>(<span class="kw">ax.df</span>, <span class="kw">ap</span><span class="op">==</span><span class="fl">1</span>) <span class="op">%&gt;%</span>
+    <span class="fu">mutate</span>(
+      pi1 = <span class="op">-</span><span class="kw">c.a</span><span class="op">*</span>(<span class="kw">a1</span><span class="op">==</span><span class="st">"attack"</span>)<span class="op">*</span><span class="kw">x1</span>  <span class="op">-</span> <span class="kw">c.i</span><span class="op">*</span>(<span class="kw">i1</span><span class="op">==</span><span class="st">"b"</span>)<span class="op">-</span><span class="kw">c.x</span><span class="op">*</span><span class="kw">x1</span>,
+      pi2 = <span class="op">-</span> (<span class="kw">a1</span><span class="op">==</span><span class="st">"attack"</span>)<span class="op">*</span><span class="kw">x1</span> <span class="op">-</span><span class="kw">c.x</span><span class="op">*</span><span class="kw">x2</span>
+    )
+  <span class="kw">ax2</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span>(<span class="kw">ax.df</span>, <span class="kw">ap</span><span class="op">==</span><span class="fl">2</span>) <span class="op">%&gt;%</span>
+    <span class="fu">mutate</span>(
+      pi1 = <span class="op">-</span> (<span class="kw">a2</span><span class="op">==</span><span class="st">"attack"</span>)<span class="op">*</span><span class="kw">x2</span> <span class="op">-</span><span class="kw">c.x</span><span class="op">*</span><span class="kw">x1</span>,
+      pi2 = <span class="op">-</span><span class="kw">c.a</span><span class="op">*</span>(<span class="kw">a2</span><span class="op">==</span><span class="st">"attack"</span>)<span class="op">*</span><span class="kw">x2</span> <span class="op">-</span> <span class="kw">c.i</span><span class="op">*</span>(<span class="kw">i2</span><span class="op">==</span><span class="st">"b"</span>)<span class="op">-</span><span class="kw">c.x</span><span class="op">*</span><span class="kw">x2</span>
+    )
+  <span class="fu">bind_rows</span>(<span class="kw">ax1</span>,<span class="kw">ax2</span>)
+}
+
+<span class="co"># State transition function</span>
+<span class="kw">trans.fun</span> <span class="op">=</span> <span class="fu">function</span>(<span class="kw">ax.df</span>,<span class="kw">x.max</span>, <span class="kw">sp</span>,<span class="kw">d.factor</span>=<span class="fl">1</span>, <span class="kw">d.exp</span>=<span class="fl">1</span>,<span class="kw">...</span>) {
+  <span class="fu">restore.point</span>(<span class="st">"trans.fun"</span>)
+
+  <span class="co"># Compute probability to destroy</span>
+  <span class="co"># a weapon unit of other player</span>
+  <span class="co"># if one attacks</span>
+  <span class="kw">ax.df</span> <span class="op">=</span> <span class="fu">mutate</span>(<span class="kw">ax.df</span>,
+    i = <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span>(<span class="kw">ap</span><span class="op">==</span><span class="fl">1</span>,<span class="kw">i1</span>,<span class="kw">i2</span>),
+    a = <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span>(<span class="kw">ap</span><span class="op">==</span><span class="fl">1</span>,<span class="kw">a1</span>,<span class="kw">a2</span>),
+    xi = <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span>(<span class="kw">ap</span><span class="op">==</span><span class="fl">1</span>,<span class="kw">x1</span>,<span class="kw">x2</span>),
+    xj = <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span>(<span class="kw">ap</span><span class="op">==</span><span class="fl">1</span>,<span class="kw">x2</span>,<span class="kw">x1</span>),
+    dp = <span class="kw">d.factor</span><span class="op">*</span>(<span class="kw">xi</span> <span class="op">/</span> <span class="kw">x.max</span>)<span class="op">^</span><span class="kw">d.exp</span>
+  )
+  
+  <span class="kw">tr</span> <span class="op">=</span> <span class="kw">ax.df</span> <span class="op">%&gt;%</span> 
+    <span class="fu">distinct</span>(<span class="kw">ap</span>,<span class="kw">xi</span>,<span class="kw">xj</span>,<span class="kw">i</span>,<span class="kw">a</span>) <span class="op">%&gt;%</span>
+    <span class="fu">left_join</span>(<span class="kw">ax.df</span>, by = <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"ap"</span>, <span class="st">"xi"</span>, <span class="st">"xj"</span>, <span class="st">"i"</span>, <span class="st">"a"</span>))
+  
+
+  <span class="kw">tr</span> <span class="op">=</span> <span class="fu"><a href="../reference/irv_joint_dist.html">irv_joint_dist</a></span>(<span class="kw">tr</span>,
+    <span class="fu"><a href="../reference/irv.html">irv</a></span>(<span class="st">"bi"</span>,default=<span class="fl">0</span>,
+      <span class="fu"><a href="../reference/irv_val.html">irv_val</a></span>(<span class="fl">1</span>, (<span class="kw">i</span><span class="op">==</span><span class="st">"b"</span>)<span class="op">*</span><span class="kw">sp</span>),
+      <span class="fu"><a href="../reference/irv_val.html">irv_val</a></span>(<span class="op">-</span><span class="fl">1</span>, (<span class="kw">i</span><span class="op">==</span><span class="st">"d"</span>)<span class="op">*</span><span class="fl">1</span>)
+    ),
+    <span class="fu"><a href="../reference/irv.html">irv</a></span>(<span class="st">"dj"</span>,default=<span class="fl">0</span>,
+      <span class="fu"><a href="../reference/irv_val.html">irv_val</a></span>(<span class="fl">1</span>, (<span class="kw">a</span><span class="op">==</span><span class="st">"attack"</span>)<span class="op">*</span><span class="kw">dp</span>)
+    ),
+    <span class="fu"><a href="../reference/irv.html">irv</a></span>(<span class="st">"new_ap"</span>,<span class="fu"><a href="../reference/irv_val.html">irv_val</a></span>(<span class="fl">1</span>, <span class="fl">0.5</span>), <span class="fu"><a href="../reference/irv_val.html">irv_val</a></span>(<span class="fl">2</span>, <span class="fl">0.5</span>))
+  )
+
+  <span class="kw">tr</span> <span class="op">=</span> <span class="kw">tr</span> <span class="op">%&gt;%</span>
+    <span class="fu">mutate</span>(
+      new_xi = <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">pmax</a></span>(<span class="kw">xi</span><span class="op">+</span><span class="kw">bi</span>,<span class="fl">0</span>),
+      new_xj = <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">pmax</a></span>(<span class="kw">xj</span><span class="op">-</span><span class="kw">dj</span>,<span class="fl">0</span>),
+      new_x1 = <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span>(<span class="kw">ap</span><span class="op">==</span><span class="fl">1</span>, <span class="kw">new_xi</span>,<span class="kw">new_xj</span>),
+      new_x2 = <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span>(<span class="kw">ap</span><span class="op">==</span><span class="fl">1</span>, <span class="kw">new_xj</span>,<span class="kw">new_xi</span>),
+      xd = <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span>(<span class="st">"p"</span>,<span class="kw">new_ap</span>,<span class="st">"_"</span>,<span class="kw">new_x1</span>,<span class="st">"_"</span>,<span class="kw">new_x2</span>),
+      xs=<span class="kw">x</span>
+    )
+  <span class="kw">tr</span>
+  
+  <span class="kw">test</span> <span class="op">=</span> <span class="kw">tr</span> <span class="op">%&gt;%</span>
+    <span class="fu">select</span>(<span class="kw">xs</span>,<span class="kw">xd</span>,<span class="kw">ap</span>,<span class="kw">i1</span>,<span class="kw">i2</span>,<span class="kw">a1</span>,<span class="kw">a2</span>, <span class="kw">prob</span>)
+}
+
+<span class="co"># Maximum size of weapons arsenal</span>
+<span class="kw">x.max</span> <span class="op">=</span> <span class="fl">3</span>
+<span class="kw">x.df1</span> <span class="op">=</span> <span class="kw">tidyr</span>::<span class="fu"><a href="https://tidyr.tidyverse.org/reference/expand_grid.html">expand_grid</a></span>(ap=<span class="fl">1</span>,x1=<span class="fl">0</span><span class="op">:</span><span class="kw">x.max</span>,x2=<span class="fl">0</span><span class="op">:</span><span class="kw">x.max</span>)  
+<span class="kw">x.df2</span> <span class="op">=</span> <span class="kw">x.df1</span> <span class="op">%&gt;%</span> <span class="fu">mutate</span>(ap=<span class="fl">2</span>)
+<span class="kw">x.df</span> <span class="op">=</span> <span class="fu">bind_rows</span>(<span class="kw">x.df1</span>, <span class="kw">x.df2</span>) <span class="op">%&gt;%</span>
+  <span class="fu">mutate</span>(
+    x = <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span>(<span class="st">"p"</span>,<span class="kw">ap</span>,<span class="st">"_"</span> ,<span class="kw">x1</span>,<span class="st">"_"</span>, <span class="kw">x2</span>),
+    xgroup = <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span>(<span class="kw">x1</span>,<span class="st">"_"</span>,<span class="kw">x2</span>)
+  )
+
+<span class="kw">g</span> <span class="op">=</span> <span class="fu"><a href="../reference/rel_game.html">rel_game</a></span>(<span class="st">"Arms Race Turns"</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/rel_param.html">rel_param</a></span>(delta=<span class="fl">0.9</span>, rho=<span class="fl">0.6</span>, c.a=<span class="fl">0.012</span>,c.i=<span class="fl">0.01</span>, c.x=<span class="fl">0.01</span>,x.max=<span class="kw">x.max</span>, sp=<span class="fl">0.2</span>, d.factor=<span class="fl">0.8</span>, d.exp=<span class="fl">2</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/rel_states.html">rel_states</a></span>(<span class="kw">x.df</span>,A.fun=<span class="kw">A.fun</span>, trans.fun=<span class="kw">trans.fun</span>,pi.fun=<span class="kw">pi.fun</span>) <span class="op">%&gt;%</span>
+  <span class="fu"><a href="../reference/rel_compile.html">rel_compile</a></span>()
+
+<span class="kw">g</span> <span class="op">=</span> <span class="kw">g</span> <span class="op">%&gt;%</span> <span class="fu"><a href="../reference/rel_capped_rne.html">rel_capped_rne</a></span>(T=<span class="fl">1001</span>)
+</pre></div>
 </div>
   </div>
 
-  <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
-        <div id="tocnav">
-      <h2 class="hasAnchor">
-<a href="#tocnav" class="anchor"></a>Contents</h2>
-      <ul class="nav nav-pills nav-stacked">
-<li><a href="#the-arms-race-game">1. The Arms Race Game</a></li>
-      <li><a href="#pareto-optimal-spe">2. Pareto-optimal SPE</a></li>
-      <li><a href="#repeated-negotiation-equilibrium">3. Repeated Negotiation Equilibrium</a></li>
-      <li><a href="#equilibrium-diagram-with-state-transitions">4. Equilibrium diagram with state transitions</a></li>
-      <li><a href="#more-equilibrium-details-joint-payoffs-and-incentive-constraints-of-all-possible-action-profiles-in-a-state-">5. More equilibrium details: Joint payoffs and incentive constraints of all possible action profiles in a state.</a></li>
-      <li><a href="#finding-alternative-t-rne">6. Finding alternative T-RNE</a></li>
-      <li><a href="#exploring-punishment-actions">7. Exploring punishment actions</a></li>
-      <li><a href="#comparative-statics">8. Comparative Statics</a></li>
-      <li><a href="#variant-attacks-can-destroy-weapons">9. Variant: Attacks can destroy weapons</a></li>
-      <li><a href="#an-arms-race-game-without-simultaneous-moves">10. An arms race game without simultaneous moves</a></li>
-      </ul>
+  <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
+
+        <nav id="toc" data-toggle="toc"><h2 data-toc-skip>Contents</h2>
+    </nav>
 </div>
-      </div>
 
 </div>
+
 
 
       <footer><div class="copyright">
@@ -558,29 +567,14 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.3.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
+
       </footer>
 </div>
 
   
 
 
-  <script type="text/javascript">
-  var sc_project=12051162;
-  var sc_invisible=1;
-  var sc_security="60139410";
-  </script>
-  <script type="text/javascript"
-  src="https://www.statcounter.com/counter/counter.js"
-  async></script>
-  <noscript><div class="statcounter"><a title="Web Analytics
-  Made Easy - StatCounter" href="https://statcounter.com/"
-  target="_blank"><img class="statcounter"
-  src="https://c.statcounter.com/12051162/0/60139410/1/"
-  alt="Web Analytics Made Easy -
-  StatCounter"></a></div></noscript>
-
-  
   </body>
 </html>

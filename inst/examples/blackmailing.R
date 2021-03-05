@@ -17,7 +17,7 @@ blackmailing = function() {
   # The T-RNE payoffs in state x0 should converge to
   # (0,1) i.e. the blackmailer can almost extract nothing
 
-  # For T = 50 we are alreafy pretty close to this result
+  # For T = 50 we are already pretty close to this result
   get_eq(g)
   # We also see how with increasing T we converge towards
   # this payoff.
@@ -38,7 +38,7 @@ blackmailing = function() {
 
   # Plot r1 as function of T
   library(ggplot2)
-  ggplot(hist, aes(x=T, y=r1)) + geom_point()
+  ggplot(hist, aes(x=t, y=r1)) + geom_point()
 
   # We see that for T slightly above 200
   # again high levels of r1 can be implemented

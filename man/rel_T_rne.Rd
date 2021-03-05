@@ -4,12 +4,23 @@
 \alias{rel_T_rne}
 \title{Compute a T-RNE}
 \usage{
-rel_T_rne(g, T, delta = g$param$delta, rho = g$param$rho,
-  adjusted.delta = NULL, beta1 = g$param$beta1,
-  tie.breaking = c("equal_r", "slack", "random", "first", "last", "max_r1",
-  "max_r2", "unequal_r")[1], tol = 1e-12, save.details = FALSE,
-  add.iterations = FALSE, save.history = FALSE, use.cpp = TRUE,
-  spe = g[["spe"]], res.field = "eq")
+rel_T_rne(
+  g,
+  T,
+  delta = g$param$delta,
+  rho = g$param$rho,
+  adjusted.delta = NULL,
+  beta1 = g$param$beta1,
+  tie.breaking = c("equal_r", "slack", "random", "first", "last", "max_r1", "max_r2",
+    "unequal_r")[1],
+  tol = 1e-12,
+  save.details = FALSE,
+  add.iterations = FALSE,
+  save.history = FALSE,
+  use.cpp = TRUE,
+  spe = g[["spe"]],
+  res.field = "eq"
+)
 }
 \arguments{
 \item{g}{The game}

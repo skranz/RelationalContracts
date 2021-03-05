@@ -223,9 +223,13 @@ rel_compile = function(g,..., compute.just.static=FALSE) {
 
   li2 = lapply(seq_along(g_defs$trans_fun_defs),compile_trans_fun_def)
 
-  tdf = bind_rows(li,li2) %>%
-    filter(xs != xd) %>%
-    unique()
+  tdf = bind_rows(li,li2)
+
+  if (NROW(tdf)>0) {
+    tdf = tdf %>%
+      filter(xs != xd) %>%
+      unique()
+  }
 
   if (NROW(tdf)>0) {
     non.states = setdiff(unique(c(tdf$xd,tdf$xs)),sdf$x)
@@ -633,14 +637,18 @@ rel_change_param = function(g,...) {
 #' @param A.fun Alternative to specify A1 and A2, a function that returns action sets.
 #' @param pi1 Player 1's payoff. (Non standard evaluation)
 #' @param pi2 Player 2's payoff. (Non standard evaluation)
+#' @param pi1.form Player 1's payoff as formula with standard evaluation
+#' @param pi2.form Player 2's payoff as formula with standard evaluation
 #' @param pi.fun Alternative to specify pi1 and pi2 as formula. A vectorized function that returns payoffs directly for all combinations of states and action profiles.
 #' @param trans.fun A function that specifies state transitions
 #' @param x.T Relevant when solving a capped game. Which terminal state shall be set in period T onwards. By default, we stay in state x.
 #' @return Returns the updated game
-rel_states = function(g, x,A1=NULL, A2=NULL, pi1, pi2, A.fun=NULL, pi.fun=NULL, trans.fun=NULL,static.A1=NULL, static.A2=NULL, static.A.fun=NULL,static.pi1, static.pi2, static.pi.fun=NULL, x.T=NULL,  ...) {
+rel_states = function(g, x,A1=NULL, A2=NULL, pi1, pi2, A.fun=NULL, pi.fun=NULL, trans.fun=NULL,static.A1=NULL, static.A2=NULL, static.A.fun=NULL,static.pi1, static.pi2, static.pi.fun=NULL, x.T=NULL, pi1.form, pi2.form,  ...) {
   args=list(...)
   if (missing(pi1)) {
     pi1 = NULL
+    if (!missing(pi1.form))
+      pi1=pi1.form[[2]]
   } else {
     pi1 = substitute(pi1)
     if (isTRUE(as.name(pi1[[1]])=="~"))
@@ -648,6 +656,8 @@ rel_states = function(g, x,A1=NULL, A2=NULL, pi1, pi2, A.fun=NULL, pi.fun=NULL, 
   }
   if (missing(pi2)) {
     pi2 = NULL
+    if (!missing(pi2.form))
+      pi2=pi2.form[[2]]
   } else {
     pi2 = substitute(pi2)
     if (isTRUE(as.name(pi2[[1]])=="~"))

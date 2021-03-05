@@ -4,9 +4,14 @@
 \alias{rel_param}
 \title{Add parameters to a relational contracting game}
 \usage{
-rel_param(g, ..., delta = non.null(param[["delta"]], 0.9),
-  rho = non.null(param[["rho"]], 0), beta1 = non.null(param[["beta1"]],
-  1/2), param = g[["param"]])
+rel_param(
+  g,
+  ...,
+  delta = non.null(param[["delta"]], 0.9),
+  rho = non.null(param[["rho"]], 0),
+  beta1 = non.null(param[["beta1"]], 1/2),
+  param = g[["param"]]
+)
 }
 \arguments{
 \item{g}{a relational contracting game created with rel_game}

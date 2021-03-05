@@ -4,12 +4,24 @@
 \alias{rel_capped_rne}
 \title{Solve an RNE for a capped version of a game}
 \usage{
-rel_capped_rne(g, T, delta = g$param$delta, rho = g$param$rho,
-  adjusted.delta = NULL, beta1 = g$param$beta1,
-  tie.breaking = c("equal_r", "slack", "random", "first", "last", "max_r1",
-  "max_r2", "unequal_r")[1], tol = 1e-12, add.iterations = FALSE,
-  save.details = FALSE, save.history = FALSE, use.cpp = TRUE,
-  T.rne = FALSE, spe = NULL, res.field = "eq")
+rel_capped_rne(
+  g,
+  T,
+  delta = g$param$delta,
+  rho = g$param$rho,
+  adjusted.delta = NULL,
+  beta1 = g$param$beta1,
+  tie.breaking = c("equal_r", "slack", "random", "first", "last", "max_r1", "max_r2",
+    "unequal_r")[1],
+  tol = 1e-12,
+  add.iterations = FALSE,
+  save.details = FALSE,
+  save.history = FALSE,
+  use.cpp = TRUE,
+  T.rne = FALSE,
+  spe = NULL,
+  res.field = "eq"
+)
 }
 \arguments{
 \item{g}{The game}

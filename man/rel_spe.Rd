@@ -4,10 +4,19 @@
 \alias{rel_spe}
 \title{Finds an optimal simple subgame perfect equilibrium of g. From this the whole SPE payoff set can be deduced.}
 \usage{
-rel_spe(g, delta = g$param$delta, tol.feasible = 1e-10,
-  no.exist.action = c("warn", "stop", "nothing"), verbose = FALSE,
-  r1 = NULL, r2 = NULL, rho = g$param$rho, add.action.labels = TRUE,
-  max.iter = 10000, first.best = FALSE)
+rel_spe(
+  g,
+  delta = g$param$delta,
+  tol.feasible = 1e-10,
+  no.exist.action = c("warn", "stop", "nothing"),
+  verbose = FALSE,
+  r1 = NULL,
+  r2 = NULL,
+  rho = g$param$rho,
+  add.action.labels = TRUE,
+  max.iter = 10000,
+  first.best = FALSE
+)
 }
 \arguments{
 \item{g}{the game object}

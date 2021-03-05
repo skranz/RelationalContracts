@@ -85,10 +85,12 @@ examples.cost.ladder.cournot.staggered = function() {
 
   diagnose_transitions(g)
 
-  g = g %>%  rel_T_rne(T=1000, delta=0.9, rho=0.4, save.details = !TRUE) %>%
+  g = g %>%  rel_T_rne(T=10000, delta=0.9, rho=0.6, save.details = !TRUE) %>%
     rel_state_probs(x0="equal")
 
+
   eq = get_eq(g)
+
 
   geq = eq_combine_xgroup(g)
 

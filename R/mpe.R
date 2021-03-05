@@ -37,10 +37,11 @@ get_mpe = function(g, extra.cols="ae", eq=g$mpe) {
 #' @param delta the discount factor
 #' @param max.iter maximum number of iterations
 #' @param tol we finish if payoffs in a subsequent iteration don't change by more than tol
-#' @param ax optionaly an initially guess of the action profiles. A vector of size nx describing action profiles as ax indices
-rel_mpe = function(g, delta=g$param$delta, static.eq=NULL, max.iter = 100, tol=1e-8, ax=NULL) {
+#' @param a.init.guess optionaly an initially guess of the action profiles. A vector of size nx (number of states) that describes for each state the integer index of the action profile. For a game g look at `g$ax.grid` to find the indeces of the desired action profiles.
+rel_mpe = function(g, delta=g$param$delta, static.eq=NULL, max.iter = 100, tol=1e-8, a.init.guess=NULL) {
   restore.point("rel_mpe")
 
+  ax = a.init.guess
   g$param$delta = delta
   if (is.null(g$ax.trans))
     g = prepare.for.spe(g)

@@ -318,7 +318,7 @@ rel_rne = function(g, delta=g$param$delta, rho=g$param$rho, adjusted.delta=NULL,
   beta2 = 1-beta1
 
 
-  rne = data_frame(x = sdf$x, solved=FALSE, r1=NA,r2=NA, U=NA, v1=NA,v2=NA,ae=NA,a1=NA,a2=NA)
+  rne = tibble(x = sdf$x, solved=FALSE, r1=NA,r2=NA, U=NA, v1=NA,v2=NA,ae=NA,a1=NA,a2=NA)
 
 
   # First solve repeated games for all terminal states
@@ -441,10 +441,16 @@ rel_rne = function(g, delta=g$param$delta, rho=g$param$rho, adjusted.delta=NULL,
     # Pick equilibrium actions
     # If indifferent choose the one with the largest
     # slack in the IC
-    slack = U.hat - (v1.hat + v2.hat)
-    rne$ae[row] = which.max(slack * (U.hat==U & IC.holds))
-    rne$a1[row] = which.max(slack * (v1.hat==v1 & IC.holds))
-    rne$a2[row] = which.max(slack * (v2.hat==v2 & IC.holds))
+    actions = r_rne_find_actions(U=U,v1 = v1,v2 = v2,U.hat = U.hat,v1.hat = v1.hat,v2.hat = v2.hat,IC.holds = IC.holds, tie.breaking = "slack")
+    rne$ae[row] = actions[1]
+    rne$a1[row] = actions[2]
+    rne$a2[row] = actions[3]
+
+
+    # slack = U.hat - (v1.hat + v2.hat)
+    # rne$ae[row] = which.max(slack * (U.hat==U & IC.holds))
+    # rne$a1[row] = which.max(slack * (v1.hat==v1 & IC.holds))
+    # rne$a2[row] = which.max(slack * (v2.hat==v2 & IC.holds))
 
     rne$solved[row] = TRUE
   }

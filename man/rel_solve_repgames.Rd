@@ -4,8 +4,19 @@
 \alias{rel_solve_repgames}
 \title{Solves for all specified states the repeated game assuming the state is fixed}
 \usage{
-rel_solve_repgames(g, x = g$sdf$x, overwrite = FALSE, rows = match(x,
-  g$sdf$x), use.repgame.package = FALSE)
+rel_solve_repgames(
+  g,
+  x = g$sdf$x,
+  overwrite = FALSE,
+  rows = match(x, g$sdf$x),
+  use.repgame.package = FALSE
+)
+}
+\value{
+Returns a game object that contains a field 'rep.games.df'.
+This data frame contains the relevant information to compute
+equilibrium payoffs and equilibria for all
+discount factors for all states.
 }
 \description{
 Solves for all specified states the repeated game assuming the state is fixed

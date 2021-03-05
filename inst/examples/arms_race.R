@@ -93,6 +93,7 @@ arms.race.example = function() {
     get_rne_details(x="2_2")
 
 
+
   # Article version alternative: set sp 0.08 and 1. For g2 keep sp on 0.08
   g = rel_game("Arms Race") %>%
     rel_param(delta=0.99, rho=0.65, c.a=0.05,c.i=0.01, c.x=0.3,x.max=x.max, sp=0.08, d.factor=0, d.exp=1, can.destroy=TRUE) %>%

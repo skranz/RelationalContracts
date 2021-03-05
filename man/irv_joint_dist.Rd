@@ -4,8 +4,13 @@
 \alias{irv_joint_dist}
 \title{Helper function to specify state transitions}
 \usage{
-irv_joint_dist(df, ..., enclos = parent.frame(), remove.zero.prob = TRUE,
-  prob.var = "prob")
+irv_joint_dist(
+  df,
+  ...,
+  enclos = parent.frame(),
+  remove.zero.prob = TRUE,
+  prob.var = "prob"
+)
 }
 \description{
 See vignette for examples

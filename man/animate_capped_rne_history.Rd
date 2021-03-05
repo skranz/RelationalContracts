@@ -4,10 +4,19 @@
 \alias{animate_capped_rne_history}
 \title{Use ggplotly to show an animation of the payoff sets of a capped RNE going from t=T to t=1}
 \usage{
-animate_capped_rne_history(g, x = g$sdf$x[1], hist = g$eq.history,
+animate_capped_rne_history(
+  g,
+  x = g$sdf$x[1],
+  hist = g$eq.history,
   colors = c("#377EB8", "#E41A1C", "#4DAF4A", "#984EA3", "#FF7F00", "#FFFF33",
-  "#A65628", "#F781BF"), alpha = 0.4, add.state.label = TRUE,
-  add.grid = FALSE, add.diag = FALSE, add.plot = NULL, eq.li = NULL)
+    "#A65628", "#F781BF"),
+  alpha = 0.4,
+  add.state.label = TRUE,
+  add.grid = FALSE,
+  add.diag = FALSE,
+  add.plot = NULL,
+  eq.li = NULL
+)
 }
 \description{
 Use ggplotly to show an animation of the payoff sets of a capped RNE going from t=T to t=1

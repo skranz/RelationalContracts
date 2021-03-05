@@ -4,13 +4,26 @@
 \alias{eq_diagram_xgroup}
 \title{Draws a diagram of equilibrium state transition}
 \usage{
-eq_diagram_xgroup(g, show.own.loop = FALSE, show.terminal.loop = FALSE,
-  use.x = NULL, just.eq.chain = FALSE, x0 = g$sdf$x[1],
-  hide.passive.edge = TRUE, add.passive.edge = TRUE, label.fun = NULL,
-  tooltip.fun = NULL, active.edge.color = "#000077",
-  passive.edge.color = "#dddddd", passive.edge.width = 1,
-  return.dfs = FALSE, eq = g[["eq"]], ap.col = if (has.col(eq, "ap")) "ap"
-  else NA, font.size = 24, font = paste0(font.size, "px Arial black"))
+eq_diagram_xgroup(
+  g,
+  show.own.loop = FALSE,
+  show.terminal.loop = FALSE,
+  use.x = NULL,
+  just.eq.chain = FALSE,
+  x0 = g$sdf$x[1],
+  hide.passive.edge = TRUE,
+  add.passive.edge = TRUE,
+  label.fun = NULL,
+  tooltip.fun = NULL,
+  active.edge.color = "#000077",
+  passive.edge.color = "#dddddd",
+  passive.edge.width = 1,
+  return.dfs = FALSE,
+  eq = g[["eq"]],
+  ap.col = if (has.col(eq, "ap")) "ap" else NA,
+  font.size = 24,
+  font = paste0(font.size, "px Arial black")
+)
 }
 \arguments{
 \item{g}{The solved game object}

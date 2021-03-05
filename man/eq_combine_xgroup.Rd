@@ -4,8 +4,11 @@
 \alias{eq_combine_xgroup}
 \title{Aggregate equilibrium behavior in games with random active player}
 \usage{
-eq_combine_xgroup(g, eq = g[["eq"]], ap.col = ifelse(has.col(eq, "ap"),
-  "ap", NA))
+eq_combine_xgroup(
+  g,
+  eq = g[["eq"]],
+  ap.col = ifelse(has.col(eq, "ap"), "ap", NA)
+)
 }
 \arguments{
 \item{g}{the game object}

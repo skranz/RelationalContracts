@@ -4,13 +4,27 @@
 \alias{plot_eq_payoff_set}
 \title{Show a base R plot of equilibrium payoff set}
 \usage{
-plot_eq_payoff_set(g, x = eq$x[1], t = 1, eq = if (use.vr) get_eq(g,
-  add.vr = TRUE) else g[["eq"]], xlim = NULL, ylim = NULL, add = FALSE,
-  plot.r = TRUE, alpha = 0.8, black.border = TRUE,
-  add.state.label = is.null(labels), labels = NULL, colors = c("#377EB8",
-  "#E41A1C", "#4DAF4A", "#984EA3", "#FF7F00", "#FFFF33", "#A65628", "#F781BF"),
-  add.xlim = NULL, add.ylim = NULL, extend.lim.perc = 0.05,
-  use.vr = FALSE, ...)
+plot_eq_payoff_set(
+  g,
+  x = eq$x[1],
+  t = 1,
+  eq = if (use.vr) get_eq(g, add.vr = TRUE) else g[["eq"]],
+  xlim = NULL,
+  ylim = NULL,
+  add = FALSE,
+  plot.r = TRUE,
+  alpha = 0.8,
+  black.border = TRUE,
+  add.state.label = is.null(labels),
+  labels = NULL,
+  colors = c("#377EB8", "#E41A1C", "#4DAF4A", "#984EA3", "#FF7F00", "#FFFF33",
+    "#A65628", "#F781BF"),
+  add.xlim = NULL,
+  add.ylim = NULL,
+  extend.lim.perc = 0.05,
+  use.vr = FALSE,
+  ...
+)
 }
 \arguments{
 \item{g}{The game object for which an equilibrium has been solved}

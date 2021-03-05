@@ -15,3 +15,4 @@ diagnose_transitions = function(g) {
   names(li) = g$sdf$x
   li
 }
+

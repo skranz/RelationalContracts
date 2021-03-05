@@ -39,6 +39,43 @@ compute.rep.game.action.lists = function(sdf, rows=seq_len(NROW(sdf))) {
   li
 }
 
+
+# Compute the Nash threat payoffs assuming that under disagreement
+# the state cannot change
+compute.rep.game.nash.threats = function(sdf, rows=seq_len(NROW(sdf)), psi=1, return.what=c("all_eq","all_payoffs","mean")[3]) {
+  restore.point("compute.rep.game.nash.threats")
+
+  li = lapply(rows, function(row) {
+    pi1.org = sdf$pi1[[row]]
+    pi2.org = sdf$pi2[[row]]
+    na1 = sdf$na1[[row]]; na2 = sdf$na2[[row]]
+
+    pi1 = pi1.org-psi*pi2.org
+    pi2 = pi2.org-psi*pi1.org
+
+    c1 = find.best.reply.payoffs(1,pi1,na1,na2)
+    c2 = find.best.reply.payoffs(2,pi2,na1,na2)
+    G = pi1+pi2
+    # Liquidity requirement
+    L = c1+c2-G
+    use = L == min(L)
+
+    if (return.what == "mean") {
+      num.eq = sum(use)
+      return(tibble(num.eq=num.eq,L=L[1], pi1=mean(pi1.org[use]), pi2 = mean(pi1.org[use])))
+    } else {
+      tau.df = cbind(.a=seq_along(pi1)[use],L=L[use], pi1 = pi1.org[use], pi2=pi2.org[use])
+      if (!return.what == "all_payoffs") {
+        dupl = duplicated(tau.df[,3:4,drop=FALSE])
+        tau.df = tau.df[!dupl,,drop=FALSE]
+      }
+    }
+    tau.df
+  })
+  li
+}
+
+
 # Solving a repeated simply static dynamic multistage game with perfect monitoring
 solve.x.rep.multistage = function(g,x=NULL,row=NULL, tol=1e-10, beta1=g$param$beta1, make.strat.lab=FALSE) {
   restore.point("solve.x.rep.multistage")

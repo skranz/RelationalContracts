@@ -1,0 +1,320 @@
+---
+title: "Gangsta's Paradise Game and Non-Existence of RNE"
+output:
+  pdf_document:
+    df_print: kable
+  html_document:
+    df_print: kable
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, error=TRUE)
+library(RelationalContracts)
+options(dplyr.summarise.inform = FALSE)
+```
+
+In the newest version of our paper "Reconciliating relational contracting and hold-up: A model of repeated negotiations" by Susanne Goldlücke and me, we introduce the *Gangsta's Paradise* game to exemplify that repeated negotiation equilibria (RNE) can fail to exist. This document accompanies our paper and shall help to get a better theoretical intuition of the existence problem and how T-RNE solve it, as well as showcase how the R package `RelationialContracts` can help to quickly numerically explore these issues.
+
+We first illustrate the existence problem. Then we show how for this example existence can be reestablished by a finer state space and how T-RNE essentially find the approbriate finer state space. Finally, we illustrate how similar effects of state space definition already arise for Markov perfect equilibria, which means it should not be surprising to find such effects also for RNE and T-RNE.
+
+The Gangsta's Paradise game has two states: a prisoners' dilemma state `x0` and paradise `x_paradise`. In `x0` players play a prisoners' dilemma game with the following payoff matrix:
+
+|     |       |       |
+|-----|-------|-------|
+|     | C     | D     |
+| C   | 1,1   | -10,3 |
+| D   | 3,-10 | 0,0   |
+
+Players move to paradise if and only if both cooperate. In paradise, players laze around and get a fixed payoff of `(2,2)` without performing any actions. Paradise is an absorbing state in which players stay forever.
+
+The following code creates the game with the `RelationalContracts` package.
+
+```{r}
+library(RelationalContracts)
+# Since we will define several similar games,
+# we define action spaces and payoff functions
+# as global variables that we can reuse later.
+
+# Action spaces in x0
+A1 = list(a1=c("C","D"))
+A2 = list(a2=c("C","D"))
+
+# Payoff functions in x0
+pi1 = ~case_when(
+  a1 == "C" & a2== "C" ~ 2,
+  a1 == "D" & a2== "C" ~ 3,
+  a1 == "C" & a2== "D" ~ -10,
+  a1 == "D" & a2== "D" ~ 0
+)
+pi2=~case_when(
+  a1 == "C" & a2== "C" ~ 2,
+  a1 == "D" & a2== "C" ~ -10,
+  a1 == "C" & a2== "D" ~ 3,
+  a1 == "D" & a2== "D" ~ 0
+)
+
+g = g0 = rel_game() %>%
+  rel_state("x0", A1=A1, A2=A2, pi1.form=pi1, pi2.form=pi2) %>%
+  rel_state("x.paradise", pi1=2, pi2=2) %>%
+  rel_transition("x0","x.paradise",a1="C",a2="C") %>%
+  rel_compile()
+```
+
+There are combinations of discount factors and negotiation probabilities for which an RNE exists. Since this is a *weakly directional game*, we can use the function `rel_rne` to find an RNE (when speaking of RNE, we always mean simple RNE as defined in our paper):
+
+```{r}
+rel_rne(g,delta = 0.5, rho=0.1) %>% get_eq() %>%
+  select(x,ae.lab, a1.lab, a2.lab, r1,r2,U,v1,v2)
+```
+
+This RNE implements `(C,C)` on the equilibrium path and as punishment (and under disagreement) mutual defection is played. For a lower discount factor, we can find an RNE where only `(D,D)` can be implemented on the equilibrium path:
+
+```{r}
+rel_rne(g,delta = 0.2, rho=0.1) %>% get_eq() %>%
+  select(x,ae.lab, a1.lab, a2.lab, r1,r2,U,v1,v2)
+```
+
+### Non-existence of RNE
+
+For some combinations of `delta` and `rho` no RNE exists in this game. An example is `delta=0.5` and `rho=0.5`:
+
+```{r}
+rel_rne(g,delta = 0.5, rho=0.5)
+```
+
+Let us illustrate why no RNE exists. First, assume that the RNE can only implement `(D,D)` on the equilibrium path. Then paradise would never be reached and each player has zero negotiation payoffs in state `x0`, i.e. `r1(x0)=r2(x0)=0`. This is only an RNE if no SPE of the truncated game with these negotiation payoff can implement higher joint payoffs. We can solve for the optimal simple SPE in that truncated game as follows:
+
+```{r}
+g = rel_spe(g, delta=0.5, rho=0.5, r1 = c(0,2), r2=c(0,2))
+g %>% 
+  get_eq() %>%
+  select(x,ae.lab,r1,r2,U,v1,v2)
+```
+
+We see that the optimal simple SPE can implement `(C,C)` in the truncated game. This means there is no RNE in which `(D,D)` is played on the equilibrium path.
+
+Now let us assume that we have an RNE that would implement `(C,C)` on the equilibrium path. This would yield negotiation payoffs of 2 for each player in state `x0`. Let us compute the optimal simple SPE in the corresponding truncated game.
+
+```{r}
+# Solve SPE in truncated game assuming given negotiation payoffs
+# r1 and r2 that result if (C,C) could be implemented
+g = rel_spe(g, delta=0.5, rho=0.5, r1 = c(2,2), r2=c(2,2))
+g %>% 
+  get_eq() %>%
+  select(x,ae.lab,r1,r2,U,v1,v2)
+```
+
+With these negotiation payoffs only `(D,D)` can be implemented in the truncated game! For the intuition, note that if one deviates from `(C,C)`, one does not move to paradise. Yet, higher negotiation payoffs in state `x0` can make this state sufficiently attractive compared to paradise so that deviation from `(C,C)` cannot be deterred anymore.
+
+So `(C,C)` could only be implemented if and only if players assume that `(D,D)` will be implemented in future negotiations. That causes existence failure of RNE.
+
+### Getting Existence with a Finer State Space
+
+The non-existence problem arises because any assumed negotiation outcome in state `x0` creates a contradiction. One solution to these contradictions might be that players allow different negotiation outcomes if state `x0` is reached repeatedly. We can model this by artificially splitting the state `x0` into multiple states e.g. `x0` and `x1` in which exactly the same stage game is played but different negotiation outcomes would be allowed.
+
+#### First Guess: The first period is different..
+
+Perhaps a first thought that comes to mind is that the first period is different. Let us assume in the first period, we start in state `x0` but in in later periods the prisoners' dilemma state is labeled state `x1` and may have a different negotiation outcome.
+
+```{r}
+# Game in which PD state is called x0 in first period
+# and x1 in later periods.
+g = rel_game() %>%
+  rel_states(c("x0","x1"), A1=A1, A2=A2, pi1.form=pi1, pi2.form=pi2) %>%
+  rel_state("x.paradise", pi1=2, pi2=2) %>%
+  rel_transition("x0","x.paradise",a1="C",a2="C") %>%
+  rel_transition("x0","x1",a1="D") %>%
+  rel_transition("x0","x1",a2="D") %>%
+  rel_transition("x1","x.paradise",a1="C",a2="C") %>%
+  rel_compile()
+```
+
+As we still have a weakly directional game, we can directly compute the RNE. Simple theoretical arguments can show that an RNE for a coarser state remains an RNE if we create a finer state space by splitting states into multiple states with different labels. We will show further below that an appropriately chosen finer state space can cause an RNE to exist, i.e. in general new RNE can show up with a finer state space. Yet, looking at our previous two examples for which RNE existed, we essentially find again the same RNE:
+
+```{r}
+# RNE with mutual cooperation
+rel_rne(g,delta = 0.5, rho=0.1) %>% get_eq() %>%
+  select(x,ae.lab, a1.lab, a2.lab, r1,r2,U,v1,v2)
+
+# Lower discount factor: RNE has mutual defection
+rel_rne(g,delta = 0.2, rho=0.1) %>% get_eq() %>%
+  select(x,ae.lab, a1.lab, a2.lab, r1,r2,U,v1,v2)
+```
+
+Now let's look at the case `delta=0.5` and `rho=0.5` for which no RNE existed with a single state `x0`. Will we now find an RNE where in state `x0` (first period) `(C,C)` is played and in later periods `(D,D)`?
+
+```{r}
+rel_rne(g,delta = 0.5, rho=0.5) %>% get_eq() %>%
+  select(x,ae.lab, a1.lab, a2.lab, r1,r2,U,v1,v2)
+```
+
+Unfortunately, not. Still no RNE exists. While in state `x0` `(C,C)` could be implemented, assuming that in state `x1` always `(D,D)` would be played causes the same problem as if there would be just a single state: the continuation equilibria from period 2 onward don't satisfy the RNE conditions.
+
+#### Second attempt: Alternating states
+
+However, there is another split of the original state `x0` such that an RNE exists. Assume that the states `x0` and `x1` alternate each period as long as paradise is not yet reached. Then there is an RNE where in state `x0` `(C,C)` is played and in state `x1` `(D,D)` (and another RNE the other way round).
+
+Unfortunately, since this is not a weakly directional game the `RelationalContracts` package has no function to automatically compute the corresponding RNE. But we can semi-automatically verify that an RNE exists. First, we want to compute the joint continuation payoffs `U` of a SPE with these action profiles. We can specify it by solving the following helper game, where we have fixed stage game payoffs according to these equilibrium path action profiles:
+
+```{r}
+helper.game = g = rel_game() %>%
+  # Assume (C,C) is played in x0
+  rel_state("x0", pi1=2, pi2=2) %>%
+  # Assume (D,D) is played in x1
+  rel_state("x1", pi1=0, pi2=0) %>%
+  rel_state("x.paradise", pi1=2, pi2=2) %>%
+  rel_transition("x0","x.paradise") %>%
+  rel_transition("x1","x0") %>%
+  rel_compile()
+
+helper.game %>% rel_spe(delta=0.5, rho=0.5) %>% get_eq() %>% select(x,U)
+```
+
+We get nice round joint payoffs of `U(x0)=4` and `U(x1)=2`. Negotiation payoffs just split these joint payoffs equally, i.e. `r1(x0)=r2(x0)=2` and `r1(x1)=r2(x1)=1`.
+
+We now specify the true game with alternating states `x0` and `x1` and solve for the SPE in the truncated game with these negotiation payoffs.
+
+```{r}
+# x0 and x1 alternate
+g = g01 = rel_game() %>%
+  rel_states(c("x0","x1"), A1=A1, A2=A2, pi1.form=pi1, pi2.form=pi2) %>%
+  rel_state("x.paradise", pi1=2, pi2=2) %>%
+  rel_transition("x0","x1",a1="D") %>%
+  rel_transition("x0","x1",a2="D") %>%
+  rel_transition("x1","x0",a1="D") %>%
+  rel_transition("x1","x0",a2="D") %>%
+  rel_transition("x0","x.paradise",a1="C",a2="C") %>%
+  rel_transition("x1","x.paradise",a1="C",a2="C") %>%
+  rel_compile()
+
+g %>% 
+  rel_spe(delta=0.5, rho=0.5, r1 = c(2,1,2), r2=c(2,1,2)) %>%
+  get_eq() %>%
+  select(x,ae.lab,r1,r2,U,v1,v2)
+```
+
+We indeed find that the optimal simple SPE in this truncated game implements `(C,C)` in state `x0` and `(D,D)` in state `x1` which also yields the assumed negotiation payoffs. Hence, we have constructed an RNE!
+
+The intuition is as follows: deviating from `(C,C)` in state `x0` is not too attractive since one would end up in state `x1` that has relatively low negotiation payoff since newly negotiated relational contracts in state `x1` start with `(D,D)`. This allows to implement `(C,C)` in state `x0` . However, in state `x1` it would be more attractive to deviate from `(C,C)` since one ends up in state `x0` with higher negotiation payoffs since newly negotiated relational contracts start with `(C,C)`. Therefore, only `(D,D)` can be implemented in state `x1`.
+
+### T-RNE
+
+We will now move back to the original game with a single state `x0` and solve a T-RNE. We set `T=100`, which means that in the first 100 periods the relational contract will be newly negotiated with probability `rho` each period and in later periods no new negotiation takes place and players will essentially follow a Pareto-optimal SPE. A T-RNE essentially makes the actual period `t<=T` part of the state definition, i.e. negotiation outcome in state `x0` can differ between periods. T-RNE always exist and can be quite quickly computed numerically: Let's directly look at T-RNE for `delta=0.5` and `rho=0.5` for which no RNE existed in the coarse state space:
+
+```{r}
+g = g0 # Set to initial game without state x1
+# Solve a T-RNE
+g = rel_T_rne(g,T=100, delta=0.5, rho=0.5, save.history = TRUE)
+
+# Show results for earliest 6 periods
+get_T_rne_history(g) %>%
+  filter(x=="x0", t <= 6) %>%
+  arrange(t) %>%
+  select(t,ae.lab,r1,r2,U,v1,v2)
+```
+
+We see that the equilibrium path actions in the T-RNE always alternate each period between `(C,C)` and `(D,D)` and one can verify that this alternation indeed continues up to `t=T.` So essentially, the T-RNE automatically reconstructs the finer state space partition with `x0` and `x1` for which an RNE exists. So while on first thought cycling T-RNE may seem undesirable, they actually construct here a quite intuitive solution for the Gangsta's Paradise game.
+
+Note that for other parameter constellations, there can be longer cycles. For example, if we increase the discount factor to `delta=0.6` we get three period cycles with `(C,C), (C,C), (D,D)` :
+
+```{r}
+g = rel_T_rne(g,T=100, delta=0.6, rho=0.5, save.history = TRUE)
+get_T_rne_history(g)  %>%
+  filter(x=="x0", t <= 6) %>%
+  arrange(t) %>%
+  select(t,ae.lab,r1,r2,U,v1,v2)
+```
+
+Here the cycle starts with `(D,D)`, but that is not essential and just depends on our value for `T`. E.g. with `T=102` the cycle starts with the two cooperative periods.
+
+```{r}
+g = rel_T_rne(g,T=102, delta=0.6, rho=0.5, save.history = TRUE)
+get_T_rne_history(g)  %>%
+  filter(x=="x0", t <= 6) %>%
+  arrange(t) %>%
+  select(t,ae.lab,r1,r2,U,v1,v2)
+```
+
+We can verify that splitting the state `x0` now into three states `x0` , `x1` and `x2` an RNE with that cycle exists. To specify the truncated game, we can use the negotiation payoffs from the T-RNE outcome. (In other examples, the T-RNE negotiation payoffs may only be approximately correct and improve for large T, but in this example things work out nicely):
+
+```{r}
+g012 = rel_game() %>%
+  rel_states(c("x0","x1","x2"), A1=A1, A2=A2, pi1.form=pi1, pi2.form=pi2) %>%
+  rel_state("x.paradise", pi1=2, pi2=2) %>%
+  rel_transition("x0","x1",a1="D") %>%
+  rel_transition("x0","x1",a2="D") %>%
+  rel_transition("x1","x2",a1="D") %>%
+  rel_transition("x1","x2",a2="D") %>%
+  rel_transition("x2","x0",a1="D") %>%
+  rel_transition("x2","x0",a2="D") %>%
+  rel_transition("x0","x.paradise",a1="C",a2="C") %>%
+  rel_transition("x1","x.paradise",a1="C",a2="C") %>%
+  rel_transition("x2","x.paradise",a1="C",a2="C") %>%
+  rel_compile()
+
+# Solve SPE of truncated game. Use r1 and r2 from
+# T-RNE solved above
+g012 %>% 
+  rel_spe(delta=0.6, rho=0.5, r1 = c(2,2,1.2,2), r2=c(2,2,1.2,2)) %>%
+  get_eq() %>%
+  select(x,ae.lab,r1,r2,U,v1,v2)
+```
+
+We find that the optimal SPE in the truncated game indeed implements the same cycle as the T-RNE and the resulting negotiation payoffs are equal to the assumed ones, i.e. we have found an RNE on this finer state space.
+
+#### A Knife-Edge Case with Infinite Cycle Length
+
+Our theoretical analysis of the Gangsta's Paradise game in our paper reveals that for `delta=1/3` mutual cooperation could be implemented in the truncated game if and only if the negotiation payoffs outside paradise are exactly 0.
+
+As we converge with the discount factor from above towards `1/3` with a positive negotiation probability, the T-RNE cycles become larger and larger. E.g.
+
+```{r}
+g = g0 # Set to initial game without state x1
+# Solve a T-RNE
+g = rel_T_rne(g,T=505, delta=0.3334, rho=0.5, save.history = TRUE,tol=1e-12)
+
+# Show results for earliest 6 periods
+hist = get_T_rne_history(g)
+hist %>%
+  filter(x=="x0", t <= 12) %>%
+  arrange(t) %>%
+  select(t,ae.lab,r1,r2,U,v1,v2)
+```
+
+The knife-edge case of `delta=1/3` can be seen as the limit case, with an infinitely long cycle. (Due to floating point arithmetic inaccuracies, we will still find a finite cycle when solving this knife-edge case numerically.) In this knife-edge case, splitting the state space into a finite finer partition would not help to reestablish existence of an RNE. Our blackmailing game example seems to be a similar knife-edge case.
+
+#### A conjecture we can't prove
+
+Of course, the examples suggest the conjecture that for general stochastic games one could generically (i.e. except for certain knife-edge cases) partition the state space into a finite set of finer states (using only time `t` not any other aspects of the played history for this partition) such that then an RNE exists. Unfortunately, we honestly have no clue how to prove such a conjecture (nor how to cleanly formulate what *generically* means in this context). We even don't have a strong intuition whether the conjecture holds. So we would relegate this question to future research.
+
+### MPE show similar symptoms
+
+One may have wondered whether these cycles are due to some special assumption in the definition of RNE or T-RNE. Yet, in this last section, we want to show that Markov perfect equilibria exhibit similar behavior. The following game finds an MPE of the original game with a single prisoners' dilemma state `x0` for `delta=0.5`:
+
+```{r}
+rel_mpe(g0,delta = 0.5) %>% get_mpe()
+```
+
+Players will mutually defect. The algorithm tries to find a single MPE but in principle there could be more MPE. The function `rel_mpe` has the argument `a.init.guess` that allows to specify an initial guess of the action profiles played in an MPE. If an MPE with these action profiles exists it will be returned. Let us check whether also an MPE with mutual cooperation exists:
+
+```{r}
+# Action profile indeces can be seen by looking at g$ax.grid
+# 1 = (C,C) 4=(D,D)
+rel_mpe(g0,delta = 0.5, a.init.guess = c(1,1)) %>% get_mpe()
+```
+
+No. The algorithm again returns the MPE where`(D,D)` is played. This means the highest MPE payoff is 0 in this game.
+
+Let us now compute MPE in the game variant in which state `x0` is split in alternating states `x0` and `x1`. The MPE where always `(D,D)` is played obviously still exists and it will also be found by default with our algorithm:
+
+```{r}
+rel_mpe(g01,delta = 0.5) %>% get_mpe()
+```
+
+But let's check whether there is also an MPE where `(C,C)` is played in state `x0` and `(D,D)` ins state `x1` by providing these action profiles as initial guess:
+
+```{r}
+rel_mpe(g01,delta = 0.5, a.init.guess=c(1,4,1)) %>% get_mpe()
+```
+
+Indeed this MPE also exists and it Pareto-dominates the MPE where always `(D,D)` is played. MPE are not plagued by non-existence because there is no requirement to always pick a Pareto-optimal MPE. But otherwise the behavior seems similar to that of RNE. Picking a finer state space allows more efficient MPE to pop-up. While this point is obvious if one would e.g. define the history of the game as part of the state, it interestingly also arises just by assuming that states alternate each period. In this sense one could argue that the "finer state-space effects" and "cycle effects" of RNE and T-RNE are in some sense inherited from MPE.

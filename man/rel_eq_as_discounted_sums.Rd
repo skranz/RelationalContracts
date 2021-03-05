@@ -13,5 +13,5 @@ By default equilibrium payoffs are given as average discounted payoffs. This is 
 \details{
 Call this function after you have solved an equilibrium if you want to present the equilibrium
 
-@param g the game for which an equilibrium was computedayoffs as the discounted sum of payoffs instead.
+ @param g the game for which an equilibrium was computedayoffs as the discounted sum of payoffs instead.
 }

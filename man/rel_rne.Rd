@@ -4,8 +4,15 @@
 \alias{rel_rne}
 \title{Find an RNE for a (weakly) directional game}
 \usage{
-rel_rne(g, delta = g$param$delta, rho = g$param$rho,
-  adjusted.delta = NULL, beta1 = g$param$beta1, verbose = TRUE, ...)
+rel_rne(
+  g,
+  delta = g$param$delta,
+  rho = g$param$rho,
+  adjusted.delta = NULL,
+  beta1 = g$param$beta1,
+  verbose = TRUE,
+  ...
+)
 }
 \arguments{
 \item{g}{The game object}

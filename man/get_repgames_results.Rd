@@ -4,8 +4,12 @@
 \alias{get_repgames_results}
 \title{Get the results of all solved repeated games assuming the state is fixed}
 \usage{
-get_repgames_results(g, action.details = TRUE, delta = g$param$delta,
-  rho = g$param$rho)
+get_repgames_results(
+  g,
+  action.details = TRUE,
+  delta = g$param$delta,
+  rho = g$param$rho
+)
 }
 \description{
 Returns for all discount factors the optimal simple strategy profiles

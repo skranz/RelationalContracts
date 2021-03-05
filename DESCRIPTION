@@ -1,14 +1,14 @@
 Package: RelationalContracts
 Type: Package
-Title: Characterize Relational Contracts Accounting For Repeated Negotiations
-Version: 0.1.0
+Title: Characterize relational contracts in repated or stochastic games  
+Version: 0.2.0
 Author: Sebastian Kranz
 Maintainer: Sebastian Kranz <sebastian.kranz@uni-ulm.de>
-Description: Characterize Relational Contracts Accounting For Repeated Negotiations
-    Extend Repeated Games setting to a more general subclass of discounted dynamic games.
+Description: Characterize relational contracts in repated or stochastic games. Can
+  also analyse repeated negotiation equilibria.
 License: GPL >= 2.0
 Encoding: UTF-8
 LazyData: true
 Depends: restorepoint, dplyr, matrixStats,RelationalContractsCpp, tidyr
 Suggests: ggplot2, plotly,DiagrammeR
-RoxygenNote: 6.0.1
+RoxygenNote: 7.1.1

@@ -4,8 +4,7 @@
 \alias{irv}
 \title{Helper functions to specify state transitions}
 \usage{
-irv(var, ..., default = NULL, lower = NULL, upper = NULL,
-  vals.unique = TRUE)
+irv(var, ..., default = NULL, lower = NULL, upper = NULL, vals.unique = TRUE)
 }
 \description{
 To be used as argument of \code{\link{irv_joint_dist}}

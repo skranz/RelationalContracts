@@ -282,7 +282,7 @@ rel_capped_rne = function(g,T, delta=g$param$delta, rho=g$param$rho, adjusted.de
   }
   if (save.history) {
     start.rne = bind_cols(t=rep(T+1,NROW(rne)),add.rne.action.labels(g,rne))
-    history = bind_rows(start.rne, res$history)
+    history = bind_rows(start.rne, add.rne.action.labels(g,res$history))
   } else {
     history = NULL
   }
@@ -740,7 +740,7 @@ rel_capped_rne_old = function(g,T, save.details=FALSE, tol=1e-10,  delta=g$param
   }
 
 
-  rne = data_frame(x = rep(sdf$x,times=T),t=rep(T:1,each=NROW(sdf)), r1=NA,r2=NA, U=NA, v1=NA,v2=NA,ae=NA,a1=NA,a2=NA)
+  rne = tibble(x = rep(sdf$x,times=T),t=rep(T:1,each=NROW(sdf)), r1=NA,r2=NA, U=NA, v1=NA,v2=NA,ae=NA,a1=NA,a2=NA)
 
 
   rne.details = NULL
